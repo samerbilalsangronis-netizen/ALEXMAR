@@ -51,8 +51,7 @@ export async function POST(req: NextRequest) {
     if (!informe.puedeImportar)
       return NextResponse.json(
         {
-          error:
-            "La conciliación tiene diferencias o advertencias pendientes. Importación bloqueada.",
+          error: "Hay errores de validación pendientes. Importación bloqueada.",
           ...informe,
         },
         { status: 422 },
@@ -60,6 +59,7 @@ export async function POST(req: NextRequest) {
     const { data, error } = await db.rpc("importar_inicial", {
       p: datos,
       p_huella: huella,
+      p_conciliacion: informe.conciliacion,
     });
     if (error) throw new Error(error.message);
     return NextResponse.json({ importado: true, resultado: data });

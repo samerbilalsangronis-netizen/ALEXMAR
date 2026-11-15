@@ -1,4 +1,8 @@
 import Link from "next/link";
+import {
+  Compatibilidades,
+  type Compatibilidad,
+} from "@/components/compatibilidades";
 import { notFound } from "next/navigation";
 import { randomUUID } from "node:crypto";
 import { consultar, sesion } from "@/lib/supabase";
@@ -24,7 +28,7 @@ export default async function Ficha({
   const p = await searchParams;
   const { perfil } = await sesion();
   const edita = ["administrador", "inventario"].includes(perfil.rol);
-  const [a, k] = await Promise.all([
+  const [a, k, compatibilidades] = await Promise.all([
     consultar<Producto | null>("ficha_producto", { p_id: id }),
     consultar<
       Pagina<{
@@ -35,6 +39,10 @@ export default async function Ficha({
         saldo: string;
       }>
     >("kardex", { p_id: id, p_pagina: pagina(p.pagina) }),
+    consultar<Pagina<Compatibilidad>>("listar_compatibilidades", {
+      p_producto: id,
+      p_pagina: pagina(p.compat_pagina),
+    }),
   ]);
   if (!a) notFound();
   const campos = [
@@ -137,6 +145,12 @@ export default async function Ficha({
           </>
         )}
       </section>
+      <Compatibilidades
+        producto={id}
+        datos={compatibilidades}
+        edita={edita}
+        parametros={p}
+      />
       {edita && (
         <details className="panel">
           <summary>Ajustar existencia por conteo</summary>
@@ -183,7 +197,10 @@ export default async function Ficha({
         <Paginacion
           {...k}
           ruta={"/inventario/" + id}
-          parametros={p.volver ? { volver: p.volver } : {}}
+          parametros={{
+            ...(p.volver ? { volver: p.volver } : {}),
+            ...(p.compat_pagina ? { compat_pagina: p.compat_pagina } : {}),
+          }}
         />
       </section>
     </>

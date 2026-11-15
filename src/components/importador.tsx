@@ -74,7 +74,8 @@ export function Importador() {
               onChange={(e) => setAcepta(e.target.checked)}
             />
             Revisé la conciliación y autorizo cargar estos archivos en el
-            proyecto nuevo vacío.
+            proyecto nuevo vacío, usando cargos menos abonos y sin redondear los
+            importes.
           </label>
         )}
       </form>
@@ -128,8 +129,9 @@ export function Importador() {
                 <>
                   <p className="aviso">
                     Hay {informe.diferencias.length} diferencias entre el saldo
-                    guardado y cargos menos abonos. La importación permanece
-                    bloqueada hasta aclararlas.
+                    guardado y cargos menos abonos. La importación está basada
+                    en la vista del origen: cargos menos abonos no eliminados.
+                    El campo guardado se conserva como procedencia.
                   </p>
                   <div className="tabla-contenedor">
                     <table>
@@ -157,8 +159,9 @@ export function Importador() {
               )}
               {informe.puedeImportar && (
                 <p className="exito">
-                  Sin diferencias ni advertencias pendientes. Revisa los conteos
-                  antes de autorizar.
+                  Validaciones correctas. Se usarán los saldos de la vista y se
+                  conservarán todos los decimales y los datos originales. Revisa
+                  los conteos y diferencias de procedencia antes de confirmar.
                 </p>
               )}
             </>

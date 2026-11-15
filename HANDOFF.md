@@ -1,5 +1,10 @@
 # HANDOFF · ALEXMAR
 
+## Estado vigente para esta publicación
+
+El propietario autorizó usar el saldo de la vista, conservar todos los decimales y publicar código. Las secciones antiguas de este documento son historial; las decisiones nuevas prevalecen. La carga remota no ha ocurrido. Ver docs/PUBLICACION.md y la migración 004; no repetir SQL ya aplicado.
+
+
 Última actualización: 2026-11-15 (America/Caracas).
 Destino: continuación del proyecto en Codex.
 Repositorio: https://github.com/samerbilalsangronis-netizen/ALEXMAR
@@ -148,3 +153,48 @@ Continuar sin rehacer lo implementado:
 Propuestas no confirmadas: costo promedio ponderado por variante con costo histórico de venta; consumo de materiales al entregar trabajo mediante evento único compartido con factura; precisión operativa de cuatro decimales.
 
 Documentar avances y mantener este HANDOFF actualizado. No declarar listo para operar hasta completar las funciones y criterios de aceptación del prompt maestro.
+
+
+## Continuaciones en este entorno (registro cronológico; ver última actualización)
+
+## Continuación: compatibilidades verificadas (2026-11-15)
+- Ficha de inventario: consulta paginada, alta, edición y eliminación confirmada de marca/modelo, rango de años o universal. Administrador/inventario editan; ventas/lectura consultan. Las acciones comprueban rol y las RPC repiten la autorización. Se conserva la búsqueda de retorno y ambas paginaciones.
+- Nueva migración `20261115000200_compatibilidades.sql`; no se modificó la base. Aprovecha RLS y auditoría existentes; valida rangos, duplicados normalizados y pertenencia al producto.
+- Corregido filtro combinado de vehículo/año: ambos deben corresponder a la misma compatibilidad. Una compatibilidad sin ningún año conocido no confirma años concretos; el texto histórico sigue separado.
+- Ver `docs/COMPATIBILIDADES.md` para aplicación desde SQL Editor. No aplicada a Supabase remoto ni publicada en GitHub desde esta continuación.
+- Pruebas: 6 correctas, tipos y build correctos. Nueva cobertura de permisos, usuario inactivo, anon, CRUD, auditoría y última página de 1.051 compatibilidades. Sin revisión visual autenticada ni prueba de Supabase real.
+- Siguiente bloque del catálogo: variantes con precio y existencia independientes, unidades y proveedores; después compras/ventas. Siguen pendientes las decisiones de costeo y conciliación histórica de DECISIONES.md.
+
+## Continuación: identidad, proveedores y reportes (2026-11-15)
+- El propietario confirmó despliegue en alexmar.vercel.app y creación del administrador. Compartió un CSV con presencia del índice y las tres RPC de compatibilidades; no constituye validación funcional remota completa.
+- Logo recibido, preparado como PNG transparente en public/logo-alexmar.png e integrado en acceso y navegación. Interfaz naranja/grafito, navegación con ruta activa y mejoras de legibilidad/móvil. Los cambios anteriores se conservaron.
+- Directorio real de proveedores (roles administrador/inventario), filtros, edición, desactivación y auditoría. Nueva migración 20261115000300_proveedores_reportes.sql; no se ejecutó remotamente.
+- Reportes: métricas del catálogo activo; cuentas históricas separadas por moneda y rol; inventario paginado y CSV/HTML completos. No hay aún compras/cuentas por pagar ni métricas de ventas, utilidad, nómina o gastos. Ver docs/PROVEEDORES_REPORTES.md.
+- No están los cuatro CSV comerciales en la instancia actual. No se cargó historia ni se resolvieron las 104 discrepancias o la regla decimal. Se preparó verificar_carga_nueva.sql (solo lectura) y se aclaró el flujo de importación en la app.
+- Validación: 8 pruebas correctas, tipos y compilación. Navegador Chromium: acceso y logo en 1440 y 390 px, sin desbordamiento horizontal. Pantallas autenticadas/Supabase real pendientes. El proxy bloqueó el acceso a alexmar.vercel.app con CONNECT 403; no se observó la web publicada.
+- Código y archivos locales sin push ni publicación. No modificar el borrador del entorno ni publicar por instrucción vigente del propietario. Para desplegar este código hará falta una instrucción explícita posterior.
+
+## Revisión de CSV recibidos (2026-11-15)
+- Ya se recibieron nuevamente los cuatro CSV comerciales. Se analizaron localmente sin escrituras en Supabase; informe y diferencias en privado/revision-historica/ (ignorado por Git). Los originales permanecen en attachments, fuera del checkout.
+- Conteos: 910 productos/848 vigentes; 163 clientes/108 vigentes; 3.637 movimientos/2.737 vigentes; 77 notas/12 vigentes. Sin errores de formato ni referencias rotas detectados por el analizador actual.
+- Confirmadas 104 discrepancias de saldo, que persisten calculando con precisión completa. Exactamente 7 valores de detalle_cuentas.total_linea exceden cuatro decimales. No se aprobó redondeo ni se cambió ninguna cifra.
+- El propietario informa 0 lotes y fecha null. No se observó directamente su Supabase; este dato indica ausencia de lotes registrados, no prueba por sí solo que las tablas estén vacías.
+- El CSV adicional contiene un inventario de 132 columnas del origen, no las definiciones de vistas/triggers. Confirma tablas proveedores y movimientos_proveedor; sus exportaciones aún no se recibieron.
+- Preparado diagnostico_origen_unico.sql para ejecutar solo en el origen: una fila con vistas, triggers/funciones y seis conteos. Verificado en PGlite con esquema sintético dentro de una transacción de solo lectura. Falta el resultado real para explicar saldos y confirmar exportaciones completas.
+- No se importaron datos, no se modificó lógica ni migraciones anteriores y no se publicó nada.
+
+## Diagnóstico completo del origen recibido (2026-11-15)
+- Recibido CSV con vistas, triggers y conteos. Los cuatro conteos de origen coinciden exactamente con los archivos recibidos (totales y vigentes); proveedores y movimientos_proveedor tienen cero filas, según resultado aportado por el propietario.
+- vista_saldos_clientes calcula cargos menos abonos de movimientos no eliminados y no utiliza clientes.total_adeudado. Los triggers devueltos solo actualizan updated_at; no mantienen el campo de saldo.
+- Se reprodujo localmente la definición recibida de la vista en PGlite, cargando los CSV sin redondeo en numeric. Los 108 saldos de clientes vigentes coinciden con el cálculo decimal independiente; 104 difieren del campo total_adeudado por más de 0.0001. Esto confirma la regla de la vista; no demuestra qué campo muestra cada pantalla del sistema anterior ni por qué se desactualizó/difiere el otro campo.
+- Contraste detallado privado en privado/revision-historica/contraste-vista.csv, ignorado por Git. No publicar los CSV ni los informes con clientes.
+- Pendientes dos decisiones del propietario, solicitadas en el chat: usar saldo de la vista conservando campo original, y preservar todos los decimales de los siete importes. No dar por aprobadas hasta respuesta explícita. Si se elige preservar precisión, adaptar mediante migración NUEVA, importador y pruebas; la base actual numeric(20,4) no permite importar esos valores sin pérdida.
+- No se ejecutó importación remota ni se publicaron cambios.
+
+## Publicación autorizada y prueba de carga exacta
+- Se integró origin/main (incluida la aclaración sobre total_adeudado en cero), preservando documentación remota y continuaciones locales.
+- Regla de vista y preservación de precisión aprobadas por "procede y publica". Nueva migración 004, sin editar migraciones anteriores. Firma nueva de importar_inicial exige la conciliación exacta; retira la función anterior para evitar cargas con reglas diferentes.
+- El analizador conserva diferencias de procedencia como información y sigue bloqueando errores. El servidor vuelve a analizar y la DB valida todas las filas y concilia saldos antes y después de insertar. Numeric sin escala fija y aritmética decimal exacta dentro del rango validado.
+- Prueba privada completa en PGlite: 4.787 originales, 163 saldos, 3.637 importes y stock de 910 productos verificados; sin duplicación al repetir. No publicar los informes ni los datos. Diez pruebas, tipos y build correctos.
+- No hay variables Supabase configuradas en esta máquina (solo .env.example); no se efectuaron carga ni SQL remotos. El propietario debe aplicar solo las migraciones pendientes y usar Importación → Analizar y conciliar → Confirmar desde su sesión autenticada.
+- Se autoriza publicar este código en main. La publicación del entorno cloud es independiente y no se solicitó cambiar su borrador. Verificar Vercel separadamente; un push no prueba un despliegue exitoso.

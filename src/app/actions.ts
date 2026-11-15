@@ -134,3 +134,94 @@ export async function guardarConsulta(f: FormData) {
     "/inventario",
   );
 }
+
+async function cambiarCompatibilidad(f: FormData, eliminar: boolean) {
+  const producto = String(f.get("producto") || "");
+  if (
+    !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(
+      producto,
+    )
+  ) {
+    throw new Error("Producto inválido.");
+  }
+  const ruta = "/inventario/" + producto;
+  const contexto = new URLSearchParams();
+  for (const k of ["volver", "pagina", "compat_pagina"]) {
+    const valor = String(f.get(k) || "");
+    if (valor) contexto.set(k, valor);
+  }
+  try {
+    const { db, perfil } = await sesion();
+    if (!["administrador", "inventario"].includes(perfil.rol)) {
+      throw new Error("No tienes permiso para esta operación.");
+    }
+    if (eliminar && f.get("confirmar") !== "on")
+      throw new Error("Confirma la eliminación.");
+    const { error } = eliminar
+      ? await db.rpc("eliminar_compatibilidad", {
+          p_producto: producto,
+          p_id: f.get("id"),
+        })
+      : await db.rpc("guardar_compatibilidad", {
+          p_producto: producto,
+          p: {
+            id: f.get("id") || null,
+            marca: String(f.get("marca") || "").trim(),
+            modelo: String(f.get("modelo") || "").trim(),
+            anio_desde: f.get("anio_desde") || null,
+            anio_hasta: f.get("anio_hasta") || null,
+            universal: f.get("universal") === "on",
+          },
+        });
+    if (error) throw new Error(error.message);
+    revalidatePath(ruta);
+    revalidatePath("/inventario");
+  } catch (e) {
+    contexto.set(
+      "error",
+      e instanceof Error ? e.message : "No se pudo guardar.",
+    );
+    redirect(ruta + "?" + contexto + "#compatibilidades");
+  }
+  contexto.set("guardado", "1");
+  redirect(ruta + "?" + contexto + "#compatibilidades");
+}
+export async function guardarCompatibilidad(f: FormData) {
+  await cambiarCompatibilidad(f, false);
+}
+export async function eliminarCompatibilidad(f: FormData) {
+  await cambiarCompatibilidad(f, true);
+}
+
+export async function guardarProveedor(f: FormData) {
+  const { perfil } = await sesion();
+  if (!["administrador", "inventario"].includes(perfil.rol))
+    throw new Error("No tienes permiso para guardar proveedores.");
+  const campos = [
+    "nombre",
+    "documento",
+    "contacto",
+    "telefono",
+    "correo",
+    "direccion",
+    "ciudad",
+    "categorias",
+    "marcas",
+    "condiciones",
+    "notas",
+  ];
+  await ejecutar(
+    "guardar_proveedor",
+    {
+      p: {
+        ...Object.fromEntries(
+          campos.map((k) => [k, String(f.get(k) || "").trim()]),
+        ),
+        id: f.get("id") || null,
+        monedas: f.getAll("monedas"),
+        activo: f.get("activo") === "on",
+      },
+    },
+    "/proveedores",
+  );
+}

@@ -1,3 +1,4 @@
+import { Marca } from "@/components/marca";
 import { configurado } from "@/lib/supabase";
 import { entrar } from "./actions";
 export default async function Inicio({
@@ -10,12 +11,17 @@ export default async function Inicio({
     <main className="acceso">
       <section className="marca-acceso">
         <span className="etiqueta">AUTOPERIQUITOS Y ROTULADOS</span>
+        <Marca portada />
         <h1>
-          ALEX<span>MAR</span>
+          Todo tu negocio.
+          <br />
+          <span>En un solo lugar.</span>
         </h1>
-        <p>Tu negocio, en orden.</p>
         <div className="linea" />
-        <p>Productos, clientes e información clara para cada decisión.</p>
+        <p>
+          Encuentra la pieza correcta. Consulta tus cuentas. Mantén el control
+          de tu inventario.
+        </p>
       </section>
       <section className="panel login">
         <span className="etiqueta">ESPACIO PRIVADO</span>

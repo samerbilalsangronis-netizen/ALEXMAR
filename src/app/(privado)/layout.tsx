@@ -1,25 +1,10 @@
 export const dynamic = "force-dynamic";
 import Link from "next/link";
-import {
-  LayoutDashboard,
-  Package,
-  Users,
-  StickyNote,
-  Upload,
-  Settings,
-  LogOut,
-  ArrowUpRight,
-} from "lucide-react";
+import { LogOut } from "lucide-react";
+import { Marca } from "@/components/marca";
+import { Navegacion } from "@/components/navegacion";
 import { sesion } from "@/lib/supabase";
 import { salir } from "@/app/actions";
-const enlaces = [
-  ["/panel", "Resumen", LayoutDashboard, "todos"],
-  ["/inventario", "Inventario", Package, "todos"],
-  ["/clientes", "Clientes y cuentas", Users, "ventas"],
-  ["/notas", "Notas", StickyNote, "admin"],
-  ["/migracion", "Importación", Upload, "admin"],
-  ["/configuracion", "Usuarios", Settings, "admin"],
-] as const;
 export default async function Privado({
   children,
 }: {
@@ -30,27 +15,12 @@ export default async function Privado({
     <div className="estructura">
       <aside className="barra no-imprimir">
         <Link href="/panel" className="logotipo">
-          ALEX<span>MAR</span>
+          <Marca />
           <small>GESTIÓN COMERCIAL</small>
         </Link>
         <div className="separador" />
         <span className="etiqueta">TU ESPACIO DE TRABAJO</span>
-        <nav>
-          {enlaces
-            .filter(
-              (e) =>
-                e[3] === "todos" ||
-                perfil.rol === "administrador" ||
-                (e[3] === "ventas" && perfil.rol === "ventas"),
-            )
-            .map(([ruta, texto, Icono]) => (
-              <Link key={ruta} href={ruta}>
-                <Icono size={19} />
-                {texto}
-                <ArrowUpRight size={13} />
-              </Link>
-            ))}
-        </nav>
+        <Navegacion rol={perfil.rol} />
         <div className="usuario">
           <div className="avatar">{perfil.nombre.slice(0, 1)}</div>
           <div>
@@ -70,9 +40,7 @@ export default async function Privado({
       </aside>
       <div className="contenido">
         <div className="franja no-imprimir">
-          <span>
-            <i /> Conexión requerida
-          </span>
+          <span>ESPACIO DE TRABAJO</span>
           <span>USD · America/Caracas</span>
         </div>
         <main>{children}</main>

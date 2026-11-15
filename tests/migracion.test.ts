@@ -49,9 +49,9 @@ test("conciliación exacta con decimales, pagos y eliminados", () => {
   assert.equal(analizar(d).puedeImportar, true);
   d.detalle_cuentas[1].eliminado = "true";
   assert.equal(analizar(d).diferencias.length, 1);
-  assert.equal(analizar(d).puedeImportar, false);
+  assert.equal(analizar(d).puedeImportar, true);
 });
-test("bloquea referencias rotas, duplicados, cantidades negativas y pérdida de precisión", () => {
+test("bloquea referencias rotas, duplicados y cantidades negativas; informa precisión conservada", () => {
   const d = datos();
   d.inventario[0].stock_actual = "-1";
   d.detalle_cuentas[0].id_cliente = "33333333-3333-4333-8333-333333333333";
@@ -72,4 +72,22 @@ test("CSV valida encabezados y respeta texto entre comillas", () => {
     "notas",
   );
   assert.equal(r[0].contenido, "Texto, con coma");
+});
+
+test("regla aprobada conserva precisión y campo original sin usarlo como saldo", () => {
+  const d = datos();
+  d.clientes[0].total_adeudado = "0";
+  d.detalle_cuentas[0].total_linea = "10.123456789012345678901234567890";
+  const r = analizar(d);
+  assert.equal(r.puedeImportar, true);
+  assert.equal(r.conciliacion[0].saldo, "7.12345678901234567890123456789");
+  assert.equal(r.diferencias[0].declarado, "0");
+  assert.equal(d.clientes[0].total_adeudado, "0");
+  d.detalle_cuentas[1].total_linea = "11";
+  assert.equal(
+    analizar(d).conciliacion[0].saldo,
+    "-0.87654321098765432109876543211",
+  );
+  d.detalle_cuentas[0].total_linea = "1." + "1".repeat(81);
+  assert.equal(analizar(d).puedeImportar, false);
 });

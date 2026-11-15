@@ -12,11 +12,15 @@
 - Roles: administrador (todo lo disponible), inventario (catálogo/costos/ajustes), ventas (catálogo sin costo y cuentas), lectura (catálogo sin costos ni cuentas).
 - Eliminados preservados inactivos. IDs originales conservados. No enlazar mercancía con movimientos históricos sin relación explícita.
 - Importación inicial atómica, solo destino vacío, mismo lote idempotente. No altera el origen.
-- No importar cuentas con diferencias ni valores que pierdan precisión sin regla aprobada. No asumir que total_adeudado es el saldo definitivo.
+- Regla de migración aprobada tras comprobar la vista del origen: saldo = CARGO no eliminado − ABONO no eliminado; TITULO no altera saldo. El campo total_adeudado se conserva como procedencia y no genera ajustes ni deuda adicional.
+- Preservar los importes completos sin redondear. Migración nueva a numeric sin escala fija; controles de entrada hasta 80 decimales y magnitud menor a 10^16, sin truncar los valores admitidos.
 
 ## Propuestas pendientes antes de operar
 - Costeo promedio ponderado por variante y conservación de costo por venta.
 - Consumo de materiales de trabajos al confirmar entrega, con evento único compartido con factura.
-- Cuatro decimales operativos, original íntegro conservado. Requiere definir redondeo a moneda y precisión según operación.
-- Conciliación: resolver 104 diferencias consultando definición original de las vistas, funciones y triggers.
+- El redondeo de futuras operaciones comerciales requiere su propia regla; la migración histórica no redondea.
+- Conciliación histórica: regla de la vista verificada localmente y aprobada. Antes de cargar en el proyecto nuevo deben aplicarse las migraciones y revisarse la simulación y sus conteos.
 - Corte, respaldo restaurable, reversión y traslado privado de archivos Storage.
+
+## Publicación autorizada
+- El propietario autorizó proceder con las dos decisiones de migración y publicar el código. No se publican CSV, datos de clientes ni informes privados. La carga remota sigue el flujo de simulación y confirmación del administrador; publicar código no ejecuta SQL ni importa datos.

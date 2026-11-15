@@ -1,15 +1,23 @@
 import Link from "next/link";
-import { consultar } from "@/lib/supabase";
+import { consultar, sesion } from "@/lib/supabase";
 import { Cabecera } from "@/components/comunes";
 import { monto, cantidad } from "@/lib/formatos";
 export default async function Panel() {
+  const { perfil } = await sesion();
   const d = await consultar<Record<string, string>>("resumen");
   return (
     <>
       <Cabecera
-        titulo="Todo empieza con información clara"
-        subtitulo="Consulta el catálogo y las cuentas de tus clientes."
+        titulo="Tu negocio, de un vistazo"
+        subtitulo="Inventario y cuentas actuales. Elige dónde quieres empezar."
       />
+      {perfil.rol === "administrador" && Number(d.productos) === 0 && (
+        <section className="aviso no-imprimir">
+          <strong>Tu catálogo aún está vacío.</strong> Instalar la base no carga
+          los datos anteriores.{" "}
+          <Link href="/migracion">Revisar importación histórica →</Link>
+        </section>
+      )}
       <section className="indicadores">
         <article>
           <small>PRODUCTOS VIGENTES</small>
@@ -38,6 +46,22 @@ export default async function Panel() {
           </article>
         )}
       </section>
+      <div className="accesos-rapidos no-imprimir">
+        <Link href="/inventario">
+          <strong>01 / Inventario</strong>
+          <span>Productos, precios y disponibilidad →</span>
+        </Link>
+        {["administrador", "inventario"].includes(perfil.rol) && (
+          <Link href="/proveedores">
+            <strong>02 / Proveedores</strong>
+            <span>Directorio y contactos comerciales →</span>
+          </Link>
+        )}
+        <Link href="/reportes">
+          <strong>03 / Reportes</strong>
+          <span>Existencias y métricas del catálogo →</span>
+        </Link>
+      </div>
       <section className="panel bienvenida">
         <span className="etiqueta">ENCUENTRA LA PIEZA CORRECTA</span>
         <h2>Busca por nombre, referencia o vehículo.</h2>

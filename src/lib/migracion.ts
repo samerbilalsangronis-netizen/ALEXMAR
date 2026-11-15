@@ -1,5 +1,7 @@
 import Papa from "papaparse";
-import Decimal from "decimal.js";
+import DecimalBase from "decimal.js";
+// 16 dígitos enteros + 80 decimales + margen para sumar todo el lote.
+const Decimal = DecimalBase.clone({ precision: 128 });
 export const tablas = [
   "inventario",
   "clientes",
@@ -53,7 +55,7 @@ function numero(v: string, obligatorio = true) {
     if (obligatorio) throw new Error("Falta un importe o cantidad.");
     return null;
   }
-  if (!/^[-+]?\d+(\.\d+)?$/.test(v))
+  if (!/^[-+]?\d+(\.\d{1,80})?$/.test(v))
     throw new Error("Formato numérico no válido.");
   const n = new Decimal(v);
   if (!n.isFinite() || n.abs().gte("10000000000000000"))
@@ -85,7 +87,7 @@ export function analizar(datos: Datos) {
   }
   const clientes = new Set(datos.clientes.map((r) => r.id));
   const productos = new Set(datos.inventario.map((r) => r.id));
-  const saldos = new Map<string, Decimal>();
+  const saldos = new Map<string, InstanceType<typeof Decimal>>();
   for (const r of datos.inventario) {
     try {
       if (!r.nombre_producto.trim()) throw new Error("Nombre vacío.");
@@ -115,15 +117,9 @@ export function analizar(datos: Datos) {
         saldos.set(
           r.id_cliente,
           (saldos.get(r.id_cliente) || new Decimal(0)).plus(
-            n
-              .toDecimalPlaces(4)
-              .times(
-                r.tipo_linea === "CARGO"
-                  ? 1
-                  : r.tipo_linea === "ABONO"
-                    ? -1
-                    : 0,
-              ),
+            n.times(
+              r.tipo_linea === "CARGO" ? 1 : r.tipo_linea === "ABONO" ? -1 : 0,
+            ),
           ),
         );
     } catch (e) {
@@ -135,16 +131,13 @@ export function analizar(datos: Datos) {
       if (!r.nombre_cliente.trim()) throw new Error("Nombre vacío.");
       const declarado = numero(r.total_adeudado)!;
       const calculado = saldos.get(r.id) || new Decimal(0);
-      if (
-        r.eliminado === "false" &&
-        declarado.minus(calculado).abs().gt("0.0001")
-      )
+      if (r.eliminado === "false" && !declarado.eq(calculado))
         diferencias.push({
           id: r.id,
           nombre: r.nombre_cliente,
-          declarado: declarado.toFixed(4),
-          calculado: calculado.toFixed(4),
-          diferencia: declarado.minus(calculado).toFixed(4),
+          declarado: declarado.toFixed(),
+          calculado: calculado.toFixed(),
+          diferencia: declarado.minus(calculado).toFixed(),
         });
     } catch (e) {
       errores.push(`Cliente ${r.id}: ${(e as Error).message}`);
@@ -152,7 +145,7 @@ export function analizar(datos: Datos) {
   }
   if (precisiones)
     advertencias.push(
-      `${precisiones} valores tienen más de cuatro decimales: se conservará el texto original y se propone redondear a cuatro decimales. Requiere revisión.`,
+      `${precisiones} valores tienen más de cuatro decimales: se conservarán completos, sin redondear, según la regla aprobada.`,
     );
   const resumen = Object.fromEntries(
     tablas.map((t) => [
@@ -164,12 +157,21 @@ export function analizar(datos: Datos) {
       },
     ]),
   );
+  if (diferencias.length)
+    advertencias.push(
+      `${diferencias.length} campos de saldo guardado difieren de la vista: se conservan como procedencia. El saldo operativo se calcula con cargos menos abonos no eliminados.`,
+    );
+  const conciliacion = datos.clientes.map((c) => ({
+    id: c.id,
+    saldo: (saldos.get(c.id) || new Decimal(0)).toFixed(),
+  }));
   return {
+    regla: "vista_saldos_clientes_sin_redondeo_v1" as const,
+    conciliacion,
     resumen,
     errores,
     advertencias,
     diferencias,
-    puedeImportar:
-      errores.length === 0 && diferencias.length === 0 && precisiones === 0,
+    puedeImportar: errores.length === 0,
   };
 }
