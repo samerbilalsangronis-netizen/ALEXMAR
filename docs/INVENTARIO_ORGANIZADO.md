@@ -29,3 +29,7 @@ Para guardar una combinación, aplica los filtros y abre **Guardar esta consulta
 ## Validación
 
 Pruebas SQL: migración sobre productos preexistentes, grupos sobre más de mil productos, filtros combinados, metadatos originales conservados, roles y auditoría. Navegador en 1440/390 px: grupos, selección Fiesta, retorno con filtros y disponibilidad del catálogo sin 005, con datos sintéticos y sesión/API simuladas. Se verificó también la migración después de cargar los CSV originales en PGlite local aislado; no se ejecutó SQL sobre la base remota desde este entorno.
+
+## Minimizar
+
+Los paneles Categorías y vehículos y Filtros personalizados tienen un botón Minimizar/Mostrar. El estado se recuerda en el navegador. El buscador queda visible; minimizar no borra los filtros activos, que se pueden quitar con sus etiquetas o Limpiar todos.

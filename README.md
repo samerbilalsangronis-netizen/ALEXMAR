@@ -1,6 +1,6 @@
 # ALEXMAR · Gestión comercial
 
-Aplicación privada en español para Autoperiquitos y Rotulados Alexmar. **Entrega por fases: base, catálogo, proveedores, reportes actuales y migración histórica.** No es aún el sistema completo ni debe sustituir al actual hasta completar las siguientes fases y conciliar los datos.
+Aplicación privada en español para Autoperiquitos y Rotulados Alexmar. **Entrega por fases: base, catálogo, proveedores, facturación inicial, reportes actuales y migración histórica.** No es aún el sistema completo ni debe sustituir al actual hasta completar las siguientes fases y conciliar los datos.
 
 ## Qué funciona
 
@@ -13,6 +13,7 @@ Aplicación privada en español para Autoperiquitos y Rotulados Alexmar. **Entre
 - Clientes, saldo histórico por moneda, filtros por fecha, saldo anterior y final calculados sobre todo el historial. CSV completo y versión HTML completa para imprimir/guardar PDF.
 - Directorio de proveedores con contactos, condiciones, monedas, filtros y auditoría (administrador/inventario).
 - Reportes de inventario: métricas globales, detalle filtrable, CSV e impresión/PDF completos; cuentas históricas resumidas por moneda según rol. Ver [alcance y SQL nuevo](docs/PROVEEDORES_REPORTES.md).
+- Facturación en USD con impuesto 0: borradores/presupuestos, productos y servicios, emisión transaccional, pago inicial contado/crédito/parcial, impresión/PDF y anulación auditada. Ver [funcionamiento y SQL 006](docs/FACTURACION.md).
 - Notas privadas del administrador.
 - Importación inicial de cuatro CSV: simulación, duplicados, vínculos, precisión y conciliación por cliente. Bloqueada ante errores, saldos que no coinciden con la simulación o un destino con datos. Transacción e identificación de lote; repetir el mismo lote no duplica.
 
@@ -28,9 +29,10 @@ Aplicación privada en español para Autoperiquitos y Rotulados Alexmar. **Entre
 4. Ejecuta una sola vez [`supabase/migrations/20261115000300_proveedores_reportes.sql`](supabase/migrations/20261115000300_proveedores_reportes.sql) para proveedores y reportes. Si ya aplicaste las migraciones anteriores, no las repitas.
 5. Ejecuta una sola vez [`supabase/migrations/20261115000400_migracion_exacta.sql`](supabase/migrations/20261115000400_migracion_exacta.sql). Conserva los importes sin redondear y exige conciliación exacta. No repitas las migraciones ya aplicadas.
 6. Para la organización del catálogo aplica una sola vez [`supabase/migrations/20261115000500_catalogo_organizado.sql`](supabase/migrations/20261115000500_catalogo_organizado.sql). Sirve también sobre productos ya importados, sin recargar los CSV.
-7. En **Authentication → Users → Add user**, crea tu usuario administrador con correo confirmado y contraseña segura. Desactiva las inscripciones públicas en Authentication si no las necesitas.
-8. Abre [`supabase/utilidades/crear_administrador.sql`](supabase/utilidades/crear_administrador.sql), sustituye el correo de ejemplo y ejecútalo en SQL Editor.
-9. No expongas el esquema `alexmar` en la API. Se mantiene privado; la API pública contiene solo funciones con verificación de usuario/rol. RLS está habilitado en todas las tablas, sin acceso directo para anon/authenticated.
+7. Para facturar aplica [`supabase/migrations/20261115000600_facturacion.sql`](supabase/migrations/20261115000600_facturacion.sql), una sola vez. No requiere reimportar datos.
+8. En **Authentication → Users → Add user**, crea tu usuario administrador con correo confirmado y contraseña segura. Desactiva las inscripciones públicas en Authentication si no las necesitas.
+9. Abre [`supabase/utilidades/crear_administrador.sql`](supabase/utilidades/crear_administrador.sql), sustituye el correo de ejemplo y ejecútalo en SQL Editor.
+10. No expongas el esquema `alexmar` en la API. Se mantiene privado; la API pública contiene solo funciones con verificación de usuario/rol. RLS está habilitado en todas las tablas, sin acceso directo para anon/authenticated.
 
 ### 2. Vercel en otra cuenta
 
@@ -71,13 +73,13 @@ No subas los CSV ni credenciales al repositorio público. La interfaz recibe los
 - Compatibilidad histórica como texto declarado pendiente de normalización. La tabla estructurada de compatibilidades existe, pero el editor de compatibilidades verificadas está disponible en la ficha. Variantes y unidades avanzadas siguen pendientes. No se infieren años a partir del texto libre.
 - Solo principal por producto en esta interfaz. No se agregan variantes incompatibles en un único total.
 - Reportes actuales: métricas de catálogo, inventario filtrado completo y cuentas históricas por moneda según rol, CSV y PDF mediante impresión. Excel nativo y reportes operativos de módulos pendientes todavía no están disponibles.
-- No se pueden registrar ventas nuevas, compras, abonos, devoluciones, trabajos, nómina o gastos en esta entrega. No hay botones de esos módulos que simulen guardar operaciones.
+- Se pueden registrar ventas nuevas en USD con impuesto 0 y su pago inicial. Compras, pagos posteriores a la factura, devoluciones parciales, trabajos, nómina y gastos siguen pendientes. No hay botones que simulen guardar esas operaciones.
 - Requiere conexión. No es offline.
 
 ## Próximas fases
 
 1. Completar catálogo: variantes, unidades, especificaciones adicionales de compatibilidad, proveedores, fotos, sugerencias con teclado y filtros restantes.
-2. Compras/recepciones y cuentas por pagar; clientes/ventas/pagos con aplicaciones, presupuestos, devoluciones y anulaciones transaccionales.
+2. Compras/recepciones y cuentas por pagar; aplicaciones de pagos posteriores a facturas, devoluciones parciales y notas de crédito. La facturación básica ya incluye presupuestos y anulación completa.
 3. Trabajos y reservas; nómina por pagos; gastos.
 4. Reportes completos, Excel nativo, costo promedio ponderado por variante con costo histórico por venta (propuesta pendiente de confirmar antes de implementarla).
 5. Migración conciliada, pruebas de concurrencia, respaldo/restauración y aceptación final.

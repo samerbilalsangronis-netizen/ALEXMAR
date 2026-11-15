@@ -62,3 +62,13 @@ Las pruebas de PGlite validan SQL real pero no reproducen todas las particularid
 - La prueba de navegador detectó que los selectores no actualizaban defaultValue al navegar con enlaces; solucionado remontando el formulario cuando cambian los filtros en URL.
 - Prueba privada: aplicar 005 después de cargar los CSV en PGlite aislado conserva originales, stock y saldos; los grupos de categoría cubren todo el catálogo vigente.
 - No se ha ejecutado SQL 005 en el Supabase remoto desde este entorno.
+
+## Facturación inicial y simplificación del tablero
+- Nueva prueba SQL con todas las migraciones: presupuestos/borradores sin stock/cuenta/pagos, cliente/conceptos congelados al emitir, descuentos/gratuidad autorizados, precios de catálogo para ventas, impuesto 0, total decimal exacto, pago parcial, stock menos reservas, variantes repetidas agregadas, reintento sin duplicados y versión optimista del borrador.
+- Anulación con reembolso obligatorio si hubo pago; stock y cuenta neutralizados mediante reversiones, sin borrar originales. Dos ventas compiten por stock insuficiente: la segunda se rechaza sin cargo, número ni salida parcial. PGlite valida estos casos secuenciales; falta prueba de sesiones concurrentes en Supabase independiente.
+- Listado con más de mil documentos y controles por rol/usuario activo. Funciones y tablas privadas inaccesibles a roles no autorizados.
+- Origen de POST: validación estricta de protocolo y Host, sin confiar en X-Forwarded-Host; admite desarrollo con 127.0.0.1 normalizado por Next. Rechaza orígenes ajenos, protocolo/puerto distinto, ruta en Origin o ausencia de cabecera.
+- `node tests/facturacion.browser.mjs`: código real de componentes, API y acciones con backend/sesión sintéticos. Menú sin Importación, búsqueda, producto+servicio, pago inicial, guardado/revisión de borrador antes de emisión, impresión con escape HTML y 1440/390 px sin desbordamiento ni errores JavaScript. Sin operaciones reales.
+- `node tests/catalogo.browser.mjs`: además comprueba minimizar/mostrar categorías y filtros, persistencia al recargar y buscador visible.
+- No se afirma validez fiscal ni prueba de cobros reales, ni se aplicó SQL 006 remotamente.
+- Resultado de la entrega: `npm test` ejecutó 13 pruebas correctas, sin omisiones. Facturación y catálogo pasaron sus recorridos de navegador con backend simulado; tipos y compilación correctos.

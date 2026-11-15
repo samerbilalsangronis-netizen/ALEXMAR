@@ -1,0 +1,43 @@
+export type LineaVenta = {
+  id?: string;
+  variante_id: string | null;
+  descripcion: string;
+  cantidad: string;
+  precio: string;
+  importe?: string;
+};
+export type Venta = {
+  id: string;
+  numero: number | null;
+  cliente_id: string;
+  tipo: "factura" | "presupuesto";
+  estado: "borrador" | "confirmada" | "anulada";
+  moneda: "USD";
+  subtotal: string;
+  descuento: string;
+  total: string;
+  abono: string;
+  metodo_pago: string | null;
+  vence: string | null;
+  observaciones: string;
+  permite_gratis: boolean;
+  version: number;
+  creado: string;
+  emitido: string | null;
+  motivo_anulacion: string | null;
+  cliente: {
+    nombre: string;
+    documento: string | null;
+    telefono: string | null;
+    direccion: string | null;
+  };
+  lineas: LineaVenta[];
+  pagos: { tipo: string; monto: string; metodo: string; creado: string }[];
+};
+export function numeroVenta(v: { numero: number | null; tipo?: string }) {
+  return v.numero === null
+    ? v.tipo === "presupuesto"
+      ? "Presupuesto"
+      : "Borrador"
+    : "V-" + String(v.numero).padStart(6, "0");
+}

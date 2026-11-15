@@ -11,13 +11,6 @@ export default async function Panel() {
         titulo="Tu negocio, de un vistazo"
         subtitulo="Inventario y cuentas actuales. Elige dónde quieres empezar."
       />
-      {perfil.rol === "administrador" && Number(d.productos) === 0 && (
-        <section className="aviso no-imprimir">
-          <strong>Tu catálogo aún está vacío.</strong> Instalar la base no carga
-          los datos anteriores.{" "}
-          <Link href="/migracion">Revisar importación histórica →</Link>
-        </section>
-      )}
       <section className="indicadores">
         <article>
           <small>PRODUCTOS VIGENTES</small>
@@ -47,6 +40,12 @@ export default async function Panel() {
         )}
       </section>
       <div className="accesos-rapidos no-imprimir">
+        {["administrador", "ventas"].includes(perfil.rol) && (
+          <Link href="/facturacion">
+            <strong>Facturación</strong>
+            <span>Crear factura o consultar ventas →</span>
+          </Link>
+        )}
         <Link href="/inventario">
           <strong>01 / Inventario</strong>
           <span>Productos, precios y disponibilidad →</span>

@@ -1,3 +1,4 @@
+import { Plegable } from "@/components/plegable";
 import type { GruposInventario, OpcionesCatalogo } from "@/lib/catalogo";
 import Link from "next/link";
 import { Search, Plus, SlidersHorizontal } from "lucide-react";
@@ -111,55 +112,60 @@ export default async function Inventario({
       )}
       {grupos && (
         <section className="panel explorar-inventario">
-          <div className="encabezado-grupos">
-            <div>
-              <span className="etiqueta">TU CATÁLOGO ORGANIZADO</span>
-              <h2>Encuentra lo que necesitas</h2>
+          <Plegable
+            titulo="Categorías y vehículos"
+            preferencia="alexmar:grupos-inventario"
+          >
+            <div className="encabezado-grupos">
+              <div>
+                <span className="etiqueta">TU CATÁLOGO ORGANIZADO</span>
+                <h2>Encuentra lo que necesitas</h2>
+              </div>
+              <nav className="selector-grupos" aria-label="Agrupar inventario">
+                <Link
+                  href={enlace({ agrupar: "categoria" })}
+                  aria-current={agrupacion === "categoria" ? "page" : undefined}
+                >
+                  Por categoría
+                </Link>
+                <Link
+                  href={enlace({ agrupar: "vehiculo" })}
+                  aria-current={agrupacion === "vehiculo" ? "page" : undefined}
+                >
+                  Por vehículo
+                </Link>
+              </nav>
             </div>
-            <nav className="selector-grupos" aria-label="Agrupar inventario">
-              <Link
-                href={enlace({ agrupar: "categoria" })}
-                aria-current={agrupacion === "categoria" ? "page" : undefined}
-              >
-                Por categoría
-              </Link>
-              <Link
-                href={enlace({ agrupar: "vehiculo" })}
-                aria-current={agrupacion === "vehiculo" ? "page" : undefined}
-              >
-                Por vehículo
-              </Link>
-            </nav>
-          </div>
-          <p className="muted">
-            {grupos.total} productos con los filtros actuales.{" "}
-            {agrupacion === "vehiculo"
-              ? "Un producto puede aparecer en varios vehículos mencionados. No se confirma compatibilidad ni año a partir del nombre."
-              : "Cada producto tiene una categoría de pieza. Los casos ambiguos quedan en Por clasificar y se pueden corregir desde su ficha."}
-          </p>
-          <div className="grupos-inventario">
-            {seleccionados.map((g) => (
-              <Link
-                key={g.nombre}
-                href={enlace(
-                  agrupacion === "categoria"
-                    ? { categoria: g.nombre }
-                    : { modelo: g.nombre },
-                )}
-                className="grupo-inventario"
-              >
-                <span>{g.nombre}</span>
-                <strong>{cantidad(g.total)}</strong>
-                <small>Ver productos →</small>
-              </Link>
-            ))}
-          </div>
-          {seleccionados.length === 0 && (
-            <p>
-              No hay grupos para estos filtros. Limpia algún filtro para
-              continuar.
+            <p className="muted">
+              {grupos.total} productos con los filtros actuales.{" "}
+              {agrupacion === "vehiculo"
+                ? "Un producto puede aparecer en varios vehículos mencionados. No se confirma compatibilidad ni año a partir del nombre."
+                : "Cada producto tiene una categoría de pieza. Los casos ambiguos quedan en Por clasificar y se pueden corregir desde su ficha."}
             </p>
-          )}
+            <div className="grupos-inventario">
+              {seleccionados.map((g) => (
+                <Link
+                  key={g.nombre}
+                  href={enlace(
+                    agrupacion === "categoria"
+                      ? { categoria: g.nombre }
+                      : { modelo: g.nombre },
+                  )}
+                  className="grupo-inventario"
+                >
+                  <span>{g.nombre}</span>
+                  <strong>{cantidad(g.total)}</strong>
+                  <small>Ver productos →</small>
+                </Link>
+              ))}
+            </div>
+            {seleccionados.length === 0 && (
+              <p>
+                No hay grupos para estos filtros. Limpia algún filtro para
+                continuar.
+              </p>
+            )}
+          </Plegable>
         </section>
       )}
       <section className="panel buscador" id="filtros-inventario">
@@ -175,155 +181,160 @@ export default async function Inventario({
             />
             <button>Buscar</button>
           </div>
-          <div className="filtros">
-            <label>
-              Categoría de pieza
-              <select name="categoria" defaultValue={p.categoria || ""}>
-                <option value="">Todas</option>
-                {p.categoria && !o.categorias.includes(p.categoria) && (
-                  <option value={p.categoria}>
-                    {p.categoria} (etiqueta original)
-                  </option>
-                )}
-                {o.categorias.map((c) => (
-                  <option key={c}>{c}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Vehículo mencionado
-              <select
-                name="modelo"
-                defaultValue={p.modelo || ""}
-                disabled={!grupos}
-              >
-                <option value="">Todos</option>
-                {o.vehiculos.map((v) => (
-                  <option key={v}>{v}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Precio
-              <select name="precio" defaultValue={p.precio || ""}>
-                <option value="">Todos</option>
-                <option value="sin">Pendiente de precio</option>
-                <option value="con">Con precio</option>
-              </select>
-            </label>
-            <label>
-              Existencias
-              <select name="stock" defaultValue={p.stock || ""}>
-                <option value="">Todas</option>
-                <option value="disponible">Disponible</option>
-                <option value="agotado">Agotado</option>
-                <option value="bajo">Bajo mínimo</option>
-              </select>
-            </label>
-            <label>
-              Orden
-              <select name="orden" defaultValue={p.orden || "relevancia"}>
-                <option value="relevancia">Relevancia</option>
-                <option value="nombre">Nombre</option>
-                <option value="precio">Precio ascendente</option>
-                <option value="existencia">Mayor existencia</option>
-              </select>
-            </label>
-          </div>
-          <details
-            open={Boolean(
-              p.vehiculo ||
-                p.anio ||
-                p.marca ||
-                p.ubicacion ||
-                p.estado ||
-                p.precio_min ||
-                p.precio_max ||
-                p.categoria_origen,
-            )}
+          <Plegable
+            titulo="Filtros personalizados"
+            preferencia="alexmar:filtros-inventario"
           >
-            <summary>
-              <SlidersHorizontal size={16} /> Más filtros
-            </summary>
             <div className="filtros">
               <label>
-                Marca
-                <select name="marca" defaultValue={p.marca || ""}>
+                Categoría de pieza
+                <select name="categoria" defaultValue={p.categoria || ""}>
                   <option value="">Todas</option>
-                  {o.marcas.map((c) => (
+                  {p.categoria && !o.categorias.includes(p.categoria) && (
+                    <option value={p.categoria}>
+                      {p.categoria} (etiqueta original)
+                    </option>
+                  )}
+                  {o.categorias.map((c) => (
                     <option key={c}>{c}</option>
                   ))}
                 </select>
               </label>
               <label>
-                Compatibilidad declarada (texto)
-                <input
-                  name="vehiculo"
-                  defaultValue={p.vehiculo}
-                  placeholder="Texto del origen…"
-                />
-              </label>
-              <label>
-                Año confirmado
-                <input
-                  name="anio"
-                  type="number"
-                  min="1900"
-                  max="2200"
-                  defaultValue={p.anio}
-                />
-              </label>
-              <label>
-                Ubicación
-                <input name="ubicacion" defaultValue={p.ubicacion} />
-              </label>
-              <label>
-                Precio mínimo USD
-                <input
-                  name="precio_min"
-                  type="number"
-                  min="0"
-                  step="0.0001"
-                  defaultValue={p.precio_min}
-                />
-              </label>
-              <label>
-                Precio máximo USD
-                <input
-                  name="precio_max"
-                  type="number"
-                  min="0"
-                  step="0.0001"
-                  defaultValue={p.precio_max}
-                />
-              </label>
-              <label>
-                Etiqueta original
+                Vehículo mencionado
                 <select
-                  name="categoria_origen"
-                  defaultValue={p.categoria_origen || ""}
+                  name="modelo"
+                  defaultValue={p.modelo || ""}
+                  disabled={!grupos}
                 >
-                  <option value="">Todas</option>
-                  {o.categorias_origen.map((c) => (
-                    <option key={c}>{c}</option>
+                  <option value="">Todos</option>
+                  {o.vehiculos.map((v) => (
+                    <option key={v}>{v}</option>
                   ))}
                 </select>
               </label>
               <label>
-                Estado
-                <select name="estado" defaultValue={p.estado || "activos"}>
-                  <option value="activos">Activos</option>
-                  <option value="inactivos">Inactivos</option>
-                  <option value="todos">Todos</option>
+                Precio
+                <select name="precio" defaultValue={p.precio || ""}>
+                  <option value="">Todos</option>
+                  <option value="sin">Pendiente de precio</option>
+                  <option value="con">Con precio</option>
+                </select>
+              </label>
+              <label>
+                Existencias
+                <select name="stock" defaultValue={p.stock || ""}>
+                  <option value="">Todas</option>
+                  <option value="disponible">Disponible</option>
+                  <option value="agotado">Agotado</option>
+                  <option value="bajo">Bajo mínimo</option>
+                </select>
+              </label>
+              <label>
+                Orden
+                <select name="orden" defaultValue={p.orden || "relevancia"}>
+                  <option value="relevancia">Relevancia</option>
+                  <option value="nombre">Nombre</option>
+                  <option value="precio">Precio ascendente</option>
+                  <option value="existencia">Mayor existencia</option>
                 </select>
               </label>
             </div>
-            <small>
-              Las agrupaciones sugieren piezas y vehículos a partir del texto o
-              de tu clasificación manual. No certifican compatibilidad; el año
-              solo consulta registros verificados.
-            </small>
-          </details>
+            <details
+              open={Boolean(
+                p.vehiculo ||
+                  p.anio ||
+                  p.marca ||
+                  p.ubicacion ||
+                  p.estado ||
+                  p.precio_min ||
+                  p.precio_max ||
+                  p.categoria_origen,
+              )}
+            >
+              <summary>
+                <SlidersHorizontal size={16} /> Más filtros
+              </summary>
+              <div className="filtros">
+                <label>
+                  Marca
+                  <select name="marca" defaultValue={p.marca || ""}>
+                    <option value="">Todas</option>
+                    {o.marcas.map((c) => (
+                      <option key={c}>{c}</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Compatibilidad declarada (texto)
+                  <input
+                    name="vehiculo"
+                    defaultValue={p.vehiculo}
+                    placeholder="Texto del origen…"
+                  />
+                </label>
+                <label>
+                  Año confirmado
+                  <input
+                    name="anio"
+                    type="number"
+                    min="1900"
+                    max="2200"
+                    defaultValue={p.anio}
+                  />
+                </label>
+                <label>
+                  Ubicación
+                  <input name="ubicacion" defaultValue={p.ubicacion} />
+                </label>
+                <label>
+                  Precio mínimo USD
+                  <input
+                    name="precio_min"
+                    type="number"
+                    min="0"
+                    step="0.0001"
+                    defaultValue={p.precio_min}
+                  />
+                </label>
+                <label>
+                  Precio máximo USD
+                  <input
+                    name="precio_max"
+                    type="number"
+                    min="0"
+                    step="0.0001"
+                    defaultValue={p.precio_max}
+                  />
+                </label>
+                <label>
+                  Etiqueta original
+                  <select
+                    name="categoria_origen"
+                    defaultValue={p.categoria_origen || ""}
+                  >
+                    <option value="">Todas</option>
+                    {o.categorias_origen.map((c) => (
+                      <option key={c}>{c}</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Estado
+                  <select name="estado" defaultValue={p.estado || "activos"}>
+                    <option value="activos">Activos</option>
+                    <option value="inactivos">Inactivos</option>
+                    <option value="todos">Todos</option>
+                  </select>
+                </label>
+              </div>
+              <small>
+                Las agrupaciones sugieren piezas y vehículos a partir del texto
+                o de tu clasificación manual. No certifican compatibilidad; el
+                año solo consulta registros verificados.
+              </small>
+            </details>
+          </Plegable>
           <div className="acciones">
             <button className="secundario">Aplicar filtros</button>
             <Link href="/inventario">Limpiar todos</Link>

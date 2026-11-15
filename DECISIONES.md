@@ -28,3 +28,9 @@
 ## Organización del inventario
 - El propietario solicita categorías y filtros personalizados después de confirmar la importación. Se conservan etiquetas originales y se separa la organización por pieza de las menciones de vehículo.
 - Las sugerencias textuales no confirman compatibilidad ni años; cada producto admite una corrección auditada que prevalece sobre la sugerencia. Datos ambiguos permanecen Por clasificar/Por identificar, sin ocultarse ni cambiar cantidades o importes.
+
+## Facturación y navegación
+- El propietario solicitó facturación, retirar Importación del tablero y poder minimizar categorías/filtros. Confirmó impuesto 0.
+- Primera fase de facturación en USD, la moneda del catálogo, sin conversiones automáticas. Borrador/presupuesto no mueve stock ni cuentas; emitir registra cargo, salida de productos y pago inicial en una transacción.
+- Descuentos, precios de producto modificados y líneas gratuitas requieren administrador. Ventas puede facturar al precio de catálogo y registrar servicios con precio explícito. Solo administrador anula; para pagos iniciales debe confirmar la reversión o reembolso realizado.
+- Importes guardados sin redondeo; el formato visible tiene dos decimales y se muestra también el total exacto. No se define costeo, margen ni integración fiscal en esta fase.

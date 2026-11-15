@@ -1420,3 +1420,95 @@ fieldset .checkbox {
     display: none;
   }
 }
+
+.plegable-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.plegable-cabecera button {
+  min-height: 36px;
+  padding: 7px 11px;
+  font-size: 12px;
+}
+.plegable:has(> div[hidden]) > .plegable-cabecera {
+  margin-bottom: 0;
+}
+.buscador .plegable {
+  margin-top: 20px;
+}
+.plegable [hidden] {
+  display: none !important;
+}
+
+.resultados-venta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+.resultado-venta {
+  text-align: left;
+  align-items: flex-start;
+  white-space: normal;
+  flex-direction: column;
+  padding: 16px;
+}
+.resultado-venta small {
+  color: var(--gris);
+}
+.resultado-venta span {
+  font-size: 12px;
+  color: #a83108;
+}
+.linea-editor {
+  display: grid;
+  grid-template-columns: minmax(180px, 2fr) minmax(85px, 1fr) minmax(
+      100px,
+      1fr
+    ) auto;
+  gap: 12px;
+  align-items: end;
+  padding-bottom: 18px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--borde);
+}
+.total-factura {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 22px 0;
+}
+.total-factura strong {
+  font-size: 28px;
+}
+.total-factura small {
+  color: var(--gris);
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+.editor-factura legend {
+  padding: 0 10px;
+  font-size: 18px;
+  font-weight: 700;
+}
+@media (max-width: 700px) {
+  .linea-editor {
+    grid-template-columns: 1fr 1fr;
+  }
+  .linea-editor label:first-child {
+    grid-column: 1 / -1;
+  }
+  .linea-editor button {
+    justify-self: start;
+  }
+  .total-factura {
+    align-items: flex-start;
+  }
+  .plegable-cabecera {
+    flex-wrap: wrap;
+  }
+}

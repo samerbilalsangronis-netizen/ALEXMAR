@@ -6,7 +6,7 @@ import {
   Package,
   Users,
   StickyNote,
-  Upload,
+  FileText,
   Settings,
   Truck,
   ChartNoAxesCombined,
@@ -14,12 +14,12 @@ import {
 } from "lucide-react";
 const enlaces = [
   ["/panel", "Resumen", LayoutDashboard, "todos"],
+  ["/facturacion", "Facturación", FileText, "ventas"],
   ["/inventario", "Inventario", Package, "todos"],
   ["/proveedores", "Proveedores", Truck, "inventario"],
   ["/clientes", "Clientes y cuentas", Users, "ventas"],
   ["/reportes", "Reportes", ChartNoAxesCombined, "todos"],
   ["/notas", "Notas", StickyNote, "admin"],
-  ["/migracion", "Importación", Upload, "admin"],
   ["/configuracion", "Usuarios", Settings, "admin"],
 ] as const;
 export function Navegacion({ rol }: { rol: string }) {

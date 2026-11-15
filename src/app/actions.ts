@@ -259,3 +259,74 @@ export async function guardarClasificacion(f: FormData) {
   q.set("guardado", "1");
   redirect(ruta + "?" + q);
 }
+
+export async function emitirVenta(f: FormData) {
+  const id = String(f.get("id") || "");
+  if (!/^[a-f0-9-]{36}$/i.test(id)) throw new Error("Venta inválida.");
+  const ruta = "/facturacion/" + id;
+  try {
+    const { db, perfil } = await sesion();
+    if (!["administrador", "ventas"].includes(perfil.rol))
+      throw new Error("No tienes permiso para emitir.");
+    if (f.get("confirmar") !== "on")
+      throw new Error("Revisa y confirma la emisión de la factura.");
+    const { error } = await db.rpc("emitir_venta", {
+      p_id: id,
+      p_version: Number(f.get("version")),
+    });
+    if (error) throw new Error(error.message);
+    for (const p of [
+      ruta,
+      "/facturacion",
+      "/inventario",
+      "/clientes",
+      "/panel",
+      "/reportes",
+    ])
+      revalidatePath(p);
+  } catch (e) {
+    redirect(
+      ruta +
+        "?error=" +
+        encodeURIComponent(
+          e instanceof Error ? e.message : "No se pudo emitir.",
+        ),
+    );
+  }
+  redirect(ruta + "?guardado=1");
+}
+export async function anularVenta(f: FormData) {
+  const id = String(f.get("id") || "");
+  if (!/^[a-f0-9-]{36}$/i.test(id)) throw new Error("Venta inválida.");
+  const ruta = "/facturacion/" + id;
+  try {
+    const { db, perfil } = await sesion();
+    if (perfil.rol !== "administrador")
+      throw new Error("Solo el administrador puede anular.");
+    if (f.get("confirmar") !== "on") throw new Error("Confirma la anulación.");
+    const { error } = await db.rpc("anular_venta", {
+      p_id: id,
+      p_motivo: String(f.get("motivo") || ""),
+      p_reembolso: f.get("reembolso") === "on",
+    });
+    if (error) throw new Error(error.message);
+    for (const p of [
+      ruta,
+      "/facturacion",
+      "/inventario",
+      "/clientes",
+      "/panel",
+      "/reportes",
+    ])
+      revalidatePath(p);
+  } catch (e) {
+    redirect(
+      ruta +
+        "?error=" +
+        encodeURIComponent(
+          e instanceof Error ? e.message : "No se pudo anular.",
+        ),
+    );
+  }
+  redirect(ruta + "?guardado=1");
+}

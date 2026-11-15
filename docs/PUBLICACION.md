@@ -30,4 +30,8 @@ Desde una sesión de administrador en **Importación**:
 
 No registres productos/clientes de prueba en el destino antes de la importación inicial: requiere tablas de negocio vacías. Proveedores puede estar vacío: el origen no tenía proveedores ni movimientos.
 
-La prueba completa se ejecutó en PGlite local aislado. La carga en Supabase real y su aceptación siguen pendientes. Esta fase todavía no sustituye el sistema operativo completo: faltan ventas nuevas, compras, pagos, trabajos, nómina y gastos, entre otros pendientes de README.
+La prueba completa se ejecutó en PGlite local aislado. La carga en Supabase real y su aceptación siguen pendientes. Esta fase todavía no sustituye el sistema operativo completo: faltan compras, pagos posteriores, devoluciones parciales, trabajos, nómina y gastos, entre otros pendientes de README.
+
+## Actualización posterior: facturación y panel plegable
+
+Para esta entrega aplica solo la [migración 006](../supabase/migrations/20261115000600_facturacion.sql), una vez. No repitas las migraciones ya instaladas ni la importación. Consulta [FACTURACION.md](FACTURACION.md) para el flujo y límites. Importación desaparece del menú/resumen y las categorías/filtros pueden minimizarse sin ocultar el buscador.

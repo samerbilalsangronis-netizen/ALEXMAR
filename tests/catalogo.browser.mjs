@@ -29,6 +29,7 @@ page = page
   .replace("@/lib/formatos", "../../../../src/lib/formatos")
   .replace("@/lib/catalogo", "../../../../src/lib/catalogo")
   .replace("@/components/comunes", "./comunes")
+  .replace("@/components/plegable", "./plegable")
   .replace("@/app/actions", "./actions");
 await writeFile(
   join(dir, "app/inventario/page.tsx"),
@@ -51,6 +52,10 @@ function filtrar(p){return filas.filter(a=>(!p.modelo||a.vehiculos.includes(p.mo
 export async function sesion(){return {perfil:{rol:'ventas'},db:{rpc:async(n,{p})=>p.pendiente ? {data:null,error:{code:'PGRST202',message:'Función pendiente'}}:{data:{total:filtrar(p).length,categorias:[...new Set(filtrar(p).map(a=>a.categoria))].map(nombre=>({nombre,total:filtrar(p).filter(a=>a.categoria===nombre).length})),vehiculos:[...new Set(filtrar(p).flatMap(a=>a.vehiculos))].map(nombre=>({nombre,total:filtrar(p).filter(a=>a.vehiculos.includes(nombre)).length}))},error:null}}};}
 export async function consultar(n,{p}={p:{}}){if(n==='opciones_catalogo')return {categorias:['Iluminación','Espejos y retrovisores'],categorias_origen:['FORD','TOYOTA'],vehiculos:['Fiesta','Hilux'],marcas:[],consultas:[{nombre:'Mi Fiesta',filtros:'modelo=Fiesta'}]};const f=filtrar(p);return {total:f.length,pagina:1,paginas:1,filas:f};}
 `,
+);
+await writeFile(
+  join(dir, "app/inventario/plegable.tsx"),
+  await readFile(join(repo, "src/components/plegable.tsx")),
 );
 const sock = createServer();
 await new Promise((r) => sock.listen(0, "127.0.0.1", r));
@@ -97,6 +102,36 @@ try {
     await expect(
       p.getByRole("heading", { name: "Encuentra lo que necesitas" }),
     ).toBeVisible();
+    await p
+      .getByRole("button", { name: "Minimizar categorías y vehículos" })
+      .click();
+    await expect(
+      p.getByRole("heading", { name: "Encuentra lo que necesitas" }),
+    ).toBeHidden();
+    await expect(
+      p.getByRole("textbox", { name: "Buscar productos" }),
+    ).toBeVisible();
+    await p.reload();
+    await expect(
+      p.getByRole("button", { name: "Mostrar categorías y vehículos" }),
+    ).toBeVisible();
+    await p
+      .getByRole("button", { name: "Mostrar categorías y vehículos" })
+      .click();
+    await p
+      .getByRole("button", { name: "Minimizar filtros personalizados" })
+      .click();
+    await expect(p.locator('select[name="categoria"]')).toBeHidden();
+    await expect(
+      p.getByRole("textbox", { name: "Buscar productos" }),
+    ).toBeVisible();
+    await p.reload();
+    await expect(
+      p.getByRole("button", { name: "Mostrar filtros personalizados" }),
+    ).toBeVisible();
+    await p
+      .getByRole("button", { name: "Mostrar filtros personalizados" })
+      .click();
     await p.getByRole("link", { name: "Por vehículo", exact: true }).click();
     await expect(
       p.getByRole("link", { name: /^Fiesta.*Ver productos/ }),

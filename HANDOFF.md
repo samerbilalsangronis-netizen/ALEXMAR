@@ -2,7 +2,7 @@
 
 ## Estado vigente para esta publicación
 
-El propietario confirma que el despliegue y la importación remota ya se completaron. No repetir la importación. Ahora solicita clasificar el inventario y filtros personales, incluyendo Fiesta. Se prepara una actualización de código y la migración 005 para aplicar sobre los productos existentes; ver docs/INVENTARIO_ORGANIZADO.md. Los registros siguientes son cronológicos y pueden describir estados anteriores.
+El propietario confirmó importación y despliegue. No repetir la carga. Ahora pidió facturación, retirar Importación del tablero y minimizar categorías/filtros. Confirmó impuesto 0. Se prepara facturación inicial USD con SQL 006, y mejoras de navegación; ver docs/FACTURACION.md. Los registros siguientes son cronológicos y pueden describir estados anteriores.
 
 
 Última actualización: 2026-11-15 (America/Caracas).
@@ -214,3 +214,13 @@ Documentar avances y mantener este HANDOFF actualizado. No declarar listo para o
 - Sugerencias calculadas al escribir el producto y filtro SQL integrable por el planificador; corregida lentitud al recorrer reportes completos. Si falta 005, se conserva la consulta anterior con aviso de activación; otros errores no se convierten en ceros.
 - Validación: 11 pruebas correctas. Nueva prueba instala 005 después de crear datos y verifica más de mil productos, permisos, auditoría y clasificación personalizada. Los CSV se ensayaron en PGlite: grupos completos, sin alterar stock, importes, saldos ni procedencia. Informes privados fuera de Git.
 - tests/catalogo.browser.mjs: agrupación, filtro Fiesta reflejado en formulario, regreso a ficha, falta de 005 y pantallas de 1440/390 px con datos/sesión simulados. Tipos/build correctos. SQL 005 no aplicado remotamente desde este entorno; propietario debe ejecutarlo una sola vez. No requiere migrar los datos de nuevo.
+
+## Facturación, retiro de Importación y paneles plegables
+- Incorporado menú Facturación para administrador/ventas y acceso desde Resumen. Importación retirada de ambos lugares; se mantienen datos y funciones históricas protegidas.
+- Categorías/vehículos y filtros personalizados tienen Minimizar/Mostrar, preferencia local y atributos accesibles. Buscador visible y filtros activos conservados al minimizar.
+- Nueva migración 006: ventas, líneas, pago inicial y FK de cuenta; RLS/esquema privado, RPC con autorización. Borradores/presupuestos editables sin efecto financiero. Emisión numerada, snapshot cliente/conceptos, stock disponible (reservas descontadas), cargo y abono inicial atómicos. Idempotencia, versión del borrador y bloqueos de variantes en orden estable.
+- USD como catálogo, impuesto 0 confirmado. Totales exactos sin redondeo; costos y márgenes no implementados. Ventas no modifica precios de catálogo ni concede descuentos/gratuidad; administrador autoriza. Anulación completa auditada con reversiones y confirmación humana de reembolso si hubo cobro. No hay pagos posteriores ni devoluciones parciales aún.
+- Búsqueda de clientes/productos paginada por API autenticada; presupuestos y facturas imprimibles/PDF completos con logo, estados y escape HTML. El código muestra activación pendiente si falta 006.
+- Pruebas SQL: borrador sin movimientos, precio/stock/reservas, productos duplicados y servicios, crédito/pago parcial, reintentos sin duplicación, edición/versiones, rechazo de sobreventa sin efectos parciales, anulación/reembolso, snapshots, permisos y más de mil documentos.
+- Navegador: flujo real de componentes/API/acciones con backend y sesión simulados; crear borrador, revisar antes de emitir, impresión con HTML escapado, menú sin Importación y pantallas 1440/390 px. Plegado/persistencia probado en catálogo. No se emitieron facturas ni se aplicó SQL en la base real desde este entorno.
+- Pendiente para activar en remoto: SQL 006 una sola vez y despliegue Ready del commit nuevo. No reimportar datos. Se documenta esta como primera fase de facturación, no como finalización del sistema completo.
