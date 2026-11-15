@@ -49,3 +49,8 @@ Las pruebas de PGlite validan SQL real pero no reproducen todas las particularid
 - Migración 004: numeric sin escala fija, saldos según la vista aprobada, preservación del campo original, conciliación exacta antes/después, rechazos transaccionales, permisos e idempotencia con detección de reutilización de huella para otro contenido.
 - Prueba privada de carga completa en PGlite aislado con los cuatro CSV recibidos: registros originales preservados, todos los importes de movimientos iguales a los originales, stock por producto igual al CSV y todos los saldos de clientes iguales a la simulación. Reintento sin duplicados. Los datos e informes detallados se mantienen fuera de Git.
 - No se ejecutaron escrituras en Supabase remoto. No se afirma un despliegue Vercel exitoso solo por publicar en GitHub.
+
+## Regresión del formulario de importación
+- `node tests/importador.browser.mjs`: Chromium sobre fixture aislado del componente con datos sintéticos y API simulada; nunca conecta a Supabase. Requiere Chromium en /usr/bin/chromium o indicar CHROMIUM_PATH.
+- Antes del cambio falla la comprobación de archivos retenidos (esperado uno, recibido cero). Después: analizar y confirmar envían los cuatro CSV y la huella, Confirmar exige aceptación, cambiar un archivo invalida la simulación y un error HTTP 502 mantiene archivos y muestra un aviso legible.
+- `npm test`: diez pruebas correctas; `npm run typecheck` y `npm run build`: correctos. No se modificaron SQL ni reglas de dinero.

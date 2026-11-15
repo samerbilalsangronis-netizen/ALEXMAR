@@ -16,13 +16,22 @@ export function Importador() {
     setOcupado(true);
     setError("");
     const confirmar = form.get("accion") === "confirmar";
+    if (!confirmar) setAcepta(false);
     try {
       if (confirmar) {
         form.set("huella", informe?.huella || "");
       }
       const r = await fetch("/api/migracion", { method: "POST", body: form });
+      if (!r.headers.get("content-type")?.includes("application/json")) {
+        throw new Error(
+          `El servidor no pudo procesar la importación (HTTP ${r.status}). Tus archivos siguen seleccionados; vuelve a intentarlo.`,
+        );
+      }
       const d = await r.json();
-      if (d.error) throw new Error(d.error);
+      if (!r.ok || d.error)
+        throw new Error(
+          d.error || `No se pudo procesar la importación (HTTP ${r.status}).`,
+        );
       setInforme(d);
     } catch (e) {
       setError((e as Error).message);
@@ -33,7 +42,20 @@ export function Importador() {
   return (
     <>
       <form
-        action={enviar}
+        onSubmit={(e) => {
+          e.preventDefault();
+          // Una action de React reinicia los file inputs al resolver la promesa.
+          // El envío manual conserva los mismos CSV entre simulación y confirmación.
+          const form = new FormData(e.currentTarget);
+          const boton = (e.nativeEvent as SubmitEvent).submitter;
+          form.set(
+            "accion",
+            boton instanceof HTMLButtonElement && boton.value === "confirmar"
+              ? "confirmar"
+              : "simular",
+          );
+          void enviar(form);
+        }}
         onChange={(e) => {
           if (
             e.target instanceof HTMLInputElement &&
@@ -41,6 +63,7 @@ export function Importador() {
           ) {
             setInforme(null);
             setAcepta(false);
+            setError("");
           }
         }}
       >
@@ -48,7 +71,13 @@ export function Importador() {
           {tablas.map((t) => (
             <label key={t} className="archivo">
               {t}.csv
-              <input type="file" name={t} accept=".csv,text/csv" required />
+              <input
+                type="file"
+                name={t}
+                accept=".csv,text/csv"
+                disabled={ocupado}
+                required
+              />
             </label>
           ))}
         </div>

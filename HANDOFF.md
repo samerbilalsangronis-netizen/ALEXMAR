@@ -198,3 +198,10 @@ Documentar avances y mantener este HANDOFF actualizado. No declarar listo para o
 - Prueba privada completa en PGlite: 4.787 originales, 163 saldos, 3.637 importes y stock de 910 productos verificados; sin duplicación al repetir. No publicar los informes ni los datos. Diez pruebas, tipos y build correctos.
 - No hay variables Supabase configuradas en esta máquina (solo .env.example); no se efectuaron carga ni SQL remotos. El propietario debe aplicar solo las migraciones pendientes y usar Importación → Analizar y conciliar → Confirmar desde su sesión autenticada.
 - Se autoriza publicar este código en main. La publicación del entorno cloud es independiente y no se solicitó cambiar su borrador. Verificar Vercel separadamente; un push no prueba un despliegue exitoso.
+
+## Corrección del bucle de importación
+- El propietario reportó que Confirmar exigía seleccionar de nuevo los CSV, y volver a seleccionarlos invalidaba la simulación.
+- Reproducido en Chromium: form action de React reinicia los file inputs tras resolver la simulación. La prueba del componente detectó cero archivos donde debía quedar uno por campo.
+- Corregido con envío manual onSubmit/preventDefault y captura explícita del botón pulsado; se conservan los archivos entre analizar y confirmar. Durante la petición se bloquea la selección de archivos, y al cambiarlos se invalida la simulación y la aceptación. Errores HTTP no JSON muestran estado sin perder los CSV.
+- Prueba de navegador en tests/importador.browser.mjs: confirma que llegan los cuatro archivos y la huella a ambas peticiones, exige aceptación y vuelve a simular al cambiar un archivo. API simulada, sin acceso a datos reales ni escrituras remotas.
+- Diez pruebas SQL/analizador, comprobación de tipos y build correctos. No requiere nuevas migraciones. Se publica la corrección en main bajo la autorización vigente.
