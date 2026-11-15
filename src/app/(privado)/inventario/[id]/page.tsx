@@ -1,3 +1,4 @@
+import type { ClasificacionProducto } from "@/lib/catalogo";
 import Link from "next/link";
 import {
   Compatibilidades,
@@ -14,7 +15,11 @@ import {
   fecha,
   pagina,
 } from "@/lib/formatos";
-import { guardarProducto, ajustarStock } from "@/app/actions";
+import {
+  guardarProducto,
+  ajustarStock,
+  guardarClasificacion,
+} from "@/app/actions";
 import { Cabecera, Avisos, Paginacion } from "@/components/comunes";
 export default async function Ficha({
   params,
@@ -26,9 +31,9 @@ export default async function Ficha({
   const { id } = await params;
   if (!/^[a-f0-9-]{36}$/.test(id)) notFound();
   const p = await searchParams;
-  const { perfil } = await sesion();
+  const { db, perfil } = await sesion();
   const edita = ["administrador", "inventario"].includes(perfil.rol);
-  const [a, k, compatibilidades] = await Promise.all([
+  const [a, k, compatibilidades, respuestaClasificacion] = await Promise.all([
     consultar<Producto | null>("ficha_producto", { p_id: id }),
     consultar<
       Pagina<{
@@ -43,11 +48,21 @@ export default async function Ficha({
       p_producto: id,
       p_pagina: pagina(p.compat_pagina),
     }),
+    db.rpc("clasificacion_producto", { p_id: id }),
   ]);
   if (!a) notFound();
+  if (
+    respuestaClasificacion.error &&
+    !["PGRST202", "42883"].includes(respuestaClasificacion.error.code)
+  )
+    throw new Error(respuestaClasificacion.error.message);
+  const clasificacion = respuestaClasificacion.error
+    ? null
+    : (respuestaClasificacion.data as ClasificacionProducto);
+
   const campos = [
     ["nombre", "Nombre"],
-    ["categoria", "Categoría"],
+    ["categoria", "Etiqueta original / libre"],
     ["marca", "Marca"],
     ["referencia", "Referencia"],
     ["alias", "Alias y palabras de búsqueda"],
@@ -145,6 +160,57 @@ export default async function Ficha({
           </>
         )}
       </section>
+      {clasificacion && (
+        <section className="panel">
+          <h2>Organización del catálogo</h2>
+          <p>
+            Categoría de pieza: <strong>{clasificacion.categoria}</strong>
+          </p>
+          <p>
+            Vehículos mencionados:{" "}
+            <strong>{clasificacion.vehiculos.join(" · ")}</strong>
+          </p>
+          <p className="muted">
+            Esta organización permite encontrar el producto. No certifica
+            compatibilidad ni años. La etiqueta original se conserva por
+            separado.
+          </p>
+          {edita && (
+            <details>
+              <summary>Personalizar categoría y grupos de vehículo</summary>
+              <form action={guardarClasificacion} className="formulario">
+                <input type="hidden" name="id" value={id} />
+                <input type="hidden" name="volver" value={p.volver || ""} />
+                <label>
+                  Tu categoría
+                  <input
+                    name="categoria_grupo"
+                    maxLength={100}
+                    placeholder={clasificacion.categoria}
+                    defaultValue={clasificacion.categoria_manual || ""}
+                  />
+                  <small>Vacío: volver a la sugerencia automática.</small>
+                </label>
+                <label>
+                  Tus grupos de vehículo
+                  <input
+                    name="vehiculos_grupo"
+                    placeholder={clasificacion.vehiculos.join(", ")}
+                    defaultValue={
+                      clasificacion.vehiculos_manuales?.join(", ") || ""
+                    }
+                  />
+                  <small>
+                    Separados por coma. Vacío: detectar desde el texto. Usa Por
+                    identificar si quieres dejarlo sin asignar.
+                  </small>
+                </label>
+                <button>Guardar clasificación</button>
+              </form>
+            </details>
+          )}
+        </section>
+      )}
       <Compatibilidades
         producto={id}
         datos={compatibilidades}

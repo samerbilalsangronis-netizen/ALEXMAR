@@ -54,3 +54,11 @@ Las pruebas de PGlite validan SQL real pero no reproducen todas las particularid
 - `node tests/importador.browser.mjs`: Chromium sobre fixture aislado del componente con datos sintéticos y API simulada; nunca conecta a Supabase. Requiere Chromium en /usr/bin/chromium o indicar CHROMIUM_PATH.
 - Antes del cambio falla la comprobación de archivos retenidos (esperado uno, recibido cero). Después: analizar y confirmar envían los cuatro CSV y la huella, Confirmar exige aceptación, cambiar un archivo invalida la simulación y un error HTTP 502 mantiene archivos y muestra un aviso legible.
 - `npm test`: diez pruebas correctas; `npm run typecheck` y `npm run build`: correctos. No se modificaron SQL ni reglas de dinero.
+
+## Catálogo organizado tras importar
+- `npm test`: 11 pruebas correctas. 005 se prueba sobre productos existentes, además de inserciones posteriores. Clasificación por nombre aunque la etiqueta original sea una marca, filtros combinados, año no inferido, personalización/restablecimiento, originales conservados, auditoría y permisos por rol.
+- Grupos sobre 1.051 productos y última página accesible; las métricas y exportación completa siguen recuperando todos los registros. Las sugerencias se almacenan para evitar recalcular reglas en cada página.
+- `node tests/catalogo.browser.mjs`: escritorio 1440 y móvil 390 sin desbordamiento; cambiar a vehículo, elegir Fiesta, reflejar el filtro en el selector y conservarlo en el enlace de retorno. Se probó también el catálogo con RPC 005 ausente. Fixture sintético y sesión simulada, sin escrituras remotas.
+- La prueba de navegador detectó que los selectores no actualizaban defaultValue al navegar con enlaces; solucionado remontando el formulario cuando cambian los filtros en URL.
+- Prueba privada: aplicar 005 después de cargar los CSV en PGlite aislado conserva originales, stock y saldos; los grupos de categoría cubren todo el catálogo vigente.
+- No se ha ejecutado SQL 005 en el Supabase remoto desde este entorno.

@@ -6,6 +6,7 @@ Aplicación privada en español para Autoperiquitos y Rotulados Alexmar. **Entre
 
 - Inicio de sesión Supabase, cuatro roles, usuarios activos/inactivos. No existe registro público de usuarios desde la aplicación.
 - Catálogo consultado en servidor, búsqueda sin tildes, palabras en cualquier orden y aproximaciones identificadas; referencia exacta priorizada.
+- Grupos de inventario por tipo de pieza y vehículo mencionado, con conteos globales, clasificación manual y filtros personales guardados. Ver [inventario organizado y SQL 005](docs/INVENTARIO_ORGANIZADO.md).
 - Filtros de categoría, marca, vehículo, año verificado, precio, ubicación, existencia y estado; orden y paginación de 30 registros. Estado en URL y consultas guardadas por usuario.
 - Compatibilidades verificadas por marca/modelo y rango de años, con edición y eliminación auditada para administrador/inventario y consulta para todos los roles. Universal explícito; no se deducen años del texto histórico.
 - Ficha editable; precios opcionales; costo excluido de respuestas para ventas y lectura. Ajustes de stock con motivo, responsable, bloqueo concurrente e idempotencia; kardex paginado.
@@ -26,9 +27,10 @@ Aplicación privada en español para Autoperiquitos y Rotulados Alexmar. **Entre
 3. En otra consulta, ejecuta completa [`supabase/migrations/20261115000200_compatibilidades.sql`](supabase/migrations/20261115000200_compatibilidades.sql), después de la base. Si ya instalaste la base, aplica solamente esta nueva migración. Ver [pasos y verificación](docs/COMPATIBILIDADES.md).
 4. Ejecuta una sola vez [`supabase/migrations/20261115000300_proveedores_reportes.sql`](supabase/migrations/20261115000300_proveedores_reportes.sql) para proveedores y reportes. Si ya aplicaste las migraciones anteriores, no las repitas.
 5. Ejecuta una sola vez [`supabase/migrations/20261115000400_migracion_exacta.sql`](supabase/migrations/20261115000400_migracion_exacta.sql). Conserva los importes sin redondear y exige conciliación exacta. No repitas las migraciones ya aplicadas.
-6. En **Authentication → Users → Add user**, crea tu usuario administrador con correo confirmado y contraseña segura. Desactiva las inscripciones públicas en Authentication si no las necesitas.
-7. Abre [`supabase/utilidades/crear_administrador.sql`](supabase/utilidades/crear_administrador.sql), sustituye el correo de ejemplo y ejecútalo en SQL Editor.
-8. No expongas el esquema `alexmar` en la API. Se mantiene privado; la API pública contiene solo funciones con verificación de usuario/rol. RLS está habilitado en todas las tablas, sin acceso directo para anon/authenticated.
+6. Para la organización del catálogo aplica una sola vez [`supabase/migrations/20261115000500_catalogo_organizado.sql`](supabase/migrations/20261115000500_catalogo_organizado.sql). Sirve también sobre productos ya importados, sin recargar los CSV.
+7. En **Authentication → Users → Add user**, crea tu usuario administrador con correo confirmado y contraseña segura. Desactiva las inscripciones públicas en Authentication si no las necesitas.
+8. Abre [`supabase/utilidades/crear_administrador.sql`](supabase/utilidades/crear_administrador.sql), sustituye el correo de ejemplo y ejecútalo en SQL Editor.
+9. No expongas el esquema `alexmar` en la API. Se mantiene privado; la API pública contiene solo funciones con verificación de usuario/rol. RLS está habilitado en todas las tablas, sin acceso directo para anon/authenticated.
 
 ### 2. Vercel en otra cuenta
 

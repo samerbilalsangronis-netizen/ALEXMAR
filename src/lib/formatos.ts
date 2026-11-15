@@ -33,6 +33,9 @@ export type Producto = {
   nombre: string;
   descripcion: string | null;
   categoria: string;
+  categoria_origen?: string;
+  vehiculos?: string[];
+  clasificacion_manual?: boolean;
   compatibilidad: string;
   marca: string;
   referencia: string;

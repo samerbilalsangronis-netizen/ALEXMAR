@@ -225,3 +225,37 @@ export async function guardarProveedor(f: FormData) {
     "/proveedores",
   );
 }
+
+export async function guardarClasificacion(f: FormData) {
+  const id = String(f.get("id") || "");
+  if (
+    !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(id)
+  )
+    throw new Error("Producto inválido.");
+  const ruta = "/inventario/" + id;
+  const q = new URLSearchParams();
+  if (f.get("volver")) q.set("volver", String(f.get("volver")));
+  try {
+    const { db, perfil } = await sesion();
+    if (!["administrador", "inventario"].includes(perfil.rol))
+      throw new Error("No tienes permiso para clasificar productos.");
+    const vehiculos = String(f.get("vehiculos_grupo") || "")
+      .split(",")
+      .map((v) => v.trim())
+      .filter(Boolean);
+    const { error } = await db.rpc("guardar_clasificacion", {
+      p_id: id,
+      p_categoria: String(f.get("categoria_grupo") || "").trim() || null,
+      p_vehiculos: vehiculos.length ? vehiculos : null,
+    });
+    if (error) throw new Error(error.message);
+    revalidatePath("/inventario");
+    revalidatePath("/reportes");
+    revalidatePath(ruta);
+  } catch (e) {
+    q.set("error", e instanceof Error ? e.message : "No se pudo clasificar.");
+    redirect(ruta + "?" + q);
+  }
+  q.set("guardado", "1");
+  redirect(ruta + "?" + q);
+}

@@ -24,3 +24,7 @@
 
 ## Publicación autorizada
 - El propietario autorizó proceder con las dos decisiones de migración y publicar el código. No se publican CSV, datos de clientes ni informes privados. La carga remota sigue el flujo de simulación y confirmación del administrador; publicar código no ejecuta SQL ni importa datos.
+
+## Organización del inventario
+- El propietario solicita categorías y filtros personalizados después de confirmar la importación. Se conservan etiquetas originales y se separa la organización por pieza de las menciones de vehículo.
+- Las sugerencias textuales no confirman compatibilidad ni años; cada producto admite una corrección auditada que prevalece sobre la sugerencia. Datos ambiguos permanecen Por clasificar/Por identificar, sin ocultarse ni cambiar cantidades o importes.

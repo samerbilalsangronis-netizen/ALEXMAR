@@ -2,7 +2,7 @@
 
 ## Estado vigente para esta publicación
 
-El propietario autorizó usar el saldo de la vista, conservar todos los decimales y publicar código. Las secciones antiguas de este documento son historial; las decisiones nuevas prevalecen. La carga remota no ha ocurrido. Ver docs/PUBLICACION.md y la migración 004; no repetir SQL ya aplicado.
+El propietario confirma que el despliegue y la importación remota ya se completaron. No repetir la importación. Ahora solicita clasificar el inventario y filtros personales, incluyendo Fiesta. Se prepara una actualización de código y la migración 005 para aplicar sobre los productos existentes; ver docs/INVENTARIO_ORGANIZADO.md. Los registros siguientes son cronológicos y pueden describir estados anteriores.
 
 
 Última actualización: 2026-11-15 (America/Caracas).
@@ -205,3 +205,12 @@ Documentar avances y mantener este HANDOFF actualizado. No declarar listo para o
 - Corregido con envío manual onSubmit/preventDefault y captura explícita del botón pulsado; se conservan los archivos entre analizar y confirmar. Durante la petición se bloquea la selección de archivos, y al cambiarlos se invalida la simulación y la aceptación. Errores HTTP no JSON muestran estado sin perder los CSV.
 - Prueba de navegador en tests/importador.browser.mjs: confirma que llegan los cuatro archivos y la huella a ambas peticiones, exige aceptación y vuelve a simular al cambiar un archivo. API simulada, sin acceso a datos reales ni escrituras remotas.
 - Diez pruebas SQL/analizador, comprobación de tipos y build correctos. No requiere nuevas migraciones. Se publica la corrección en main bajo la autorización vigente.
+
+## Inventario organizado después de la importación
+- Importación remota completada según confirmación del propietario. No se repitió ninguna carga remota.
+- Nueva migración 005: conserva categorías/compatibilidad originales y agrega sugerencias almacenadas derivadas del texto, con clasificación manual independiente y auditada. Reemplaza consultas mediante RPC autorizadas, sin exponer esquema privado ni costos a roles no permitidos.
+- Inventario empieza con grupos por pieza/vehículo, conteos de todo el resultado, filtros combinables y consultas personales existentes. Los grupos no son una simple agrupación de la página visible. Fiesta se detecta también en nombres y etiquetas; no se certifica compatibilidad ni año desde texto libre. Los casos ambiguos quedan disponibles para revisión.
+- Cada ficha permite personalizar categoría y grupos (administrador/inventario). Conservar campos vacíos vuelve a sugerencia. El regreso conserva página/filtros; los selectores se actualizan al navegar mediante links.
+- Sugerencias calculadas al escribir el producto y filtro SQL integrable por el planificador; corregida lentitud al recorrer reportes completos. Si falta 005, se conserva la consulta anterior con aviso de activación; otros errores no se convierten en ceros.
+- Validación: 11 pruebas correctas. Nueva prueba instala 005 después de crear datos y verifica más de mil productos, permisos, auditoría y clasificación personalizada. Los CSV se ensayaron en PGlite: grupos completos, sin alterar stock, importes, saldos ni procedencia. Informes privados fuera de Git.
+- tests/catalogo.browser.mjs: agrupación, filtro Fiesta reflejado en formulario, regreso a ficha, falta de 005 y pantallas de 1440/390 px con datos/sesión simulados. Tipos/build correctos. SQL 005 no aplicado remotamente desde este entorno; propietario debe ejecutarlo una sola vez. No requiere migrar los datos de nuevo.
