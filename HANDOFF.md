@@ -1,5 +1,13 @@
 # HANDOFF · ALEXMAR
 
+## Imágenes generadas por vehículo · 2026-11-17
+
+El propietario pidió Higgsfield y eligió expresamente generar aquí cuando se comprobó que no hay conector ni acceso al sitio. Se crearon 20 referencias de vehículos (PNG 1536×1024, cada una menor de 3 MB), en public/vehiculos. Apariencia uniforme de estudio, vehículos plateados/cabinas claras. La foto propia subida tiene prioridad; el recurso generado es alternativa y se identifica como Referencia IA, con modelo de ejemplo si la tarjeta es una marca. No se escriben fotos a Supabase ni se modifican datos, clasificaciones o compatibilidades. No necesita SQL adicional.
+
+Pruebas: 17 pruebas, tipos y compilación aprobados. Navegador comprueba prioridad de foto propia, carga de las 20 imágenes y enlaces de descarga. Revisión visual de toda la galería.
+
+Galería privada /inventario/imagenes con descarga individual. Cargo, 1721, 815 y Caribe pendientes de identificar. No inferir fabricante ni años con esos nombres. Los estilos representados son ejemplos, no generaciones confirmadas del inventario. La selección usa la exportación local histórica, no una consulta de la base actual. Detalles y archivos en docs/IMAGENES_GENERADAS.md.
+
 ## Ajuste visual y reparación de gráficos · 2026-11-17
 
 El propietario rechazó los desplegables principales y solicitó fotos originales, logo animado sin teléfono y acceso centrado. Filtros principales convertidos a tarjetas/radios con iconos y aplicación de un clic; filtros técnicos siguen en Más filtros. Se conserva búsqueda, paginación, filtros guardados y plegado. Las tarjetas de marca/modelo permiten al administrador añadir/cambiar una foto original. Sin foto se indica pendiente: no se simula una fotografía con SVG. Fotos en bucket privado, URL firmada, validación de origen/sesión/rol/formato/tamaño y RLS. Ninguna foto original de vehículo fue suministrada todavía.

@@ -2485,3 +2485,90 @@ caption {
 .opcion-visual:has(input:checked) .marca-elegida {
   opacity: 1;
 }
+
+.referencia-vehiculo {
+  position: relative;
+  grid-column: 1/-1;
+  min-width: 0;
+  overflow: hidden;
+  background: #eee9e3;
+}
+.foto-vehiculo.imagen-generada {
+  object-fit: contain;
+  background: #eee9e3;
+}
+.origen-imagen {
+  position: absolute;
+  bottom: 7px;
+  left: 9px;
+  padding: 3px 7px;
+  border-radius: 5px;
+  font-size: 9px;
+  color: #45413c;
+  background: #fffffff2;
+  line-height: 1.4;
+}
+.aviso-imagenes {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  font-size: 12px;
+  color: var(--gris);
+  margin: -8px 0 24px;
+}
+.aviso-imagenes a {
+  color: var(--acento);
+  font-weight: 650;
+  white-space: nowrap;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+.coleccion-vehiculos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+.imagen-coleccion {
+  padding: 0;
+  overflow: hidden;
+  margin: 0;
+}
+.imagen-coleccion > img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3/2;
+  object-fit: contain;
+  background: #eee9e3;
+}
+.imagen-coleccion > div {
+  padding: 22px;
+}
+.imagen-coleccion h2 {
+  margin: 8px 0 18px;
+}
+.imagen-coleccion .boton {
+  font-size: 12px;
+}
+@media (max-width: 1100px) {
+  .coleccion-vehiculos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 700px) {
+  .aviso-imagenes {
+    flex-direction: column;
+    align-items: start;
+    gap: 0;
+  }
+  .coleccion-vehiculos {
+    grid-template-columns: 1fr;
+  }
+  .origen-imagen {
+    font-size: 8px;
+    left: 6px;
+    bottom: 6px;
+  }
+}

@@ -1,4 +1,6 @@
 "use client";
+import Image from "next/image";
+import { referenciaVehiculo } from "../lib/imagenes-vehiculo";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Camera, Upload } from "lucide-react";
@@ -9,6 +11,7 @@ export function FotoVehiculo({
   nombre: string;
   url?: string;
 }) {
+  const referencia = referenciaVehiculo(nombre);
   const [fallo, setFallo] = useState(false);
   useEffect(() => setFallo(false), [url]);
   return url && !fallo ? (
@@ -21,6 +24,21 @@ export function FotoVehiculo({
       width={640}
       height={400}
     />
+  ) : !url && referencia && !fallo ? (
+    <div className="referencia-vehiculo">
+      <Image
+        className="foto-vehiculo imagen-generada"
+        src={referencia.src}
+        alt={`Imagen generada por IA · ${referencia.modelo}${referencia.ejemploMarca ? " · ejemplo de " + nombre : ""}`}
+        width={1536}
+        height={1024}
+        sizes="(max-width:700px) 45vw, (max-width:1100px) 30vw, 300px"
+        onError={() => setFallo(true)}
+      />
+      <small className="origen-imagen">
+        Referencia IA{referencia.ejemploMarca ? " · " + referencia.modelo : ""}
+      </small>
+    </div>
   ) : (
     <div className="foto-pendiente">
       <Camera size={36} aria-hidden="true" />

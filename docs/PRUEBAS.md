@@ -97,3 +97,10 @@ Las pruebas de PGlite validan SQL real pero no reproducen todas las particularid
 - `node tests/catalogo.browser.mjs`: categorías/modelos, regreso a ficha, filtros y plegado persistentes; sin desbordamiento 1440/390; catálogo sigue disponible si falta clasificación.
 - `npm run typecheck` y `npm run build`: aprobados. El recorrido de facturación anterior también pasó con el logo nuevo. El endpoint de fotos rechazó origen ajeno (403), rol ventas (403) y contenido SVG presentado como PNG (400), sin guardar metadatos.
 - La corrección de los gráficos y las fotos en producción requieren aplicar SQL 009 una vez. Publicar el código no ejecuta esa consulta en Supabase ni confirma una carga real.
+
+## Referencias de vehículos generadas por IA · 2026-11-17
+
+- `npm test`: 17 pruebas aprobadas; sin cambios en SQL o reglas financieras. `npm run typecheck` y `npm run build`: aprobados.
+- Navegador (`node tests/redisenio.browser.mjs`): imagen generada de ejemplo para Ford disponible; subir foto propia la sustituye y desaparece la referencia IA de esa tarjeta. La navegación marca/modelo/pieza y el formulario de subida continúan funcionando con sesión/Storage simulados.
+- Galería real con 20 tarjetas y 20 enlaces PNG; comprobadas todas las imágenes cargadas con dimensiones naturales válidas. Revisión visual de las veinte imágenes en captura de galería. Inventario sigue sin desbordamiento en 1440/390.
+- Recursos estáticos servidos mediante Next/Image para tarjetas/galería. Se conservan originales PNG menores de 3 MB, sin edición posterior; no se escribieron imágenes ni datos en Supabase remoto. No se verificó la generación real de los vehículos asociados a las piezas: las imágenes están etiquetadas como referencias IA.

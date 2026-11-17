@@ -126,6 +126,13 @@ export default async function Inventario({
         </div>
       </Cabecera>
       <Avisos p={p} />
+      <div className="aviso-imagenes">
+        <span>
+          Imágenes de referencia generadas por IA. Tus fotos originales tienen
+          prioridad; verifica modelo y compatibilidad.
+        </span>
+        <Link href="/inventario/imagenes">Ver colección y descargar ↗</Link>
+      </div>
       {!grupos && (
         <section className="aviso">
           <strong>

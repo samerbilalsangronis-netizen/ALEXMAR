@@ -1,6 +1,6 @@
 // Pantallas reales con datos sintéticos. No usa Supabase ni operaciones reales.
 import { chromium, expect } from "@playwright/test";
-import { mkdir, mkdtemp, writeFile, readFile, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, writeFile, readFile, rm, cp } from "node:fs/promises";
 import { spawn } from "node:child_process";
 import { createServer } from "node:net";
 import { join, resolve } from "node:path";
@@ -43,6 +43,8 @@ const paginas = {
   "(privado)/layout.tsx": "(privado)/layout.tsx",
   "(privado)/panel/page.tsx": "(privado)/panel/page.tsx",
   "(privado)/inventario/page.tsx": "(privado)/inventario/page.tsx",
+  "(privado)/inventario/imagenes/page.tsx":
+    "(privado)/inventario/imagenes/page.tsx",
   "(privado)/facturacion/nueva/page.tsx":
     "(privado)/facturacion/nueva/page.tsx",
   "(privado)/reportes/page.tsx": "(privado)/reportes/page.tsx",
@@ -57,6 +59,9 @@ for (const [dest, src] of Object.entries(paginas)) {
   );
 }
 await mkdir(join(dir, "public"), { recursive: true });
+await cp(join(repo, "public/vehiculos"), join(dir, "public/vehiculos"), {
+  recursive: true,
+});
 await writeFile(
   join(dir, "public/logo-alexmar-sin-telefono.png"),
   await readFile(join(repo, "public/logo-alexmar-sin-telefono.png")),
@@ -250,6 +255,14 @@ try {
         throw new Error("Desbordamiento " + ruta + " " + width);
     }
     await page.goto(base + "/inventario");
+    if (width === 1440) {
+      const generada = page.getByRole("img", {
+        name: "Imagen generada por IA · Fiesta · ejemplo de Ford",
+        exact: true,
+      });
+      await expect(generada).toBeVisible();
+      await expect(generada).toHaveAttribute("src", /fiesta/);
+    }
     await expect(page.locator(".filtros-visuales select")).toHaveCount(0);
     await page
       .locator(".filtro-stock label")
@@ -279,6 +292,12 @@ try {
         exact: true,
       }),
     ).toBeVisible();
+    await expect(
+      page.getByRole("img", {
+        name: "Imagen generada por IA · Fiesta · ejemplo de Ford",
+        exact: true,
+      }),
+    ).toHaveCount(0);
     await page.getByRole("link", { name: /^Ford.*Ver productos/ }).click();
     await expect(page).toHaveURL(/marca_vehiculo=Ford/);
     await expect(
@@ -312,6 +331,27 @@ try {
       caret: "initial",
     });
   }
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(base + "/inventario/imagenes");
+  await expect(page.locator(".imagen-coleccion")).toHaveCount(20);
+  await expect(
+    page.getByRole("link", { name: "Descargar PNG", exact: true }),
+  ).toHaveCount(20);
+  await page
+    .locator(".imagen-coleccion img")
+    .evaluateAll((xs) => xs.forEach((x) => (x.loading = "eager")));
+  await expect
+    .poll(() =>
+      page
+        .locator(".imagen-coleccion img")
+        .evaluateAll((xs) => xs.every((x) => x.complete && x.naturalWidth > 0)),
+    )
+    .toBeTruthy();
+  await page.screenshot({
+    path: join(repo, "test-results/coleccion-vehiculos.png"),
+    fullPage: true,
+    caret: "initial",
+  });
   await page.goto(base + "/");
   await expect(page.locator(".marca-acceso .marca-imagen")).toHaveAttribute(
     "src",

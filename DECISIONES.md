@@ -49,3 +49,7 @@
 - El propietario pide filtros más visuales, poder colocar fotos originales, corregir gráficos y sustituir la A por logo animado; retirar teléfono del logo y centrarlo en acceso.
 - Fotos aportadas por administrador en Storage privado. No se descargan fotos sin procedencia ni se representan dibujos como fotos auténticas. Se conserva el control de acceso y la separación entre referencia visual y compatibilidad verificada.
 - SQL 009 corrige la dependencia ausente de 008 y no obliga a repetir importaciones. SQL 007 sigue siendo necesario para actualizar el origen desde CSV.
+
+## Referencias visuales generadas por IA
+- El propietario autoriza generar las imágenes aquí como alternativa a Higgsfield, que no está disponible en el chat. Veinte referencias uniformes con etiqueta explícita; no se presentan como fotos originales.
+- Fotos subidas tienen prioridad. Imágenes estáticas genéricas no modifican la base ni certifican compatibilidades. Los grupos ambiguos quedan pendientes.
