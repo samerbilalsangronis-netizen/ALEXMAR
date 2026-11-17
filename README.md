@@ -4,6 +4,8 @@ Aplicación privada en español para Autoperiquitos y Rotulados Alexmar. **Entre
 
 ## Qué funciona
 
+- Filtros visuales de un clic, fotos originales de vehículos subidas por administrador, logo sin teléfono y gráficos reparados con SQL 009. Ver [uso y activación](docs/FOTOS_Y_FILTROS.md).
+
 - Interfaz adaptable con tema claro/oscuro, búsqueda global, facturación reorganizada e inventario visual por marca/modelo. Gráficos de margen potencial, ventas y clientes con permisos y SQL 008. Ver [diseño y analítica](docs/REDISENIO_ANALITICA.md).
 
 - Inicio de sesión Supabase, cuatro roles, usuarios activos/inactivos. No existe registro público de usuarios desde la aplicación.

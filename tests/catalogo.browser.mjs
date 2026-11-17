@@ -27,8 +27,12 @@ let page = await readFile(
 page = page
   .replace("@/lib/supabase", "./datos")
   .replace(
-    "@/components/vehiculo-imagen",
-    "../../../../src/components/vehiculo-imagen",
+    "@/components/foto-vehiculo",
+    "../../../../src/components/foto-vehiculo",
+  )
+  .replace(
+    "@/components/filtro-visual",
+    "../../../../src/components/filtro-visual",
   )
   .replace("@/lib/formatos", "../../../../src/lib/formatos")
   .replace("@/lib/catalogo", "../../../../src/lib/catalogo")
@@ -53,7 +57,7 @@ await writeFile(
 
 const filas=[{id:'11111111-1111-4111-8111-111111111111',nombre:'Faro de muestra Fiesta',categoria:'Iluminación',categoria_origen:'FORD',vehiculos:['Fiesta'],precio:'20',fisico:'3',reservado:'0',disponible:'3',minimo:'1',marca:'',referencia:'MUESTRA-01',ubicacion:'Prueba',activo:true},{id:'22222222-2222-4222-8222-222222222222',nombre:'Espejo de muestra Hilux',categoria:'Espejos y retrovisores',categoria_origen:'TOYOTA',vehiculos:['Hilux'],precio:null,fisico:'0',reservado:'0',disponible:'0',minimo:'1',marca:'',referencia:'',ubicacion:'',activo:true}];
 function filtrar(p){return filas.filter(a=>(!p.modelo||a.vehiculos.includes(p.modelo))&&(!p.categoria||a.categoria===p.categoria));}
-export async function sesion(){return {perfil:{rol:'ventas'},db:{rpc:async(n,{p})=>p.pendiente ? {data:null,error:{code:'PGRST202',message:'Función pendiente'}}:{data:{total:filtrar(p).length,categorias:[...new Set(filtrar(p).map(a=>a.categoria))].map(nombre=>({nombre,total:filtrar(p).filter(a=>a.categoria===nombre).length})),vehiculos:[...new Set(filtrar(p).flatMap(a=>a.vehiculos))].map(nombre=>({nombre,total:filtrar(p).filter(a=>a.vehiculos.includes(nombre)).length}))},error:null}}};}
+export async function sesion(){return {perfil:{rol:'ventas'},db:{rpc:async(n,{p})=>n==='fotos_vehiculos'?{data:[],error:null}:p.pendiente ? {data:null,error:{code:'PGRST202',message:'Función pendiente'}}:{data:{total:filtrar(p).length,categorias:[...new Set(filtrar(p).map(a=>a.categoria))].map(nombre=>({nombre,total:filtrar(p).filter(a=>a.categoria===nombre).length})),vehiculos:[...new Set(filtrar(p).flatMap(a=>a.vehiculos))].map(nombre=>({nombre,total:filtrar(p).filter(a=>a.vehiculos.includes(nombre)).length}))},error:null}}};}
 export async function consultar(n,{p}={p:{}}){if(n==='opciones_catalogo')return {categorias:['Iluminación','Espejos y retrovisores'],categorias_origen:['FORD','TOYOTA'],vehiculos:['Fiesta','Hilux'],marcas:[],consultas:[{nombre:'Mi Fiesta',filtros:'modelo=Fiesta'}]};const f=filtrar(p);return {total:f.length,pagina:1,paginas:1,filas:f};}
 `,
 );
@@ -125,7 +129,7 @@ try {
     await p
       .getByRole("button", { name: "Minimizar filtros personalizados" })
       .click();
-    await expect(p.locator('select[name="categoria"]')).toBeHidden();
+    await expect(p.locator(".filtro-categoria")).toBeHidden();
     await expect(
       p.getByRole("textbox", { name: "Buscar productos" }),
     ).toBeVisible();
@@ -143,7 +147,7 @@ try {
     await p.getByRole("link", { name: /^Fiesta.*Ver productos/ }).click();
     await p.waitForURL("**/*modelo=Fiesta*");
     await expect(p.locator(".producto")).toHaveCount(1);
-    await expect(p.locator('select[name="modelo"]')).toHaveValue("Fiesta");
+    await expect(p.locator('input[name="modelo"]')).toHaveValue("Fiesta");
     const href = await p.locator(".producto").getAttribute("href");
     if (!decodeURIComponent(href).includes("modelo=Fiesta"))
       throw new Error("Se perdió el filtro de retorno");

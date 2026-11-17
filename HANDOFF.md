@@ -1,5 +1,15 @@
 # HANDOFF · ALEXMAR
 
+## Ajuste visual y reparación de gráficos · 2026-11-17
+
+El propietario rechazó los desplegables principales y solicitó fotos originales, logo animado sin teléfono y acceso centrado. Filtros principales convertidos a tarjetas/radios con iconos y aplicación de un clic; filtros técnicos siguen en Más filtros. Se conserva búsqueda, paginación, filtros guardados y plegado. Las tarjetas de marca/modelo permiten al administrador añadir/cambiar una foto original. Sin foto se indica pendiente: no se simula una fotografía con SVG. Fotos en bucket privado, URL firmada, validación de origen/sesión/rol/formato/tamaño y RLS. Ninguna foto original de vehículo fue suministrada todavía.
+
+Se reprodujo el error de la captura: SQL 008 depende de `procedencia_actual` (007), ausente en la base del propietario. SQL 009 nuevo reemplaza la RPC sin esa dependencia, conservando métricas separadas y excluyendo originales revertidos. Agrega además metadatos/bucket/permisos de fotos. No editar ni repetir 008; el propietario aplica 009 completo una vez. No se ejecutó SQL remoto desde este entorno. Ver docs/FOTOS_Y_FILTROS.md.
+
+Validación de esta actualización: 17 pruebas SQL/lógica aprobadas, tipos y compilación aprobados, incluido el estado sin 007 y las políticas de Storage; navegador con sesión/Storage simulados verifica selección visual, subida/API/refresco, acceso, logo y movimiento reducido a 1440/390.
+
+Logo editado con imagegen para retirar solo la línea telefónica y mantener transparencia, nombre, mascota y localidad; archivo nuevo para evitar caché de la imagen anterior. Acceso centrado, tablero con logo real y entrada animada breve, estática con movimiento reducido; impresión comparte logo sin teléfono. Se conserva Importar archivos hasta aviso.
+
 ## Herramienta de diseño instalada · 2026-11-17
 
 Por solicitud del propietario se instaló UI UX Pro Max para Codex en `.agents/skills/ui-ux-pro-max/`, usando el paquete oficial `ui-ux-pro-max-cli@2.15.0` del proyecto https://github.com/nextlevelbuilder/ui-ux-pro-max-skill. El instalador incluye también las habilidades auxiliares `design-system` y `slides`. Instalación local al repositorio; no modifica dependencias de la aplicación ni publica la web. Se verificó la búsqueda local con Python 3.12 mediante `search.py 'table keyboard navigation' --domain ux -n 1`, con resultado correcto. Consultar su SKILL.md para próximos trabajos de interfaz, respetando las reglas de ALEXMAR.

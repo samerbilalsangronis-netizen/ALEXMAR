@@ -93,7 +93,7 @@ test("analítica: márgenes completos sin falsear faltantes, ventas por fecha Ca
     await db.exec(`insert into alexmar.lotes(id,huella,resumen,usuario_id) values('77777777-7777-4777-8777-777777777777',repeat('a',64),'{}','${ids[0]}');
     insert into alexmar.origenes(tipo,origen_id,nuevo_id,lote_id,datos) select 'detalle_cuentas',id::text,id,'77777777-7777-4777-8777-777777777777','{}' from alexmar.movimientos_cuenta where monto=99999;
     insert into alexmar.movimientos_cuenta(id,cliente_id,tipo,fecha,descripcion,monto,origen) values('88888888-8888-4888-8888-888888888888','55555555-5555-4555-8555-555555555555','CARGO',now(),'Corrección de ejemplo',100,'supabase_anterior');
-    insert into alexmar.movimientos_cuenta(cliente_id,tipo,fecha,descripcion,monto,origen) values('55555555-5555-4555-8555-555555555555','ABONO',now(),'Reversión de ejemplo',99999,'actualizacion_origen');
+    insert into alexmar.movimientos_cuenta(cliente_id,tipo,fecha,descripcion,monto,origen,datos_originales) select '55555555-5555-4555-8555-555555555555','ABONO',now(),'Reversión de ejemplo',99999,'actualizacion_origen',jsonb_build_object('reversion_de',nuevo_id) from alexmar.origenes;
     insert into alexmar.revisiones_origen(tipo,origen_id,nuevo_id,lote_id,anterior,nuevo) select tipo,origen_id,'88888888-8888-4888-8888-888888888888',lote_id,'{}','{}' from alexmar.origenes;
     set role authenticated;`);
     const leer = async () =>

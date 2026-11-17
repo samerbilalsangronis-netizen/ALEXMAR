@@ -2132,3 +2132,356 @@ caption {
 .ruta-vehiculo a:hover {
   text-decoration: underline;
 }
+
+/* Selección visual de piezas: un clic aplica toda la búsqueda actual. */
+.filtros-visuales {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  margin-bottom: 24px;
+}
+.filtro-visual {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.filtro-visual legend {
+  padding: 0;
+  margin-bottom: 12px;
+  font-size: 12px;
+  font-weight: 650;
+}
+.filtro-categoria {
+  grid-column: 1/-1;
+}
+.opciones-visuales {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.opcion-visual {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 9px;
+  padding: 12px 14px;
+  border-radius: 11px;
+  border: 1px solid var(--borde);
+  background: var(--elevado);
+  font-size: 12px;
+  cursor: pointer;
+  min-height: 48px;
+  font-weight: 500;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+.opcion-visual:hover {
+  border-color: var(--acento);
+}
+.opcion-visual input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  padding: 0;
+  pointer-events: none;
+}
+.opcion-visual:has(input:checked) {
+  background: var(--acento-suave);
+  border-color: var(--acento);
+  color: var(--acento);
+  font-weight: 700;
+}
+.opcion-visual:has(input:focus-visible) {
+  outline: 3px solid var(--acento);
+  outline-offset: 3px;
+}
+.marca-elegida {
+  display: none;
+}
+.opcion-visual:has(input:checked) .marca-elegida {
+  display: block;
+}
+.filtro-categoria .opciones-visuales {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
+}
+.filtro-categoria .opcion-visual {
+  min-height: 72px;
+}
+.filtro-categoria .opcion-visual > svg:first-of-type {
+  flex-shrink: 0;
+  color: var(--acento);
+}
+.tarjeta-grupo {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--borde);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--superficie);
+}
+.tarjeta-grupo .grupo-inventario {
+  border: 0;
+  border-radius: 0;
+  flex: 1;
+  height: 100%;
+}
+.tarjeta-grupo:has(a:hover) {
+  border-color: var(--acento);
+}
+.tarjeta-grupo .grupo-vehiculo {
+  padding: 0 0 18px;
+  gap: 10px;
+  grid-template-columns: 1fr auto;
+  background: var(--superficie);
+}
+.grupo-vehiculo > span,
+.grupo-vehiculo > small {
+  padding-left: 18px;
+}
+.grupo-vehiculo > strong {
+  padding-right: 18px;
+}
+.foto-vehiculo {
+  grid-column: 1/-1;
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  display: block;
+  background: var(--elevado);
+}
+.foto-pendiente {
+  grid-column: 1/-1;
+  min-height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--elevado);
+  color: var(--gris);
+  border-bottom: 1px solid var(--borde);
+}
+.foto-pendiente > span {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--tinta);
+}
+.foto-pendiente small {
+  font-size: 10px;
+}
+.subir-foto {
+  padding: 0 12px 12px;
+}
+.subir-foto .boton {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  font-size: 11px;
+  min-height: 42px;
+  padding: 8px;
+}
+.subir-foto input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  min-height: 100%;
+  width: 100%;
+}
+.subir-foto .boton:focus-within {
+  outline: 3px solid var(--acento);
+  outline-offset: 2px;
+}
+.subir-foto .aviso {
+  font-size: 11px;
+  margin: 10px 0 0;
+  padding: 10px;
+}
+.subir-foto > small {
+  font-size: 10px;
+  color: var(--gris);
+}
+/* El logo auténtico sustituye al monograma. Movimiento corto, con alternativa reducida. */
+.hero-sello {
+  transform: none;
+  width: 32%;
+  max-width: 290px;
+  flex-shrink: 0;
+  position: relative;
+}
+.hero-sello .marca-imagen {
+  width: 100%;
+  max-height: 230px;
+  object-fit: contain;
+}
+.logo-animado {
+  animation: logo-entrada 900ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  filter: drop-shadow(0 12px 16px #0003);
+}
+.hero-sello small {
+  display: block;
+  margin-top: 12px;
+  line-height: 1.6;
+}
+.hero-sello:before,
+.hero-sello:after {
+  content: "";
+  position: absolute;
+  width: 78%;
+  height: 1px;
+  left: 10%;
+  top: 52%;
+  background: #ff9a6940;
+  transform: rotate(-14deg);
+  z-index: 0;
+  pointer-events: none;
+}
+.hero-sello:after {
+  top: 60%;
+  width: 60%;
+  left: 21%;
+}
+.hero-sello .logo-animado {
+  position: relative;
+  z-index: 1;
+}
+@keyframes logo-entrada {
+  from {
+    opacity: 0;
+    transform: translateY(18px) rotate(-5deg) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(0) scale(1);
+  }
+}
+.marca-acceso {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+}
+.marca-acceso .portada {
+  width: min(340px, 90%);
+  max-width: 340px;
+  max-height: 290px;
+  object-position: center;
+  margin: 0 auto 28px;
+}
+.marca-acceso p {
+  margin-inline: auto;
+}
+.marca-acceso .linea {
+  margin-inline: auto;
+}
+.marca-acceso h1 {
+  font-size: clamp(32px, 3.6vw, 50px);
+}
+@media (max-width: 850px) {
+  .hero-sello {
+    display: block;
+    width: 28%;
+    min-width: 130px;
+  }
+  .hero-sello small {
+    display: none;
+  }
+  .hero-negocio > div:first-child {
+    min-width: 0;
+  }
+  .hero-negocio h2 {
+    font-size: 30px;
+  }
+}
+@media (max-width: 700px) {
+  .filtros-visuales {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+  .filtro-categoria .opciones-visuales {
+    grid-template-columns: 1fr 1fr;
+  }
+  .opcion-visual {
+    font-size: 11px;
+    padding: 10px;
+    gap: 6px;
+  }
+  .filtro-categoria .opcion-visual {
+    min-height: 75px;
+  }
+  .foto-vehiculo {
+    height: 135px;
+  }
+  .foto-pendiente {
+    min-height: 135px;
+  }
+  .foto-pendiente > span {
+    font-size: 18px;
+  }
+  .grupo-vehiculo > span,
+  .grupo-vehiculo > small {
+    padding-left: 12px;
+  }
+  .grupo-vehiculo > strong {
+    padding-right: 12px;
+  }
+  .hero-negocio {
+    flex-direction: column;
+    align-items: start;
+    padding-bottom: 26px;
+  }
+  .hero-sello {
+    align-self: center;
+    width: 190px;
+    max-width: 65%;
+    margin-top: 12px;
+  }
+  .hero-sello .marca-imagen {
+    max-height: 175px;
+  }
+  .marca-acceso {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 0;
+  }
+  .marca-acceso .portada {
+    width: 220px;
+    max-height: 200px;
+    margin: 0 auto 20px;
+  }
+  .marca-acceso h1 {
+    flex: none;
+    font-size: 30px;
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+  .marca-acceso p {
+    max-width: 330px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .logo-animado {
+    animation: none;
+    transform: none;
+    opacity: 1;
+  }
+}
+
+.marca-elegida {
+  display: block;
+  opacity: 0;
+  flex-shrink: 0;
+}
+.opcion-visual:has(input:checked) .marca-elegida {
+  opacity: 1;
+}

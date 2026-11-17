@@ -1,3 +1,4 @@
+import { Marca } from "@/components/marca";
 import { Analitica } from "@/components/analitica";
 import { Plus, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
@@ -41,7 +42,9 @@ export default async function Panel({
           </Link>
         </div>
         <div className="hero-sello" aria-hidden="true">
-          <span>A</span>
+          <div className="logo-animado">
+            <Marca />
+          </div>
           <small>REPUESTOS / ACCESORIOS / ROTULADOS</small>
         </div>
       </section>

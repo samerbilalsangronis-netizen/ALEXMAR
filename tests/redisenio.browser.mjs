@@ -38,6 +38,7 @@ await writeFile(
 );
 const paginas = {
   "layout.tsx": "layout.tsx",
+  "page.tsx": "page.tsx",
   "globals.css": "globals.css",
   "(privado)/layout.tsx": "(privado)/layout.tsx",
   "(privado)/panel/page.tsx": "(privado)/panel/page.tsx",
@@ -57,23 +58,57 @@ for (const [dest, src] of Object.entries(paginas)) {
 }
 await mkdir(join(dir, "public"), { recursive: true });
 await writeFile(
-  join(dir, "public/logo-alexmar.png"),
-  await readFile(join(repo, "public/logo-alexmar.png")),
+  join(dir, "public/logo-alexmar-sin-telefono.png"),
+  await readFile(join(repo, "public/logo-alexmar-sin-telefono.png")),
 );
 await writeFile(
   join(dir, "acciones.ts"),
-  '"use server";export async function salir(){};export async function guardarProducto(){};export async function guardarConsulta(){};',
+  '"use server";export async function entrar(){};export async function salir(){};export async function guardarProducto(){};export async function guardarConsulta(){};',
 );
 await writeFile(
   join(dir, "datos.ts"),
   `// @ts-nocheck
+import {readFile,writeFile} from 'node:fs/promises';
+const fotoArchivo=${JSON.stringify(join(dir, "foto.json"))};
+const perfilArchivo=${JSON.stringify(join(dir, "perfil.json"))};
+const fotoPublica=${JSON.stringify(join(dir, "public/foto-prueba.png"))};
 const filas=[{id:'p1',nombre:'Faro Fiesta de muestra',categoria:'Iluminación',categoria_origen:'FORD',vehiculos:['Fiesta'],precio:'25',costo:'10',fisico:'3',reservado:'0',disponible:'3',minimo:'1',marca:'',referencia:'MUESTRA',ubicacion:'A1',activo:true},{id:'p2',nombre:'Espejo NPR de muestra',categoria:'Carrocería',vehiculos:['NPR'],precio:'40',fisico:'2',reservado:'0',disponible:'2',minimo:'1',marca:'',referencia:'',ubicacion:'B2',activo:true}];
 function filtrar(p){return filas.filter(a=>(!p.marca_vehiculo||(p.marca_vehiculo==='Ford'?a.id==='p1':a.id==='p2'))&&(!p.modelo||a.vehiculos.includes(p.modelo)));}
 const categorias=[{nombre:'Iluminación',productos:12,costo:'800',venta:'1400',margen:'600',porcentaje:'42.857'},{nombre:'Carrocería',productos:7,costo:'320',venta:'500',margen:'180',porcentaje:'36'},{nombre:'Audio',productos:8,costo:'600',venta:'480',margen:'-120',porcentaje:'-25'}];
-async function rpc(n,{p={}}={}){if(n==='analitica_comercial')return {data:{desde:'2026-06-01',hasta:'2026-11-17',inventario:{costo:'1720',venta:'2380',margen:'660',porcentaje:'27.73',completos:27,total:40,sin_costo:10,sin_precio:5,costo_cero:2,stock_negativo:0,categorias},ventas:{total:'4250',facturas:28,ticket:'151.785',serie:[{mes:'2026-06',total:'200',facturas:2},{mes:'2026-07',total:'650',facturas:5},{mes:'2026-08',total:'350',facturas:3},{mes:'2026-09',total:'1100',facturas:7},{mes:'2026-10',total:'700',facturas:4},{mes:'2026-11',total:'1250',facturas:7}],clientes:[{id:'c1',nombre:'Cliente de ejemplo',total:'750',facturas:6}]},historial_clientes:[{id:'c2',nombre:'Histórico de ejemplo',cargos:'1800',abonos:'900'}]},error:null};if(n==='grupos_inventario')return {data:{total:filtrar(p).length,categorias:[{nombre:'Iluminación',total:1}],vehiculos:filtrar(p).flatMap(a=>a.vehiculos).map(nombre=>({nombre,total:1})),marcas_vehiculo:[{nombre:'Ford',total:1},{nombre:'Isuzu / Chevrolet',total:1}]},error:null};throw new Error('RPC no simulada '+n);}
-export async function sesion(){return {perfil:{rol:'administrador',nombre:'Usuario de prueba'},db:{rpc}};}
+async function rpc(n,{p={}}={}){if(n==='mi_perfil')return {data:JSON.parse(await readFile(perfilArchivo,'utf8')),error:null};if(n==='guardar_foto_vehiculo'){await writeFile(fotoArchivo,JSON.stringify([{nombre:arguments[1].p_nombre,archivo:arguments[1].p_archivo}]));return {data:null,error:null};}if(n==='fotos_vehiculos')return {data:JSON.parse(await readFile(fotoArchivo,'utf8')),error:null};if(n==='analitica_comercial')return {data:{desde:'2026-06-01',hasta:'2026-11-17',inventario:{costo:'1720',venta:'2380',margen:'660',porcentaje:'27.73',completos:27,total:40,sin_costo:10,sin_precio:5,costo_cero:2,stock_negativo:0,categorias},ventas:{total:'4250',facturas:28,ticket:'151.785',serie:[{mes:'2026-06',total:'200',facturas:2},{mes:'2026-07',total:'650',facturas:5},{mes:'2026-08',total:'350',facturas:3},{mes:'2026-09',total:'1100',facturas:7},{mes:'2026-10',total:'700',facturas:4},{mes:'2026-11',total:'1250',facturas:7}],clientes:[{id:'c1',nombre:'Cliente de ejemplo',total:'750',facturas:6}]},historial_clientes:[{id:'c2',nombre:'Histórico de ejemplo',cargos:'1800',abonos:'900'}]},error:null};if(n==='grupos_inventario')return {data:{total:filtrar(p).length,categorias:[{nombre:'Iluminación',total:1}],vehiculos:filtrar(p).flatMap(a=>a.vehiculos).map(nombre=>({nombre,total:1})),marcas_vehiculo:[{nombre:'Ford',total:1},{nombre:'Isuzu / Chevrolet',total:1}]},error:null};throw new Error('RPC no simulada '+n);}
+const db = {
+ rpc,
+ auth: {getUser:async()=>({data:{user:{id:'11111111-1111-4111-8111-111111111111'}}})},
+ storage: {from:()=>({
+  upload:async(path,bytes)=>{await writeFile(fotoPublica,bytes);return {error:null};},
+  remove:async()=>({error:null}),
+  createSignedUrls:async(paths)=>({data:paths.map(()=>({signedUrl:'/foto-prueba.png'})),error:null})
+ })}
+};
+export async function conexion(){return db;}
+export function configurado(){return true;}
+export async function sesion(){return {perfil:{rol:'administrador',nombre:'Usuario de prueba'},db};}
 export async function consultar(n,{p={}}={}){if(n==='resumen')return {productos:'40',sin_precio:'5',clientes:'32',deuda_usd:'1750'};if(n==='metricas_generales')return {productos_activos:40,sin_precio:5,agotadas:8,bajo_minimo:3};if(n==='opciones_catalogo')return {categorias:['Iluminación','Carrocería'],vehiculos:['Fiesta','NPR'],categorias_origen:['FORD'],marcas:[],consultas:[]};return {filas:filtrar(p),total:filtrar(p).length,pagina:1,paginas:1};}
 `,
+);
+await writeFile(join(dir, "foto.json"), "[]");
+await writeFile(
+  join(dir, "perfil.json"),
+  JSON.stringify({ rol: "administrador" }),
+);
+await writeFile(
+  join(dir, "public/foto-prueba.png"),
+  await readFile(join(repo, "public/logo-alexmar-sin-telefono.png")),
+);
+await writeFile(
+  join(dir, "app/actions.ts"),
+  '"use server";export async function entrar(){};',
+);
+await mkdir(join(dir, "app/api/vehiculos/foto"), { recursive: true });
+await writeFile(
+  join(dir, "app/api/vehiculos/foto/route.ts"),
+  "// @ts-nocheck -- fixture\n" +
+    (await readFile(join(repo, "src/app/api/vehiculos/foto/route.ts"), "utf8")),
 );
 const sock = createServer();
 await new Promise((r) => sock.listen(0, "127.0.0.1", r));
@@ -140,6 +175,35 @@ try {
       },
     });
   });
+  const endpointFoto = base + "/api/vehiculos/foto";
+  const archivoFalso = {
+    name: "falsa.png",
+    mimeType: "image/png",
+    buffer: Buffer.from('<svg onload="alert(1)"></svg>'),
+  };
+  const ajeno = await page.request.post(endpointFoto, {
+    headers: { origin: "https://otro.example" },
+    multipart: { nombre: "Ford", foto: archivoFalso },
+  });
+  expect(ajeno.status()).toBe(403);
+  const falso = await page.request.post(endpointFoto, {
+    headers: { origin: base },
+    multipart: { nombre: "Ford", foto: archivoFalso },
+  });
+  expect(falso.status()).toBe(400);
+  await writeFile(join(dir, "perfil.json"), JSON.stringify({ rol: "ventas" }));
+  const sinPermiso = await page.request.post(endpointFoto, {
+    headers: { origin: base },
+    multipart: { nombre: "Ford", foto: archivoFalso },
+  });
+  expect(sinPermiso.status()).toBe(403);
+  expect(JSON.parse(await readFile(join(dir, "foto.json"), "utf8"))).toEqual(
+    [],
+  );
+  await writeFile(
+    join(dir, "perfil.json"),
+    JSON.stringify({ rol: "administrador" }),
+  );
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 1000 });
     await page.goto(base + "/panel");
@@ -186,6 +250,35 @@ try {
         throw new Error("Desbordamiento " + ruta + " " + width);
     }
     await page.goto(base + "/inventario");
+    await expect(page.locator(".filtros-visuales select")).toHaveCount(0);
+    await page
+      .locator(".filtro-stock label")
+      .filter({ hasText: "Disponible" })
+      .click();
+    await expect(page).toHaveURL(/stock=disponible/);
+    await expect(
+      page.getByLabel("Foto real de Ford", { exact: true }),
+    ).toBeEnabled();
+    const subida = page.waitForResponse(
+      (r) =>
+        r.url().endsWith("/api/vehiculos/foto") &&
+        r.request().method() === "POST",
+    );
+    await page.getByLabel("Foto real de Ford", { exact: true }).setInputFiles({
+      name: "foto-real.png",
+      mimeType: "image/png",
+      buffer: await readFile(
+        join(repo, "public/logo-alexmar-sin-telefono.png"),
+      ),
+    });
+    const respuestaSubida = await subida;
+    if (!respuestaSubida.ok()) throw new Error(await respuestaSubida.text());
+    await expect(
+      page.getByRole("img", {
+        name: "Fotografía de referencia · Ford",
+        exact: true,
+      }),
+    ).toBeVisible();
     await page.getByRole("link", { name: /^Ford.*Ver productos/ }).click();
     await expect(page).toHaveURL(/marca_vehiculo=Ford/);
     await expect(
@@ -219,9 +312,31 @@ try {
       caret: "initial",
     });
   }
+  await page.goto(base + "/");
+  await expect(page.locator(".marca-acceso .marca-imagen")).toHaveAttribute(
+    "src",
+    /sin-telefono/,
+  );
+  await page.screenshot({
+    path: join(repo, "test-results/acceso-centrado.png"),
+    fullPage: true,
+    caret: "initial",
+  });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto(base + "/panel");
+  await expect(page.locator(".hero-sello .marca-imagen")).toHaveAttribute(
+    "src",
+    /sin-telefono/,
+  );
+  if (
+    (await page
+      .locator(".logo-animado")
+      .evaluate((el) => getComputedStyle(el).animationName)) !== "none"
+  )
+    throw new Error("Animación no respeta movimiento reducido");
   if (errores.length) throw new Error(errores.join("\n"));
   console.log(
-    "Rediseño: claro/oscuro persistente, gráficos, historial separado, marca → modelo → pieza, pago contado/crédito y 4 pantallas sin desbordamiento a 1440/390. Datos simulados.",
+    "Rediseño: filtros visuales de un clic, subida real de formulario/API con Storage simulado, foto persistente, logo sin teléfono, acceso centrado, movimiento reducido, claro/oscuro, gráficos y facturación a 1440/390 sin desbordamiento. Datos simulados.",
   );
 } finally {
   await browser?.close();

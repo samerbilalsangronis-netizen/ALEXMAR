@@ -88,3 +88,12 @@ Las pruebas de PGlite validan SQL real pero no reproducen todas las particularid
 - `node tests/catalogo.browser.mjs`: filtros, plegado persistente, grupos, retorno a ficha, 1440/390 y disponibilidad del catálogo con SQL pendiente.
 - `node tests/facturacion.browser.mjs`: recorrido de cliente, piezas y servicios, guardar/revisar antes de emitir, impresión con escape HTML y 1440/390 sin errores ni desbordamiento; API y DB simuladas.
 - Revisión visual de capturas en ambos temas. No hay credenciales del Supabase remoto en el entorno: no se aplicó SQL 008 ni se verificaron cifras reales del negocio. PostgreSQL embebido y simulación de navegador no sustituyen la aceptación con la sesión real del propietario después de activar el SQL nuevo.
+
+## Filtros visuales, fotos y fallo de gráficos · 2026-11-17
+
+- `npm test`: 17 pruebas aprobadas. SQL 009 probado expresamente con SQL 008 instalado y SQL 007 ausente: gráficos disponibles sin `procedencia_actual`. La prueba completa conserva margen, fechas Caracas, roles y exclusión de movimientos originales revertidos.
+- Fotos: simulación local de las tablas Storage y RLS, bucket privado, lectura de usuarios activos, subida solo de administrador bajo su carpeta, ausencia de acceso directo al esquema, restricción de metadatos a archivos existentes y rechazo de rutas inválidas. Prueba de firma de JPG/PNG/WebP y rechazo de SVG/HTML. No se subieron fotos a Storage remoto.
+- `node tests/redisenio.browser.mjs`: filtros principales sin desplegables, opción Disponible aplicada con un clic y conservada en URL; subida mediante el endpoint real con Storage/sesión simulados, refresco y foto visible; claro/oscuro, panel, inventario y reportes a 1440/390. Logo sin teléfono en acceso y tablero; con movimiento reducido no se anima. Captura del acceso centrado revisada visualmente. Datos y foto de prueba sintéticos.
+- `node tests/catalogo.browser.mjs`: categorías/modelos, regreso a ficha, filtros y plegado persistentes; sin desbordamiento 1440/390; catálogo sigue disponible si falta clasificación.
+- `npm run typecheck` y `npm run build`: aprobados. El recorrido de facturación anterior también pasó con el logo nuevo. El endpoint de fotos rechazó origen ajeno (403), rol ventas (403) y contenido SVG presentado como PNG (400), sin guardar metadatos.
+- La corrección de los gráficos y las fotos en producción requieren aplicar SQL 009 una vez. Publicar el código no ejecuta esa consulta en Supabase ni confirma una carga real.

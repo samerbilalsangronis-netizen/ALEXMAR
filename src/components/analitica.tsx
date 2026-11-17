@@ -26,6 +26,31 @@ export async function Analitica({
     p_hasta: hasta,
   });
   if (error) {
+    if (error.code === "42P01")
+      return (
+        <section className="panel activacion" role="alert">
+          <Info size={24} />
+          <div>
+            <h2>Activa la corrección de los gráficos</h2>
+            <p>
+              Falta una estructura de la actualización de importaciones. SQL 009
+              corrige los gráficos sin modificar tus datos ni exigir repetir esa
+              importación.
+            </p>
+            {perfil.rol === "administrador" && (
+              <a
+                className="boton secundario"
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://github.com/samerbilalsangronis-netizen/ALEXMAR/blob/main/supabase/migrations/20261117000900_graficos_fotos_vehiculos.sql"
+              >
+                Abrir corrección SQL 009 <ArrowUpRight size={16} />
+              </a>
+            )}
+          </div>
+        </section>
+      );
+
     if (!["PGRST202", "42883"].includes(error.code))
       return (
         <section className="aviso" role="alert">

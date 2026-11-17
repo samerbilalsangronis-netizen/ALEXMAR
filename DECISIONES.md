@@ -44,3 +44,8 @@
 - Tema claro/oscuro seleccionable; rediseño de todas las superficies compartidas, formularios, búsqueda y facturación sin cambiar reglas financieras.
 - Navegación visual por marca de vehículo, modelo y piezas. NPR se presenta como familia Isuzu / Chevrolet; no se inventan años ni se certifica ajuste. Ilustraciones propias orientativas.
 - Margen potencial del inventario según costos y precios actuales, con cobertura de datos explícita. No se toma como utilidad realizada. Ranking por facturas nuevas separado de cargos históricos migrados. Se respetan los roles de costos y de cuentas.
+
+## Filtros y fotografías de vehículos
+- El propietario pide filtros más visuales, poder colocar fotos originales, corregir gráficos y sustituir la A por logo animado; retirar teléfono del logo y centrarlo en acceso.
+- Fotos aportadas por administrador en Storage privado. No se descargan fotos sin procedencia ni se representan dibujos como fotos auténticas. Se conserva el control de acceso y la separación entre referencia visual y compatibilidad verificada.
+- SQL 009 corrige la dependencia ausente de 008 y no obliga a repetir importaciones. SQL 007 sigue siendo necesario para actualizar el origen desde CSV.
