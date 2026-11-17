@@ -41,3 +41,7 @@ Pagos posteriores a la emisión y aplicación de anticipos a facturas, devolucio
 Importación se retiró del menú y del resumen porque el propietario confirmó la carga. Se mantienen los datos, lotes y controles de seguridad del importador; no se repite la carga.
 
 En Inventario, **Minimizar** permite plegar tanto Categorías y vehículos como Filtros personalizados. El buscador sigue visible y la preferencia se recuerda en el navegador. Los filtros activos permanecen aplicados; puedes quitarlos con sus etiquetas o Limpiar todos.
+
+## Actualización posterior del menú
+
+Por petición posterior del propietario, Importar archivos vuelve temporalmente al menú y al resumen del administrador para incorporar lo registrado en la aplicación anterior. Ver ACTUALIZAR_ORIGEN.md. No se oculta automáticamente al terminar: el propietario avisará cuándo retirarlo.

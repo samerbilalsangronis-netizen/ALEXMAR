@@ -1,58 +1,75 @@
-import { sesion, consultar } from "@/lib/supabase";
+import { sesion } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 import { Cabecera } from "@/components/comunes";
 import { Importador } from "@/components/importador";
 export default async function Migracion() {
-  const { perfil } = await sesion();
+  const { perfil, db } = await sesion();
   if (perfil.rol !== "administrador") notFound();
-  const resumen = await consultar<{ productos: number; clientes: number }>(
-    "resumen",
-  );
+  const { data, error } = await db.rpc("estado_importacion");
+  if (error && !["PGRST202", "42883"].includes(error.code))
+    throw new Error(error.message);
+  const actualizar = error || Boolean(data?.carga_previa);
   return (
     <>
       <Cabecera
-        titulo="Importación inicial"
-        subtitulo="Primero verifica. Después confirma."
+        titulo="Importar archivos"
+        subtitulo={
+          actualizar
+            ? "Actualizar los registros de la aplicación anterior, sin repetir la carga inicial."
+            : "Primera carga del historial."
+        }
       />
-      <section className="panel estado-migracion">
-        <span className="etiqueta">DATOS EN ESTE PROYECTO</span>
+      {error && (
+        <section className="aviso">
+          <h2>Activa la actualización desde archivos</h2>
+          <p>
+            Aplica una sola vez el{" "}
+            <a
+              href="https://github.com/samerbilalsangronis-netizen/ALEXMAR/blob/main/supabase/migrations/20261116000700_actualizacion_origen.sql"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              SQL 007
+            </a>{" "}
+            en el Supabase nuevo. Después recarga esta página. No elimines datos
+            ni repitas los SQL anteriores.
+          </p>
+        </section>
+      )}
+      <section className="panel">
         <h2>
-          Productos activos: {resumen.productos} · Clientes activos:{" "}
-          {resumen.clientes}
+          {actualizar
+            ? "Incorporar lo registrado después de la última importación"
+            : "Cargar los datos por primera vez"}
         </h2>
-        <p>
-          Crear las tablas no importa el historial. Para ver tus datos
-          anteriores hay que revisar las exportaciones, conciliar las
-          diferencias y confirmar la carga.
-        </p>
         <ol>
           <li>
-            Exporta inventario, clientes, detalle_cuentas y notas del origen.
+            Exporta otra vez las cuatro tablas completas del sistema anterior:
+            inventario, clientes, detalle_cuentas y notas. Incluye los registros
+            eliminados.
           </li>
           <li>
-            Adjunta los cuatro CSV abajo y pulsa Analizar y conciliar. Este paso
-            no guarda datos.
+            Selecciona los archivos nuevos y pulsa Analizar y conciliar. Este
+            paso no guarda cambios.
           </li>
           <li>
-            Revisa el saldo calculado con la regla aprobada de la vista: cargos
-            menos abonos vigentes. Los campos guardados se preservan y no se
-            redondea ningún importe.
+            Revisa los registros nuevos y actualizados. Si hay cambios locales
+            incompatibles o archivos incompletos, la carga se bloquea.
+          </li>
+          <li>
+            Confirma solo después de revisar. Repetir un mismo lote no duplica
+            movimientos ni existencias.
           </li>
         </ol>
-      </section>
-      <section className="panel">
         <p>
-          Adjunta las cuatro exportaciones del Supabase anterior. Se conservan
-          los identificadores, el estado eliminado y los datos originales.
-          Moneda histórica confirmada: USD.
+          Se conserva la precisión decimal y el saldo según cargos menos abonos
+          no eliminados. Las correcciones de movimientos anteriores se registran
+          mediante reversiones, sin borrar los originales.
         </p>
-        <p>
-          La simulación no escribe en la base. La confirmación solo admite un
-          destino vacío y verifica los saldos contra el cálculo exacto de la
-          simulación. Las existencias se registran una sola vez como saldo
-          inicial.
-        </p>
-        <Importador />
+        <Importador
+          modo={actualizar ? "actualizacion" : "inicial"}
+          habilitado={!error}
+        />
       </section>
     </>
   );

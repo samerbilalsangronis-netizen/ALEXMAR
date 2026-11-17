@@ -2,10 +2,10 @@
 
 ## Estado vigente para esta publicación
 
-El propietario confirmó importación y despliegue. No repetir la carga. Ahora pidió facturación, retirar Importación del tablero y minimizar categorías/filtros. Confirmó impuesto 0. Se prepara facturación inicial USD con SQL 006, y mejoras de navegación; ver docs/FACTURACION.md. Los registros siguientes son cronológicos y pueden describir estados anteriores.
+El propietario pidió restablecer Importar archivos temporalmente para incorporar operaciones posteriores registradas solo en la aplicación anterior. La carga inicial ya se completó y no se debe repetir. Se incorpora actualización por diferencias con SQL 007, revisión e idempotencia. Mantener visible hasta que el propietario avise que terminó y solicite retirarlo; ver docs/ACTUALIZAR_ORIGEN.md.
 
 
-Última actualización: 2026-11-15 (America/Caracas).
+Última actualización: 2026-11-16 (America/Caracas).
 Destino: continuación del proyecto en Codex.
 Repositorio: https://github.com/samerbilalsangronis-netizen/ALEXMAR
 Rama de trabajo: `main`. El propietario prefiere cambios probados directamente en esta rama.
@@ -224,3 +224,12 @@ Documentar avances y mantener este HANDOFF actualizado. No declarar listo para o
 - Pruebas SQL: borrador sin movimientos, precio/stock/reservas, productos duplicados y servicios, crédito/pago parcial, reintentos sin duplicación, edición/versiones, rechazo de sobreventa sin efectos parciales, anulación/reembolso, snapshots, permisos y más de mil documentos.
 - Navegador: flujo real de componentes/API/acciones con backend y sesión simulados; crear borrador, revisar antes de emitir, impresión con HTML escapado, menú sin Importación y pantallas 1440/390 px. Plegado/persistencia probado en catálogo. No se emitieron facturas ni se aplicó SQL en la base real desde este entorno.
 - Pendiente para activar en remoto: SQL 006 una sola vez y despliegue Ready del commit nuevo. No reimportar datos. Se documenta esta como primera fase de facturación, no como finalización del sistema completo.
+
+## Restauración temporal de Importar archivos y actualización de origen
+- Solicitado por el propietario; confirmó operaciones nuevas solo en el sistema anterior. Restaurado acceso de administrador en menú y resumen. No autoocultar después de confirmar; esperar su aviso para retirarlo.
+- El importador inicial no admite destinos con datos. Nueva migración 007 sin modificar SQL anteriores: revisiones de procedencia, estado de carga y RPC de actualización transaccional, exclusivamente administrador.
+- Comparación por IDs y campos normalizados entre última versión del origen y valor actual. Conserva campos locales no modificados en origen; bloquea cambios incompatibles, IDs colisionados, archivos incompletos y versiones anteriores. El estado simulado se verifica otra vez bajo bloqueos antes de confirmar.
+- Stock por diferencia con movimiento trazable; los movimientos de cuenta anteriores nunca se reescriben: reversión más versión nueva cuando corresponde. Los saldos de la parte migrada se concilian exactamente con los archivos y las operaciones locales independientes se preservan. Procedencia inicial intacta y revisiones posteriores privadas/auditadas.
+- El formulario reutiliza los cuatro CSV completos (no solo los del día), conserva archivos entre analizar/confirmar, muestra nuevos/actualizados/sin cambios y detalle de valores Antes/Después. Confirmar requiere revisión y aceptación; lotes repetidos no se aplican otra vez. Si falta SQL 007, muestra cómo activarlo.
+- Pruebas: actualización de las cuatro tablas, precisión, reintentos, stock por delta, correcciones/eliminación lógica con reversiones, conservación de clasificación, datos originales y campos locales; archivos incompletos/viejos y revisiones obsoletas bloqueados; permisos. El navegador prueba modo actualización y conservación de archivos con API simulada.
+- No se aplicó SQL 007 ni se importaron los registros de hoy en el Supabase remoto desde este entorno. El propietario debe aplicar el SQL nuevo, exportar los CSV completos actuales, analizar y confirmar desde su sesión.

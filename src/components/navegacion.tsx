@@ -7,6 +7,7 @@ import {
   Users,
   StickyNote,
   FileText,
+  Upload,
   Settings,
   Truck,
   ChartNoAxesCombined,
@@ -20,6 +21,7 @@ const enlaces = [
   ["/clientes", "Clientes y cuentas", Users, "ventas"],
   ["/reportes", "Reportes", ChartNoAxesCombined, "todos"],
   ["/notas", "Notas", StickyNote, "admin"],
+  ["/migracion", "Importar archivos", Upload, "admin"],
   ["/configuracion", "Usuarios", Settings, "admin"],
 ] as const;
 export function Navegacion({ rol }: { rol: string }) {

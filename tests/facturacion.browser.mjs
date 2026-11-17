@@ -150,6 +150,9 @@ try {
   await expect(
     page.getByRole("link", { name: "Facturación", exact: true }),
   ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Importar archivos", exact: true }),
+  ).toBeVisible();
   await page.getByRole("link", { name: "Nueva factura", exact: true }).click();
   await page.waitForURL("**/facturacion/nueva");
   await page.getByRole("button", { name: /Cliente de muestra/ }).click();
@@ -236,7 +239,7 @@ try {
   }
   expect(errores).toEqual([]);
   console.log(
-    "Facturación navegador: menú sin Importación; cliente/producto/servicio; borrador revisado antes de emitir; impresión con HTML escapado; 1440/390 px sin errores ni desbordamiento. Sesión/DB simuladas, sin operaciones reales.",
+    "Facturación navegador: menú con Importar archivos temporal para administrador; cliente/producto/servicio; borrador revisado antes de emitir; impresión con HTML escapado; 1440/390 px sin errores ni desbordamiento. Sesión/DB simuladas, sin operaciones reales.",
   );
 } finally {
   await browser?.close();

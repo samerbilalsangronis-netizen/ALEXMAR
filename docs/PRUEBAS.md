@@ -72,3 +72,10 @@ Las pruebas de PGlite validan SQL real pero no reproducen todas las particularid
 - `node tests/catalogo.browser.mjs`: además comprueba minimizar/mostrar categorías y filtros, persistencia al recargar y buscador visible.
 - No se afirma validez fiscal ni prueba de cobros reales, ni se aplicó SQL 006 remotamente.
 - Resultado de la entrega: `npm test` ejecutó 13 pruebas correctas, sin omisiones. Facturación y catálogo pasaron sus recorridos de navegador con backend simulado; tipos y compilación correctos.
+
+## Actualización posterior del origen
+- 14 pruebas correctas, sin omisiones, incluidas las regresiones de inventario, facturación y carga inicial.
+- Nueva prueba SQL de actualización: primera carga y luego altas de productos/clientes/movimientos/notas; stock ajustado por diferencia, precisión completa, reintento sin duplicación, versiones y reversiones financieras sin alterar el original.
+- Preservación de clasificación personalizada y campos locales no afectados, bloqueo de conflictos sobre el mismo dato, archivos incompletos/antiguos y estado local cambiado desde la simulación. Roles no autorizados bloqueados.
+- `node tests/importador.browser.mjs`: primera carga y actualización, cuatro archivos conservados, revisión enviada al confirmar, conflictos sin botón de confirmación y errores HTTP legibles. API simulada, sin escrituras remotas.
+- Importar archivos queda restaurado temporalmente para administrador; no se oculta automáticamente. No se aplicó SQL ni se cargaron los CSV nuevos en la base real desde este entorno.

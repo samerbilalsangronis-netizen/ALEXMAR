@@ -40,6 +40,12 @@ export default async function Panel() {
         )}
       </section>
       <div className="accesos-rapidos no-imprimir">
+        {perfil.rol === "administrador" && (
+          <Link href="/migracion">
+            <strong>Importar archivos</strong>
+            <span>Revisar y actualizar desde la aplicación anterior →</span>
+          </Link>
+        )}
         {["administrador", "ventas"].includes(perfil.rol) && (
           <Link href="/facturacion">
             <strong>Facturación</strong>

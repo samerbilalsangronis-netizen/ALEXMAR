@@ -1,3 +1,4 @@
+import { mismoOrigen } from "@/lib/origen";
 import { NextRequest, NextResponse } from "next/server";
 import { createHash } from "node:crypto";
 import { conexion } from "@/lib/supabase";
@@ -5,7 +6,7 @@ import { tablas, leerCSV, analizar, type Datos } from "@/lib/migracion";
 export const maxDuration = 60;
 export async function POST(req: NextRequest) {
   try {
-    if (req.headers.get("origin") !== req.nextUrl.origin)
+    if (!mismoOrigen(req))
       return NextResponse.json(
         { error: "Origen no autorizado." },
         { status: 403 },
@@ -44,6 +45,34 @@ export async function POST(req: NextRequest) {
     const huella = createHash("sha256")
       .update(JSON.stringify(datos))
       .digest("hex");
+    if (form.get("modo") === "actualizacion") {
+      const confirmar = form.get("accion") === "confirmar";
+      if (confirmar && form.get("huella") !== huella)
+        throw new Error("Los archivos cambiaron. Repite el análisis.");
+      if (!informe.puedeImportar)
+        return NextResponse.json({ ...informe, huella });
+      const { data, error } = await db.rpc("sincronizar_origen", {
+        p: datos,
+        p_huella: huella,
+        p_conciliacion: informe.conciliacion,
+        p_confirmar: confirmar,
+        p_revision: confirmar ? String(form.get("revision") || "") : null,
+      });
+      if (error)
+        throw new Error(
+          error.code === "PGRST202"
+            ? "Falta activar la actualización desde archivos con el SQL 007 en el proyecto nuevo."
+            : error.message,
+        );
+      return NextResponse.json({
+        ...informe,
+        huella,
+        actualizacion: data,
+        puedeImportar: informe.puedeImportar && Boolean(data.puedeImportar),
+        importado: Boolean(data.importado),
+        repetido: Boolean(data.repetido),
+      });
+    }
     if (form.get("accion") !== "confirmar")
       return NextResponse.json({ ...informe, huella });
     if (form.get("huella") !== huella)

@@ -34,3 +34,8 @@
 - Primera fase de facturación en USD, la moneda del catálogo, sin conversiones automáticas. Borrador/presupuesto no mueve stock ni cuentas; emitir registra cargo, salida de productos y pago inicial en una transacción.
 - Descuentos, precios de producto modificados y líneas gratuitas requieren administrador. Ventas puede facturar al precio de catálogo y registrar servicios con precio explícito. Solo administrador anula; para pagos iniciales debe confirmar la reversión o reembolso realizado.
 - Importes guardados sin redondeo; el formato visible tiene dos decimales y se muestra también el total exacto. No se define costeo, margen ni integración fiscal en esta fase.
+
+## Actualizaciones posteriores a la carga inicial
+- El propietario solicitó volver a mostrar Importar archivos porque se registraron operaciones posteriores en el sistema anterior. Confirmó que solo se trabajó en la aplicación anterior para este corte.
+- Mantener la opción visible hasta que el propietario avise que terminó y pida retirarla; no ocultarla automáticamente.
+- Actualizar por IDs y comparar la última procedencia con el estado local. Preservar ediciones locales compatibles, bloquear conflictos y archivos incompletos, registrar stock por diferencia y correcciones financieras mediante reversiones sin borrar originales. No sustituir la base ni volver a aplicar aperturas.

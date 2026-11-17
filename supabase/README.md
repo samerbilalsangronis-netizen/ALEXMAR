@@ -12,11 +12,12 @@ Abre cada archivo y copia su contenido completo en **SQL Editor → New query �
 | 4 | [Migración exacta](migrations/20261115000400_migracion_exacta.sql) | Importes sin redondeo y conciliación contra la regla aprobada de la vista. Ejecutar una sola vez después de proveedores y reportes. |
 | 5 | [Catálogo organizado](migrations/20261115000500_catalogo_organizado.sql) | Grupos por tipo de pieza y vehículo mencionado; personalización auditada. Aplica sobre los productos existentes, sin reimportar. |
 | 6 | [Facturación](migrations/20261115000600_facturacion.sql) | Borradores, emisión, stock/cuentas/pago inicial transaccionales y anulación. Agrega funciones sobre los datos ya importados. |
-| 7 | [Crear administrador](utilidades/crear_administrador.sql) | Asigna el primer administrador a un usuario ya creado en Authentication. Antes de ejecutar, sustituye `CAMBIA-ESTO@ejemplo.com` por su correo. |
+| 7 | [Actualización desde el origen](migrations/20261116000700_actualizacion_origen.sql) | Incorpora nuevos registros y cambios después de la carga inicial, con revisión, conflictos, reversiones e idempotencia. |
+| 8 | [Crear administrador](utilidades/crear_administrador.sql) | Asigna el primer administrador a un usuario ya creado en Authentication. Antes de ejecutar, sustituye `CAMBIA-ESTO@ejemplo.com` por su correo. |
 
 Si ya aplicaste la base, no la repitas: continúa con las migraciones pendientes. No ejecutes fragmentos de las migraciones ni las apliques al sistema anterior. Estos archivos no se han aplicado a un Supabase remoto desde esta sesión.
 
-Para el paso 7, crea primero el usuario desde **Authentication → Users → Add user**, con correo confirmado. Si ya existe un administrador activo, utiliza Configuración para dar otros accesos.
+Para el paso 8, crea primero el usuario desde **Authentication → Users → Add user**, con correo confirmado. Si ya existe un administrador activo, utiliza Configuración para dar otros accesos.
 
 ## Proyecto Supabase ANTERIOR: solo lectura
 

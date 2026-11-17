@@ -36,7 +36,7 @@ await writeFile(
 );
 await writeFile(
   join(fixture, "app/page.jsx"),
-  'import {Importador} from "./importador"; export default function Page(){return <Importador />;}',
+  'import {Importador} from "./importador"; export default async function Page({searchParams}){const p=await searchParams;return <Importador modo={p.modo==="actualizacion"?"actualizacion":"inicial"}/>;}',
 );
 const socket = createServer();
 await new Promise((done) => socket.listen(0, "127.0.0.1", done));
@@ -83,6 +83,7 @@ try {
   const tablas = ["inventario", "clientes", "detalle_cuentas", "notas"];
   const llamadas = [];
   let fallo = false;
+  let conflicto = false;
   await page.route("**/api/migracion", async (route) => {
     const req = route.request();
     const form = await new Request(req.url(), {
@@ -106,6 +107,8 @@ try {
     }
     if (accion === "confirmar") {
       expect(form.get("huella")).toBe("a".repeat(64));
+      if (form.get("modo") === "actualizacion")
+        expect(form.get("revision")).toBe("b".repeat(64));
       await route.fulfill({ json: { importado: true } });
     } else {
       await route.fulfill({
@@ -118,7 +121,29 @@ try {
           diferencias: [],
           conciliacion: [],
           regla: "vista_saldos_clientes_sin_redondeo_v1",
-          puedeImportar: true,
+          puedeImportar: !conflicto,
+          ...(form.get("modo") === "actualizacion"
+            ? {
+                actualizacion: {
+                  revision: "b".repeat(64),
+                  resumen: Object.fromEntries(
+                    tablas.map((t) => [
+                      t,
+                      { nuevos: 1, actualizados: 1, sin_cambios: 5 },
+                    ]),
+                  ),
+                  conflictos: conflicto
+                    ? [
+                        {
+                          tabla: "inventario",
+                          id: "prueba",
+                          motivo: "Cambió también en la web nueva: fisico",
+                        },
+                      ]
+                    : [],
+                },
+              }
+            : {}),
           huella: "a".repeat(64),
         },
       });
@@ -175,8 +200,41 @@ try {
     expect(
       await page.locator(`input[name="${t}"]`).evaluate((i) => i.files.length),
     ).toBe(1);
+  fallo = false;
+  await page.goto(url + "?modo=actualizacion");
+  await archivos();
+  await page.getByRole("button", { name: "1. Analizar y conciliar" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Cambios respecto de la última carga" }),
+  ).toBeVisible();
+  for (const t of tablas)
+    expect(
+      await page.locator(`input[name="${t}"]`).evaluate((i) => i.files.length),
+    ).toBe(1);
+  await page.getByRole("checkbox").check();
+  await page
+    .getByRole("button", { name: "2. Confirmar actualización" })
+    .click();
+  await expect(
+    page.getByText(
+      "Actualización confirmada. Consulta inventario, clientes y notas.",
+    ),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "2. Confirmar actualización" }),
+  ).toHaveCount(0);
+  conflicto = true;
+  await page.reload();
+  await archivos();
+  await page.getByRole("button", { name: "1. Analizar y conciliar" }).click();
+  await expect(
+    page.getByText(/Cambió también en la web nueva: fisico/),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "2. Confirmar actualización" }),
+  ).toHaveCount(0);
   console.log(
-    "Correcto: analizar→confirmar conserva cuatro CSV; cambiar archivo invalida simulación; error HTTP visible sin perder archivos. API simulada, sin escrituras en Supabase.",
+    "Correcto: analizar→confirmar conserva cuatro CSV; cambiar archivo invalida simulación; error HTTP visible sin perder archivos; actualización con revisión y conflictos bloqueados. API simulada, sin escrituras en Supabase.",
   );
 } finally {
   await browser?.close();

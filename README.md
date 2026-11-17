@@ -15,6 +15,7 @@ Aplicación privada en español para Autoperiquitos y Rotulados Alexmar. **Entre
 - Reportes de inventario: métricas globales, detalle filtrable, CSV e impresión/PDF completos; cuentas históricas resumidas por moneda según rol. Ver [alcance y SQL nuevo](docs/PROVEEDORES_REPORTES.md).
 - Facturación en USD con impuesto 0: borradores/presupuestos, productos y servicios, emisión transaccional, pago inicial contado/crédito/parcial, impresión/PDF y anulación auditada. Ver [funcionamiento y SQL 006](docs/FACTURACION.md).
 - Notas privadas del administrador.
+- Actualización posterior desde los cuatro CSV completos: compara procedencia, detecta conflictos locales y registra cambios sin duplicar stock ni dinero. Ver [actualizar el origen y SQL 007](docs/ACTUALIZAR_ORIGEN.md).
 - Importación inicial de cuatro CSV: simulación, duplicados, vínculos, precisión y conciliación por cliente. Bloqueada ante errores, saldos que no coinciden con la simulación o un destino con datos. Transacción e identificación de lote; repetir el mismo lote no duplica.
 
 ## Instalación desde el navegador
@@ -30,9 +31,10 @@ Aplicación privada en español para Autoperiquitos y Rotulados Alexmar. **Entre
 5. Ejecuta una sola vez [`supabase/migrations/20261115000400_migracion_exacta.sql`](supabase/migrations/20261115000400_migracion_exacta.sql). Conserva los importes sin redondear y exige conciliación exacta. No repitas las migraciones ya aplicadas.
 6. Para la organización del catálogo aplica una sola vez [`supabase/migrations/20261115000500_catalogo_organizado.sql`](supabase/migrations/20261115000500_catalogo_organizado.sql). Sirve también sobre productos ya importados, sin recargar los CSV.
 7. Para facturar aplica [`supabase/migrations/20261115000600_facturacion.sql`](supabase/migrations/20261115000600_facturacion.sql), una sola vez. No requiere reimportar datos.
-8. En **Authentication → Users → Add user**, crea tu usuario administrador con correo confirmado y contraseña segura. Desactiva las inscripciones públicas en Authentication si no las necesitas.
-9. Abre [`supabase/utilidades/crear_administrador.sql`](supabase/utilidades/crear_administrador.sql), sustituye el correo de ejemplo y ejecútalo en SQL Editor.
-10. No expongas el esquema `alexmar` en la API. Se mantiene privado; la API pública contiene solo funciones con verificación de usuario/rol. RLS está habilitado en todas las tablas, sin acceso directo para anon/authenticated.
+8. Para actualizaciones posteriores del origen aplica una sola vez [`supabase/migrations/20261116000700_actualizacion_origen.sql`](supabase/migrations/20261116000700_actualizacion_origen.sql). No repitas la carga inicial.
+9. En **Authentication → Users → Add user**, crea tu usuario administrador con correo confirmado y contraseña segura. Desactiva las inscripciones públicas en Authentication si no las necesitas.
+10. Abre [`supabase/utilidades/crear_administrador.sql`](supabase/utilidades/crear_administrador.sql), sustituye el correo de ejemplo y ejecútalo en SQL Editor.
+11. No expongas el esquema `alexmar` en la API. Se mantiene privado; la API pública contiene solo funciones con verificación de usuario/rol. RLS está habilitado en todas las tablas, sin acceso directo para anon/authenticated.
 
 ### 2. Vercel en otra cuenta
 
