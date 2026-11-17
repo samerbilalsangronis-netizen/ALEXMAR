@@ -1,16 +1,50 @@
+import { Analitica } from "@/components/analitica";
+import { Plus, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { consultar, sesion } from "@/lib/supabase";
 import { Cabecera } from "@/components/comunes";
 import { monto, cantidad } from "@/lib/formatos";
-export default async function Panel() {
+export default async function Panel({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string>>;
+}) {
+  const p = await searchParams;
   const { perfil } = await sesion();
   const d = await consultar<Record<string, string>>("resumen");
   return (
     <>
       <Cabecera
-        titulo="Tu negocio, de un vistazo"
-        subtitulo="Inventario y cuentas actuales. Elige dónde quieres empezar."
-      />
+        titulo="Cada pieza cuenta."
+        subtitulo="Tu operación, tus clientes y las oportunidades de hoy."
+      >
+        {["administrador", "ventas"].includes(perfil.rol) && (
+          <Link className="boton" href="/facturacion/nueva">
+            <Plus size={18} /> Crear factura
+          </Link>
+        )}
+      </Cabecera>
+      <section className="hero-negocio">
+        <div>
+          <span className="etiqueta">ALEXMAR · EN MOVIMIENTO</span>
+          <h2>
+            Más control.
+            <br />
+            <em>Mejores decisiones.</em>
+          </h2>
+          <p>
+            La pieza correcta, el cliente indicado y tu negocio siempre a la
+            vista.
+          </p>
+          <Link href="/inventario" className="boton">
+            Explorar inventario <ArrowUpRight size={18} />
+          </Link>
+        </div>
+        <div className="hero-sello" aria-hidden="true">
+          <span>A</span>
+          <small>REPUESTOS / ACCESORIOS / ROTULADOS</small>
+        </div>
+      </section>
       <section className="indicadores">
         <article>
           <small>PRODUCTOS VIGENTES</small>
@@ -39,6 +73,13 @@ export default async function Panel() {
           </article>
         )}
       </section>
+      <Analitica parametros={p} />
+      <div className="titulo-seccion">
+        <div>
+          <span className="etiqueta">TU DÍA A DÍA</span>
+          <h2>Todo a un paso</h2>
+        </div>
+      </div>
       <div className="accesos-rapidos no-imprimir">
         {perfil.rol === "administrador" && (
           <Link href="/migracion">
@@ -67,17 +108,6 @@ export default async function Panel() {
           <span>Existencias y métricas del catálogo →</span>
         </Link>
       </div>
-      <section className="panel bienvenida">
-        <span className="etiqueta">ENCUENTRA LA PIEZA CORRECTA</span>
-        <h2>Busca por nombre, referencia o vehículo.</h2>
-        <p>
-          Consulta precio y disponibilidad sin abrir cada producto. Los datos
-          incompletos permanecen visibles para revisarlos.
-        </p>
-        <Link className="boton" href="/inventario">
-          Abrir inventario →
-        </Link>
-      </section>
     </>
   );
 }

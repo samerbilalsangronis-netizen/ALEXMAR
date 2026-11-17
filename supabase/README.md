@@ -13,7 +13,8 @@ Abre cada archivo y copia su contenido completo en **SQL Editor → New query �
 | 5 | [Catálogo organizado](migrations/20261115000500_catalogo_organizado.sql) | Grupos por tipo de pieza y vehículo mencionado; personalización auditada. Aplica sobre los productos existentes, sin reimportar. |
 | 6 | [Facturación](migrations/20261115000600_facturacion.sql) | Borradores, emisión, stock/cuentas/pago inicial transaccionales y anulación. Agrega funciones sobre los datos ya importados. |
 | 7 | [Actualización desde el origen](migrations/20261116000700_actualizacion_origen.sql) | Incorpora nuevos registros y cambios después de la carga inicial, con revisión, conflictos, reversiones e idempotencia. |
-| 8 | [Crear administrador](utilidades/crear_administrador.sql) | Asigna el primer administrador a un usuario ya creado en Authentication. Antes de ejecutar, sustituye `CAMBIA-ESTO@ejemplo.com` por su correo. |
+| 8 | [Analítica y marcas de vehículo](migrations/20261117000800_analitica_vehiculos.sql) | Márgenes potenciales, ventas mensuales, clientes destacados y agrupación visual por marca/modelo, con permisos por rol. No reimporta datos. |
+| Utilidad | [Crear administrador](utilidades/crear_administrador.sql) | Asigna el primer administrador a un usuario ya creado en Authentication. Antes de ejecutar, sustituye `CAMBIA-ESTO@ejemplo.com` por su correo. |
 
 Si ya aplicaste la base, no la repitas: continúa con las migraciones pendientes. No ejecutes fragmentos de las migraciones ni las apliques al sistema anterior. Estos archivos no se han aplicado a un Supabase remoto desde esta sesión.
 

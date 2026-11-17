@@ -79,3 +79,12 @@ Las pruebas de PGlite validan SQL real pero no reproducen todas las particularid
 - Preservación de clasificación personalizada y campos locales no afectados, bloqueo de conflictos sobre el mismo dato, archivos incompletos/antiguos y estado local cambiado desde la simulación. Roles no autorizados bloqueados.
 - `node tests/importador.browser.mjs`: primera carga y actualización, cuatro archivos conservados, revisión enviada al confirmar, conflictos sin botón de confirmación y errores HTTP legibles. API simulada, sin escrituras remotas.
 - Importar archivos queda restaurado temporalmente para administrador; no se oculta automáticamente. No se aplicó SQL ni se cargaron los CSV nuevos en la base real desde este entorno.
+
+## Rediseño visual y analítica · 2026-11-17
+
+- `npm test`: 15 pruebas aprobadas, sin omitidas. Nueva prueba SQL instala todas las migraciones, verifica conjuntos completos de costo/precio, ceros explícitos, datos faltantes, stock negativo, margen negativo, porcentaje ponderado, clasificación de Ford/NPR, filtros conjuntos y roles activos/inactivos. Las ventas se delimitan a días de Caracas, excluyen presupuestos/anuladas/borradores e historial. Verifica ranking, ticket sin ventas y rango inválido; lectura no recibe datos financieros y ventas no recibe costos.
+- `npm run typecheck` y `npm run build`: aprobados.
+- `node tests/redisenio.browser.mjs`: pantallas reales con sesión y datos sintéticos; temas claro/oscuro persistentes, selector del gráfico, historial separado, recorrido marca → modelo → pieza, conservación de marca al buscar y atajos contado/crédito. Resumen, inventario, reportes y nueva factura a 1440 y 390 px sin desbordamiento; se comprueban errores de hidratación. Capturas locales en test-results, excluidas de git.
+- `node tests/catalogo.browser.mjs`: filtros, plegado persistente, grupos, retorno a ficha, 1440/390 y disponibilidad del catálogo con SQL pendiente.
+- `node tests/facturacion.browser.mjs`: recorrido de cliente, piezas y servicios, guardar/revisar antes de emitir, impresión con escape HTML y 1440/390 sin errores ni desbordamiento; API y DB simuladas.
+- Revisión visual de capturas en ambos temas. No hay credenciales del Supabase remoto en el entorno: no se aplicó SQL 008 ni se verificaron cifras reales del negocio. PostgreSQL embebido y simulación de navegador no sustituyen la aceptación con la sesión real del propietario después de activar el SQL nuevo.

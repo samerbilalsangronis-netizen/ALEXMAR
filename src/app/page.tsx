@@ -1,3 +1,4 @@
+import { Tema } from "@/components/tema";
 import { Marca } from "@/components/marca";
 import { configurado } from "@/lib/supabase";
 import { entrar } from "./actions";
@@ -9,6 +10,9 @@ export default async function Inicio({
   const p = await searchParams;
   return (
     <main className="acceso">
+      <div className="tema-acceso">
+        <Tema />
+      </div>
       <section className="marca-acceso">
         <span className="etiqueta">AUTOPERIQUITOS Y ROTULADOS</span>
         <Marca portada />

@@ -26,6 +26,10 @@ let page = await readFile(
 );
 page = page
   .replace("@/lib/supabase", "./datos")
+  .replace(
+    "@/components/vehiculo-imagen",
+    "../../../../src/components/vehiculo-imagen",
+  )
   .replace("@/lib/formatos", "../../../../src/lib/formatos")
   .replace("@/lib/catalogo", "../../../../src/lib/catalogo")
   .replace("@/components/comunes", "./comunes")

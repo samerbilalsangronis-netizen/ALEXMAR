@@ -1,3 +1,4 @@
+import { VehiculoImagen } from "@/components/vehiculo-imagen";
 import { Plegable } from "@/components/plegable";
 import type { GruposInventario, OpcionesCatalogo } from "@/lib/catalogo";
 import Link from "next/link";
@@ -44,11 +45,20 @@ export default async function Inventario({
     ...Object.fromEntries(activos),
     ...(p.pagina ? { pagina: p.pagina } : {}),
   }).toString();
-  const agrupacion = p.agrupar === "vehiculo" ? "vehiculo" : "categoria";
+  const agrupacion =
+    p.agrupar === "categoria"
+      ? "categoria"
+      : p.agrupar === "vehiculo"
+        ? "vehiculo"
+        : grupos?.marcas_vehiculo
+          ? "marca_vehiculo"
+          : "categoria";
   const seleccionados =
     agrupacion === "categoria"
       ? grupos?.categorias || []
-      : grupos?.vehiculos || [];
+      : agrupacion === "marca_vehiculo"
+        ? grupos?.marcas_vehiculo || []
+        : grupos?.vehiculos || [];
   function enlace(cambios: Record<string, string>) {
     const q = new URLSearchParams(Object.fromEntries(activos));
     for (const [k, v] of Object.entries(cambios)) {
@@ -59,6 +69,7 @@ export default async function Inventario({
     return "/inventario?" + q;
   }
   const nombresFiltros: Record<string, string> = {
+    marca_vehiculo: "Marca de vehículo",
     categoria: "Categoría",
     modelo: "Vehículo mencionado",
     categoria_origen: "Etiqueta original",
@@ -72,7 +83,7 @@ export default async function Inventario({
     <>
       <Cabecera
         titulo="Inventario"
-        subtitulo="Explora tus piezas por categoría o vehículo y combina tus propios filtros."
+        subtitulo="Elige tu marca, encuentra el vehículo y descubre sus piezas."
       >
         <div className="acciones">
           <a className="boton secundario" href="#filtros-inventario">
@@ -110,67 +121,16 @@ export default async function Inventario({
           )}
         </section>
       )}
-      {grupos && (
-        <section className="panel explorar-inventario">
-          <Plegable
-            titulo="Categorías y vehículos"
-            preferencia="alexmar:grupos-inventario"
-          >
-            <div className="encabezado-grupos">
-              <div>
-                <span className="etiqueta">TU CATÁLOGO ORGANIZADO</span>
-                <h2>Encuentra lo que necesitas</h2>
-              </div>
-              <nav className="selector-grupos" aria-label="Agrupar inventario">
-                <Link
-                  href={enlace({ agrupar: "categoria" })}
-                  aria-current={agrupacion === "categoria" ? "page" : undefined}
-                >
-                  Por categoría
-                </Link>
-                <Link
-                  href={enlace({ agrupar: "vehiculo" })}
-                  aria-current={agrupacion === "vehiculo" ? "page" : undefined}
-                >
-                  Por vehículo
-                </Link>
-              </nav>
-            </div>
-            <p className="muted">
-              {grupos.total} productos con los filtros actuales.{" "}
-              {agrupacion === "vehiculo"
-                ? "Un producto puede aparecer en varios vehículos mencionados. No se confirma compatibilidad ni año a partir del nombre."
-                : "Cada producto tiene una categoría de pieza. Los casos ambiguos quedan en Por clasificar y se pueden corregir desde su ficha."}
-            </p>
-            <div className="grupos-inventario">
-              {seleccionados.map((g) => (
-                <Link
-                  key={g.nombre}
-                  href={enlace(
-                    agrupacion === "categoria"
-                      ? { categoria: g.nombre }
-                      : { modelo: g.nombre },
-                  )}
-                  className="grupo-inventario"
-                >
-                  <span>{g.nombre}</span>
-                  <strong>{cantidad(g.total)}</strong>
-                  <small>Ver productos →</small>
-                </Link>
-              ))}
-            </div>
-            {seleccionados.length === 0 && (
-              <p>
-                No hay grupos para estos filtros. Limpia algún filtro para
-                continuar.
-              </p>
-            )}
-          </Plegable>
-        </section>
-      )}
       <section className="panel buscador" id="filtros-inventario">
         <form key={filtrosGuardados}>
           <input type="hidden" name="agrupar" value={agrupacion} />
+          {p.marca_vehiculo && (
+            <input
+              type="hidden"
+              name="marca_vehiculo"
+              value={p.marca_vehiculo}
+            />
+          )}
           <div className="busqueda">
             <Search size={21} />
             <input
@@ -257,7 +217,7 @@ export default async function Inventario({
               </summary>
               <div className="filtros">
                 <label>
-                  Marca
+                  Marca del repuesto
                   <select name="marca" defaultValue={p.marca || ""}>
                     <option value="">Todas</option>
                     {o.marcas.map((c) => (
@@ -366,6 +326,117 @@ export default async function Inventario({
           </div>
         )}
       </section>
+      {grupos && (
+        <section className="panel explorar-inventario">
+          <Plegable
+            titulo="Categorías y vehículos"
+            preferencia="alexmar:grupos-inventario"
+          >
+            <div className="encabezado-grupos">
+              <div>
+                <span className="etiqueta">TU CATÁLOGO ORGANIZADO</span>
+                <h2>Encuentra lo que necesitas</h2>
+              </div>
+              <nav className="selector-grupos" aria-label="Agrupar inventario">
+                {grupos.marcas_vehiculo && (
+                  <Link
+                    href={enlace({ agrupar: "marca_vehiculo" })}
+                    aria-current={
+                      agrupacion === "marca_vehiculo" ? "page" : undefined
+                    }
+                  >
+                    Por marca
+                  </Link>
+                )}
+                <Link
+                  href={enlace({ agrupar: "categoria" })}
+                  aria-current={agrupacion === "categoria" ? "page" : undefined}
+                >
+                  Por categoría
+                </Link>
+                <Link
+                  href={enlace({ agrupar: "vehiculo" })}
+                  aria-current={agrupacion === "vehiculo" ? "page" : undefined}
+                >
+                  Por vehículo
+                </Link>
+              </nav>
+            </div>
+            <p className="muted">
+              {grupos.total} productos con los filtros actuales.{" "}
+              {agrupacion !== "categoria"
+                ? "Un producto puede aparecer en varios vehículos mencionados. Las imágenes son ilustrativas. Verifica compatibilidad y año antes de vender."
+                : "Cada producto tiene una categoría de pieza. Los casos ambiguos quedan en Por clasificar y se pueden corregir desde su ficha."}
+            </p>
+            {(p.marca_vehiculo || p.modelo) && (
+              <nav className="ruta-vehiculo" aria-label="Ruta del vehículo">
+                <Link
+                  href={enlace({
+                    marca_vehiculo: "",
+                    modelo: "",
+                    agrupar: grupos.marcas_vehiculo
+                      ? "marca_vehiculo"
+                      : "vehiculo",
+                  })}
+                >
+                  Todas las marcas
+                </Link>
+                {p.marca_vehiculo && (
+                  <>
+                    <span aria-hidden="true">/</span>
+                    <Link href={enlace({ modelo: "", agrupar: "vehiculo" })}>
+                      {p.marca_vehiculo}
+                    </Link>
+                  </>
+                )}
+                {p.modelo && (
+                  <>
+                    <span aria-hidden="true">/</span>
+                    <strong>{p.modelo}</strong>
+                  </>
+                )}
+              </nav>
+            )}
+            <div className="grupos-inventario">
+              {seleccionados.map((g) => (
+                <Link
+                  key={g.nombre}
+                  aria-label={`${g.nombre} · ${cantidad(g.total)} productos · Ver productos`}
+                  href={enlace(
+                    agrupacion === "categoria"
+                      ? { categoria: g.nombre }
+                      : agrupacion === "marca_vehiculo"
+                        ? {
+                            marca_vehiculo: g.nombre,
+                            modelo: "",
+                            agrupar: "vehiculo",
+                          }
+                        : { modelo: g.nombre },
+                  )}
+                  className={
+                    "grupo-inventario" +
+                    (agrupacion !== "categoria" ? " grupo-vehiculo" : "")
+                  }
+                >
+                  {agrupacion !== "categoria" && (
+                    <VehiculoImagen nombre={g.nombre} />
+                  )}
+                  <span>{g.nombre}</span>
+                  <strong>{cantidad(g.total)}</strong>
+                  <small>Ver productos →</small>
+                </Link>
+              ))}
+            </div>
+            {seleccionados.length === 0 && (
+              <p>
+                No hay grupos para estos filtros. Limpia algún filtro para
+                continuar.
+              </p>
+            )}
+          </Plegable>
+        </section>
+      )}
+
       <div className="encabezado-lista">
         <h2>
           Catálogo <span>{d.total}</span>
@@ -482,7 +553,7 @@ export default async function Inventario({
               />
             </label>
             <label>
-              Marca
+              Marca del repuesto
               <input name="marca" />
             </label>
             <label>

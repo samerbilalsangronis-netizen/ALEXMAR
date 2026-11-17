@@ -1,6 +1,7 @@
 export type GrupoInventario = { nombre: string; total: number };
 export type GruposInventario = {
   total: number;
+  marcas_vehiculo?: GrupoInventario[];
   categorias: GrupoInventario[];
   vehiculos: GrupoInventario[];
 };

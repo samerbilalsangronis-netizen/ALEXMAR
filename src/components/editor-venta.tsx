@@ -1,4 +1,13 @@
 "use client";
+import {
+  Search,
+  UserRound,
+  PackagePlus,
+  ReceiptText,
+  Plus,
+  Check,
+  ArrowRight,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import DecimalBase from "decimal.js";
@@ -57,7 +66,7 @@ function Busqueda({
     };
   }, [q, pagina, tipo]);
   return (
-    <div>
+    <div className="busqueda-factura">
       <label>
         {tipo === "clientes" ? "Buscar cliente" : "Buscar producto por nombre"}
         <input
@@ -93,7 +102,11 @@ function Busqueda({
                 ? `${monto(r.precio)} · ${cantidad(r.disponible)} disponibles`
                 : r.documento || "Sin documento"}
             </small>
-            <span>Seleccionar →</span>
+            <span>
+              {tipo === "productos"
+                ? "Añadir a la factura +"
+                : "Seleccionar cliente →"}
+            </span>
           </button>
         ))}
       </div>
@@ -206,56 +219,77 @@ export function EditorVenta({
     }
   }
   return (
-    <>
-      <section className="panel">
-        <h2>1. Cliente</h2>
-        {cliente && (
-          <p className="exito">
-            Seleccionado: <strong>{cliente.nombre}</strong>
-          </p>
-        )}
-        <details open={!cliente}>
-          <summary>
-            {cliente ? "Cambiar cliente" : "Seleccionar cliente"}
-          </summary>
-          <Busqueda tipo="clientes" elegir={setCliente} />
-        </details>
-      </section>
-      <section className="panel">
-        <h2>2. Productos y servicios</h2>
-        <details open={lineas.length === 0}>
-          <summary>Añadir productos del inventario</summary>
-          <Busqueda
-            tipo="productos"
-            elegir={(p) =>
+    <div className="flujo-factura">
+      <nav className="pasos-factura" aria-label="Preparar factura">
+        <span className={cliente ? "completo" : ""}>
+          <UserRound size={17} /> 01 · Cliente {cliente && <Check size={14} />}
+        </span>
+        <span className={lineas.length ? "completo" : ""}>
+          <PackagePlus size={17} /> 02 · Piezas y servicios
+        </span>
+        <span>
+          <ReceiptText size={17} /> 03 · Revisar y emitir
+        </span>
+      </nav>
+      <div className="seleccion-factura">
+        <section className="panel">
+          <span className="etiqueta">EMPECEMOS POR LA PERSONA</span>
+          <h2>1. Cliente</h2>
+          {cliente && (
+            <p className="exito">
+              Seleccionado: <strong>{cliente.nombre}</strong>
+            </p>
+          )}
+          <details open={!cliente}>
+            <summary>
+              {cliente ? "Cambiar cliente" : "Seleccionar cliente"}
+            </summary>
+            <Busqueda tipo="clientes" elegir={setCliente} />
+          </details>
+        </section>
+        <section className="panel">
+          <span className="etiqueta">ARMA TU VENTA</span>
+          <h2>2. Productos y servicios</h2>
+          <details open>
+            <summary>Añadir productos del inventario</summary>
+            <Busqueda
+              tipo="productos"
+              elegir={(p) =>
+                setLineas((ls) => [
+                  ...ls,
+                  {
+                    variante_id: p.variante_id!,
+                    descripcion: p.nombre,
+                    cantidad: "1",
+                    precio: p.precio || "",
+                  },
+                ])
+              }
+            />
+          </details>
+          <button
+            type="button"
+            className="secundario"
+            onClick={() =>
               setLineas((ls) => [
                 ...ls,
                 {
-                  variante_id: p.variante_id!,
-                  descripcion: p.nombre,
+                  variante_id: null,
+                  descripcion: "",
                   cantidad: "1",
-                  precio: p.precio || "",
+                  precio: "",
                 },
               ])
             }
-          />
-        </details>
-        <button
-          type="button"
-          className="secundario"
-          onClick={() =>
-            setLineas((ls) => [
-              ...ls,
-              { variante_id: null, descripcion: "", cantidad: "1", precio: "" },
-            ])
-          }
-        >
-          Añadir servicio
-        </button>
-      </section>
-      <form onSubmit={guardar}>
+          >
+            <Plus size={17} /> Añadir servicio
+          </button>
+        </section>
+      </div>
+      <form onSubmit={guardar} className="documento-factura">
         <fieldset disabled={ocupado} className="panel editor-factura">
-          <legend>Detalle y condiciones</legend>
+          <legend>Tu factura</legend>
+          <p className="muted">{lineas.length} líneas · USD · Impuesto 0</p>
           {lineas.map((l, i) => (
             <div key={l.id || i} className="linea-editor">
               <label>
@@ -300,6 +334,24 @@ export function EditorVenta({
             </div>
           ))}
           {lineas.length === 0 && <p>Añade al menos un producto o servicio.</p>}
+          <div className="atajos-pago">
+            <span>Forma de cobro</span>
+            <button
+              type="button"
+              className="secundario"
+              onClick={() => setAbono("0")}
+            >
+              A crédito
+            </button>
+            <button
+              type="button"
+              className="secundario"
+              disabled={!total || new Decimal(total).isNegative()}
+              onClick={() => setAbono(total)}
+            >
+              Contado · total completo
+            </button>
+          </div>
           <div className="formulario">
             <label>
               Documento
@@ -388,8 +440,12 @@ export function EditorVenta({
               {error}
             </p>
           )}
-          <button disabled={ocupado || !cliente || lineas.length === 0}>
-            {ocupado ? "Guardando…" : "Guardar y revisar borrador"}
+          <button
+            className="guardar-factura"
+            disabled={ocupado || !cliente || lineas.length === 0}
+          >
+            {ocupado ? "Guardando…" : "Guardar y revisar borrador"}{" "}
+            <ArrowRight size={17} />
           </button>
           <p className="muted">
             Este paso no descuenta existencias ni registra un cobro. Emitirás la
@@ -397,6 +453,6 @@ export function EditorVenta({
           </p>
         </fieldset>
       </form>
-    </>
+    </div>
   );
 }

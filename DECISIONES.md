@@ -39,3 +39,8 @@
 - El propietario solicitó volver a mostrar Importar archivos porque se registraron operaciones posteriores en el sistema anterior. Confirmó que solo se trabajó en la aplicación anterior para este corte.
 - Mantener la opción visible hasta que el propietario avise que terminó y pida retirarla; no ocultarla automáticamente.
 - Actualizar por IDs y comparar la última procedencia con el estado local. Preservar ediciones locales compatibles, bloquear conflictos y archivos incompletos, registrar stock por diferencia y correcciones financieras mediante reversiones sin borrar originales. No sustituir la base ni volver a aplicar aperturas.
+
+## Rediseño y métricas solicitado el 17 de noviembre de 2026
+- Tema claro/oscuro seleccionable; rediseño de todas las superficies compartidas, formularios, búsqueda y facturación sin cambiar reglas financieras.
+- Navegación visual por marca de vehículo, modelo y piezas. NPR se presenta como familia Isuzu / Chevrolet; no se inventan años ni se certifica ajuste. Ilustraciones propias orientativas.
+- Margen potencial del inventario según costos y precios actuales, con cobertura de datos explícita. No se toma como utilidad realizada. Ranking por facturas nuevas separado de cargos históricos migrados. Se respetan los roles de costos y de cuentas.

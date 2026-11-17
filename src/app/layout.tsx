@@ -7,7 +7,14 @@ export const metadata: Metadata = {
 };
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("alexmar:tema");document.documentElement.dataset.tema=t==="claro"||t==="oscuro"?t:matchMedia("(prefers-color-scheme: dark)").matches?"oscuro":"claro"}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body>{children}</body>
     </html>
   );

@@ -15,7 +15,7 @@ test("catálogo organizado: agrupación completa, Fiesta por nombre, filtros y c
       `create role anon;create role authenticated;create schema auth;create schema extensions;create table auth.users(id uuid primary key,email text);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('app.usuario',true),'')::uuid$$;`,
     );
     for (const f of (await readdir("supabase/migrations"))
-      .filter((f) => f.endsWith(".sql") && !f.includes("00500"))
+      .filter((f) => f.endsWith(".sql") && f < "20261115000500")
       .sort())
       await db.exec(await readFile("supabase/migrations/" + f, "utf8"));
     await db.exec(
@@ -46,12 +46,10 @@ test("catálogo organizado: agrupación completa, Fiesta por nombre, filtros y c
     await crear("Artículo sin información", "VARIOS");
     // Activar la clasificación DESPUÉS de crear datos, como en el proyecto importado.
     await db.exec("reset role");
-    await db.exec(
-      await readFile(
-        "supabase/migrations/20261115000500_catalogo_organizado.sql",
-        "utf8",
-      ),
-    );
+    for (const f of (await readdir("supabase/migrations"))
+      .filter((f) => f.endsWith(".sql") && f >= "20261115000500")
+      .sort())
+      await db.exec(await readFile("supabase/migrations/" + f, "utf8"));
     await db.exec("set role authenticated");
     type Filas = {
       filas: {

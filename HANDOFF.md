@@ -1,11 +1,25 @@
 # HANDOFF · ALEXMAR
 
+## Herramienta de diseño instalada · 2026-11-17
+
+Por solicitud del propietario se instaló UI UX Pro Max para Codex en `.agents/skills/ui-ux-pro-max/`, usando el paquete oficial `ui-ux-pro-max-cli@2.15.0` del proyecto https://github.com/nextlevelbuilder/ui-ux-pro-max-skill. El instalador incluye también las habilidades auxiliares `design-system` y `slides`. Instalación local al repositorio; no modifica dependencias de la aplicación ni publica la web. Se verificó la búsqueda local con Python 3.12 mediante `search.py 'table keyboard navigation' --domain ux -n 1`, con resultado correcto. Consultar su SKILL.md para próximos trabajos de interfaz, respetando las reglas de ALEXMAR.
+
+## Rediseño visual y analítica · 2026-11-17
+
+Se aplica UI UX Pro Max con adaptación a la marca existente: sistema de tokens claro/oscuro, preferencia por navegador, búsqueda global, formularios/tablas adaptables y editor de factura en dos columnas con pasos y atajos de pago. Inventario abre por marca de vehículo (si SQL 008 está disponible), luego modelos y piezas con ilustraciones SVG propias. Marca del repuesto permanece independiente. Se conservan búsqueda, paginación, filtros guardados y plegado.
+
+SQL 008 es nuevo: amplía la agrupación y añade `analitica_comercial`, solo lectura, con costo/margen para administrador/inventario y ventas/clientes para administrador/ventas. Margen potencial sobre existencia física positiva y pares completos costo/precio; no utilidad realizada. Ventas nuevas excluyen historia importada, anulaciones y presupuestos; actividad histórica aparece separada y etiquetada. Ver docs/REDISENIO_ANALITICA.md para fórmulas, fechas, límites y activación. No se modifican migraciones anteriores, datos reales ni reglas financieras. Mantener Importar archivos hasta aviso del propietario.
+
+Pruebas locales: 15 pruebas SQL/lógica aprobadas, tipos y compilación aprobados. Navegador con datos sintéticos: temas persistentes y gráficos, navegación marca/modelo/pieza, filtros y plegado, y facturación revisada antes de emitir; 1440/390 sin desbordamiento. Ver docs/PRUEBAS.md.
+
+La migración remota 008 queda a cargo del administrador en SQL Editor. La publicación del código no aplica SQL ni realiza una importación. No confundir las capturas sintéticas con métricas verificadas de la base del negocio.
+
 ## Estado vigente para esta publicación
 
 El propietario pidió restablecer Importar archivos temporalmente para incorporar operaciones posteriores registradas solo en la aplicación anterior. La carga inicial ya se completó y no se debe repetir. Se incorpora actualización por diferencias con SQL 007, revisión e idempotencia. Mantener visible hasta que el propietario avise que terminó y solicite retirarlo; ver docs/ACTUALIZAR_ORIGEN.md.
 
 
-Última actualización: 2026-11-16 (America/Caracas).
+Última actualización: 2026-11-17 (America/Caracas).
 Destino: continuación del proyecto en Codex.
 Repositorio: https://github.com/samerbilalsangronis-netizen/ALEXMAR
 Rama de trabajo: `main`. El propietario prefiere cambios probados directamente en esta rama.

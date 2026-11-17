@@ -4,6 +4,8 @@ Aplicación privada en español para Autoperiquitos y Rotulados Alexmar. **Entre
 
 ## Qué funciona
 
+- Interfaz adaptable con tema claro/oscuro, búsqueda global, facturación reorganizada e inventario visual por marca/modelo. Gráficos de margen potencial, ventas y clientes con permisos y SQL 008. Ver [diseño y analítica](docs/REDISENIO_ANALITICA.md).
+
 - Inicio de sesión Supabase, cuatro roles, usuarios activos/inactivos. No existe registro público de usuarios desde la aplicación.
 - Catálogo consultado en servidor, búsqueda sin tildes, palabras en cualquier orden y aproximaciones identificadas; referencia exacta priorizada.
 - Grupos de inventario por tipo de pieza y vehículo mencionado, con conteos globales, clasificación manual y filtros personales guardados. Ver [inventario organizado y SQL 005](docs/INVENTARIO_ORGANIZADO.md).
@@ -32,9 +34,10 @@ Aplicación privada en español para Autoperiquitos y Rotulados Alexmar. **Entre
 6. Para la organización del catálogo aplica una sola vez [`supabase/migrations/20261115000500_catalogo_organizado.sql`](supabase/migrations/20261115000500_catalogo_organizado.sql). Sirve también sobre productos ya importados, sin recargar los CSV.
 7. Para facturar aplica [`supabase/migrations/20261115000600_facturacion.sql`](supabase/migrations/20261115000600_facturacion.sql), una sola vez. No requiere reimportar datos.
 8. Para actualizaciones posteriores del origen aplica una sola vez [`supabase/migrations/20261116000700_actualizacion_origen.sql`](supabase/migrations/20261116000700_actualizacion_origen.sql). No repitas la carga inicial.
-9. En **Authentication → Users → Add user**, crea tu usuario administrador con correo confirmado y contraseña segura. Desactiva las inscripciones públicas en Authentication si no las necesitas.
-10. Abre [`supabase/utilidades/crear_administrador.sql`](supabase/utilidades/crear_administrador.sql), sustituye el correo de ejemplo y ejecútalo en SQL Editor.
-11. No expongas el esquema `alexmar` en la API. Se mantiene privado; la API pública contiene solo funciones con verificación de usuario/rol. RLS está habilitado en todas las tablas, sin acceso directo para anon/authenticated.
+9. Para gráficos y marcas de vehículo aplica una sola vez [`supabase/migrations/20261117000800_analitica_vehiculos.sql`](supabase/migrations/20261117000800_analitica_vehiculos.sql). No requiere reimportar.
+10. En **Authentication → Users → Add user**, crea tu usuario administrador con correo confirmado y contraseña segura. Desactiva las inscripciones públicas en Authentication si no las necesitas.
+11. Abre [`supabase/utilidades/crear_administrador.sql`](supabase/utilidades/crear_administrador.sql), sustituye el correo de ejemplo y ejecútalo en SQL Editor.
+12. No expongas el esquema `alexmar` en la API. Se mantiene privado; la API pública contiene solo funciones con verificación de usuario/rol. RLS está habilitado en todas las tablas, sin acceso directo para anon/authenticated.
 
 ### 2. Vercel en otra cuenta
 

@@ -1,3 +1,4 @@
+import { Analitica } from "@/components/analitica";
 import Link from "next/link";
 import { consultar, sesion } from "@/lib/supabase";
 import { Cabecera, Paginacion } from "@/components/comunes";
@@ -45,6 +46,7 @@ export default async function Reportes({
         titulo="Reportes y métricas"
         subtitulo={`Situación actual · ${fecha(new Date().toISOString())} · America/Caracas`}
       />
+      <Analitica parametros={p} />
       <h2>Estado del catálogo activo</h2>
       <section className="indicadores">
         <article>
@@ -123,6 +125,8 @@ export default async function Reportes({
       <section className="panel">
         <h2>Detalle de inventario</h2>
         <form className="filtros no-imprimir">
+          {p.desde && <input type="hidden" name="desde" value={p.desde} />}
+          {p.hasta && <input type="hidden" name="hasta" value={p.hasta} />}
           <label>
             Buscar
             <input
@@ -221,14 +225,22 @@ export default async function Reportes({
             historial, revisa la importación con el administrador.
           </p>
         )}
-        <Paginacion {...d} ruta="/reportes" parametros={filtros} />
+        <Paginacion
+          {...d}
+          ruta="/reportes"
+          parametros={{
+            ...filtros,
+            ...(p.desde ? { desde: p.desde } : {}),
+            ...(p.hasta ? { hasta: p.hasta } : {}),
+          }}
+        />
       </section>
       <section className="panel">
         <h2>Reportes pendientes de las próximas fases</h2>
         <p className="muted">
-          Ventas y utilidad, compras y deuda de proveedores, trabajos, nómina y
-          gastos requieren sus módulos y operaciones registradas. Todavía no
-          están disponibles.
+          Utilidad realizada con costo histórico, compras y deuda de
+          proveedores, trabajos, nómina y gastos requieren sus módulos y
+          operaciones registradas. Todavía no están disponibles.
         </p>
       </section>
     </>
