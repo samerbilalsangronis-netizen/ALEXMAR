@@ -6,7 +6,7 @@ Son 20 imágenes con vista de tres cuartos, acabado plateado (cabinas comerciale
 
 ## Cómo se usan
 
-- En Inventario, la foto subida al bucket privado por el administrador tiene prioridad. Si no existe y el grupo tiene una referencia conocida, aparece la imagen generada con etiqueta Referencia IA.
+- En Inventario, la foto subida al bucket privado por el administrador tiene prioridad. Si no existe y el grupo tiene una referencia conocida, aparece la imagen generada de referencia. Por petición posterior del propietario se retiraron sus etiquetas visibles de IA; la procedencia se conserva en esta documentación.
 - En una marca, se usa un modelo representativo y la etiqueta indica cuál: Ford/Fiesta, Toyota/Hilux, Chevrolet/Aveo, Isuzu o Isuzu / Chevrolet/NPR, Mazda/BT-50, Mitsubishi/L200 y Suzuki/Samurai. No representa todos los modelos de la marca.
 - Los grupos desconocidos no reciben una imagen de otro vehículo por similitud textual. Cargo, 1721, 815 y Caribe esperan identificación o foto original del propietario; no se atribuye fabricante por el número o nombre ambiguo. Las marcas sin modelo y sin representante definido también siguen pendientes.
 - La galería privada `/inventario/imagenes` permite revisar y descargar las veinte referencias. Los archivos genéricos generados se sirven como recursos públicos de la web; las fotos del administrador conservan Storage privado y URL firmada.

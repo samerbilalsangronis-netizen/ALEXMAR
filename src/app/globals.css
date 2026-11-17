@@ -2572,3 +2572,136 @@ caption {
     bottom: 6px;
   }
 }
+
+/* Recepción del proveedor: selección, revisión y comprobante separados. */
+.recepcion-editor {
+  max-width: 1120px;
+}
+.recepcion-proveedor {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: var(--acento-suave);
+}
+.recepcion-proveedor > svg {
+  color: var(--acento);
+  flex-shrink: 0;
+}
+.recepcion-proveedor h2 {
+  margin: 5px 0;
+}
+.recepcion-proveedor p {
+  margin: 0;
+  font-size: 12px;
+}
+.crear-producto-compra {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--borde);
+}
+.linea-recepcion > div {
+  align-self: center;
+  min-width: 0;
+}
+.linea-recepcion strong {
+  display: block;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.linea-recepcion small {
+  display: block;
+  font-size: 11px;
+  margin-top: 5px;
+}
+.recepcion-editor .resultados-venta {
+  max-height: 350px;
+  overflow-y: auto;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 4px;
+}
+.recepcion-editor .checkbox {
+  margin: 24px 0;
+}
+.recepcion-editor .acciones {
+  margin-top: 18px;
+}
+.recepcion-editor .linea-editor input {
+  font-size: 14px;
+}
+.recepcion-editor .linea-editor label {
+  font-size: 12px;
+}
+.producto > details {
+  margin-top: 18px;
+}
+.producto > .boton {
+  margin-top: 16px;
+}
+@media (max-width: 700px) {
+  .linea-recepcion > div:first-child {
+    grid-column: 1/-1;
+  }
+  .recepcion-editor .resultados-venta {
+    grid-template-columns: 1fr;
+    max-height: 300px;
+  }
+  .linea-recepcion button {
+    grid-column: 2;
+  }
+  .recepcion-editor .total-factura {
+    align-items: start;
+  }
+  .recepcion-editor .total-factura small {
+    text-align: left;
+  }
+  .recepcion-proveedor {
+    gap: 14px;
+  }
+}
+.tabla-compras table {
+  min-width: 720px;
+}
+.tabla-compras td:first-child {
+  min-width: 180px;
+}
+.precios-pendientes {
+  background: var(--acento-suave);
+}
+.precios-pendientes .etiqueta {
+  color: var(--acento);
+}
+.precios-pendientes h2 {
+  margin-top: 8px;
+}
+.precios-pendientes .boton {
+  font-size: 12px;
+}
+@media print {
+  .tabla-compras table {
+    min-width: 0;
+  }
+  .tabla-compras td:first-child {
+    min-width: 0;
+  }
+}
+.precios-recibidos {
+  display: grid;
+  gap: 18px;
+}
+.asignar-precio {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.asignar-precio label {
+  flex: 1;
+  min-width: 180px;
+}
+.asignar-precio button {
+  font-size: 12px;
+}
+.asignar-precio .aviso {
+  flex-basis: 100%;
+  margin: 0;
+}

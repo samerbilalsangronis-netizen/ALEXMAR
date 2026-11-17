@@ -1,5 +1,17 @@
 # HANDOFF · ALEXMAR
 
+## Compras y recepciones de proveedores · 2026-11-17
+
+El propietario pide registrar lo que trae un proveedor, sumar existencias y generar la deuda automáticamente. Confirma que queda pendiente el precio de venta, y elige último costo recibido (no promedio ponderado). SQL 010 nuevo agrega compras/líneas/pagos privados, RLS/auditoría, idempotencia y bloqueo de variantes en orden compatible con ventas. Compra y recepción se confirman juntas: 5×100 → +5 unidades y USD 500 de deuda. Nuevo producto dentro de la misma transacción, con precio de venta NULL; existente conserva su precio. Se guarda el costo histórico de recepción y se actualiza el costo de catálogo.
+
+Proveedores → ficha con cuenta/productos/recepciones → Recibir mercancía → revisar → confirmar. Comprobante con tarea visible de poner precio de venta, pagos parciales/completos (administrador), impresión y anulación protegida. Administrador/inventario reciben y consultan; ventas/lectura no acceden. La facturación existente descuenta el stock común; no se reduce la deuda del proveedor al vender. Paginación real de compras, productos y pagos; sumas globales independientes de la página. No hay transferencias bancarias automáticas, anticipos, devoluciones ni pedidos pendientes de recibir en esta fase. Ver docs/COMPRAS_RECEPCIONES.md.
+
+Verificación local: 20 pruebas aprobadas, tipos y compilación, incluido recorrido 5×100, factura con descuento de stock, pagos parciales, reintentos, permisos, anulación, decimales exactos y paginación. Navegador con DB simulada prueba selección/creación, revisión/confirmación, precio de venta directo y 1440/390. Ver docs/PRUEBAS.md.
+
+El propietario aplica SQL 010 completo una vez en el Supabase nuevo, sin reimportar. No se aplicó SQL ni se hicieron compras/pagos/ventas sobre datos reales desde este entorno. Mantener Importar archivos hasta aviso, como antes.
+
+Se retiraron los rótulos Referencia IA de las fotos y de la galería, y la mención de IA en los textos de interfaz; no se presentan como fotos auténticas del negocio. La procedencia de generación permanece documentada. Prioridad de fotos propias y reglas de compatibilidad intactas.
+
 ## Imágenes generadas por vehículo · 2026-11-17
 
 El propietario pidió Higgsfield y eligió expresamente generar aquí cuando se comprobó que no hay conector ni acceso al sitio. Se crearon 20 referencias de vehículos (PNG 1536×1024, cada una menor de 3 MB), en public/vehiculos. Apariencia uniforme de estudio, vehículos plateados/cabinas claras. La foto propia subida tiene prioridad; el recurso generado es alternativa y se identifica como Referencia IA, con modelo de ejemplo si la tarjeta es una marca. No se escriben fotos a Supabase ni se modifican datos, clasificaciones o compatibilidades. No necesita SQL adicional.

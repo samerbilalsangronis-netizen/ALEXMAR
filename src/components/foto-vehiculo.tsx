@@ -29,15 +29,12 @@ export function FotoVehiculo({
       <Image
         className="foto-vehiculo imagen-generada"
         src={referencia.src}
-        alt={`Imagen generada por IA · ${referencia.modelo}${referencia.ejemploMarca ? " · ejemplo de " + nombre : ""}`}
+        alt={`Vehículo de referencia · ${referencia.modelo}${referencia.ejemploMarca ? " · ejemplo de " + nombre : ""}`}
         width={1536}
         height={1024}
         sizes="(max-width:700px) 45vw, (max-width:1100px) 30vw, 300px"
         onError={() => setFallo(true)}
       />
-      <small className="origen-imagen">
-        Referencia IA{referencia.ejemploMarca ? " · " + referencia.modelo : ""}
-      </small>
     </div>
   ) : (
     <div className="foto-pendiente">

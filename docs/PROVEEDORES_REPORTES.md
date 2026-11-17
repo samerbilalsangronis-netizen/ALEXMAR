@@ -1,3 +1,5 @@
+> Actualización: compras recibidas, stock y cuentas por pagar ya están disponibles mediante SQL 010. Ver [compras y recepciones](COMPRAS_RECEPCIONES.md); este documento conserva el alcance original del directorio/reportes.
+
 # Proveedores, métricas y reportes
 
 ## Disponible en esta fase

@@ -103,7 +103,7 @@ export default async function Panel({
         {["administrador", "inventario"].includes(perfil.rol) && (
           <Link href="/proveedores">
             <strong>02 / Proveedores</strong>
-            <span>Directorio y contactos comerciales →</span>
+            <span>Recepciones, deudas y contactos →</span>
           </Link>
         )}
         <Link href="/reportes">

@@ -4,6 +4,8 @@ Aplicación privada en español para Autoperiquitos y Rotulados Alexmar. **Entre
 
 ## Qué funciona
 
+- [Compras y recepciones de proveedores](docs/COMPRAS_RECEPCIONES.md): mercancía recibida suma stock y deuda; último costo, precio de venta pendiente para productos nuevos, pagos y cuenta por proveedor (SQL 010).
+
 - Veinte imágenes de vehículos generadas por IA para las tarjetas, con fotos propias prioritarias y [galería descargable](docs/IMAGENES_GENERADAS.md). Sin SQL adicional.
 
 - Filtros visuales de un clic, fotos originales de vehículos subidas por administrador, logo sin teléfono y gráficos reparados con SQL 009. Ver [uso y activación](docs/FOTOS_Y_FILTROS.md).
@@ -82,15 +84,15 @@ No subas los CSV ni credenciales al repositorio público. La interfaz recibe los
 - Compatibilidad histórica como texto declarado pendiente de normalización. La tabla estructurada de compatibilidades existe, pero el editor de compatibilidades verificadas está disponible en la ficha. Variantes y unidades avanzadas siguen pendientes. No se infieren años a partir del texto libre.
 - Solo principal por producto en esta interfaz. No se agregan variantes incompatibles en un único total.
 - Reportes actuales: métricas de catálogo, inventario filtrado completo y cuentas históricas por moneda según rol, CSV y PDF mediante impresión. Excel nativo y reportes operativos de módulos pendientes todavía no están disponibles.
-- Se pueden registrar ventas nuevas en USD con impuesto 0 y su pago inicial. Compras, pagos posteriores a la factura, devoluciones parciales, trabajos, nómina y gastos siguen pendientes. No hay botones que simulen guardar esas operaciones.
+- Se pueden registrar ventas nuevas en USD con impuesto 0 y su pago inicial. Pagos posteriores a la factura de venta, devoluciones parciales, trabajos, nómina y gastos siguen pendientes. Las compras recibidas y sus pagos al proveedor están disponibles con SQL 010. No hay botones que simulen guardar esas operaciones.
 - Requiere conexión. No es offline.
 
 ## Próximas fases
 
 1. Completar catálogo: variantes, unidades, especificaciones adicionales de compatibilidad, proveedores, fotos, sugerencias con teclado y filtros restantes.
-2. Compras/recepciones y cuentas por pagar; aplicaciones de pagos posteriores a facturas, devoluciones parciales y notas de crédito. La facturación básica ya incluye presupuestos y anulación completa.
+2. Completar compras (pedidos, devoluciones, anticipos y notas de crédito) y aplicaciones de pagos posteriores a facturas de venta. Recepciones y pagos de proveedor ya disponibles. La facturación básica ya incluye presupuestos y anulación completa.
 3. Trabajos y reservas; nómina por pagos; gastos.
-4. Reportes completos, Excel nativo, costo promedio ponderado por variante con costo histórico por venta (propuesta pendiente de confirmar antes de implementarla).
+4. Reportes completos, Excel nativo, costo histórico por venta y utilidad realizada. El propietario eligió último costo recibido para el costo actual de catálogo.
 5. Migración conciliada, pruebas de concurrencia, respaldo/restauración y aceptación final.
 
 ## Para desarrollo (el propietario no necesita terminal)

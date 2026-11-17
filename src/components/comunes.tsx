@@ -42,16 +42,18 @@ export function Paginacion({
   paginas,
   ruta,
   parametros = {},
+  parametroPagina = "pagina",
 }: {
   total: number;
   pagina: number;
   paginas: number;
   ruta: string;
   parametros?: Record<string, string>;
+  parametroPagina?: string;
 }) {
   function href(n: number) {
     const p = new URLSearchParams(parametros);
-    p.set("pagina", String(n));
+    p.set(parametroPagina, String(n));
     return ruta + "?" + p;
   }
   return (

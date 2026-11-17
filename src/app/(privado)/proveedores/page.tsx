@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { consultar, sesion } from "@/lib/supabase";
 import { guardarProveedor } from "@/app/actions";
@@ -84,7 +85,7 @@ export default async function Proveedores({
     <>
       <Cabecera
         titulo="Tus proveedores"
-        subtitulo="Contactos y condiciones comerciales, siempre a mano."
+        subtitulo="Recibe productos, actualiza existencias y consulta lo que debes a cada proveedor."
       />
       <Avisos p={p} />
       <section className="panel no-imprimir">
@@ -122,8 +123,9 @@ export default async function Proveedores({
         <Formulario />
       </details>
       <p className="muted">
-        Directorio comercial. Las compras, recepciones y cuentas por pagar
-        todavía están pendientes; aquí no se calculan saldos.
+        Abre un proveedor para registrar mercancía recibida, consultar sus
+        productos y registrar pagos. Las recepciones confirmadas suman
+        existencias automáticamente.
       </p>
       <div className="productos">
         {d.filas.map((c) => (
@@ -136,7 +138,9 @@ export default async function Proveedores({
                 {c.activo ? "Activo" : "Inactivo"}
               </span>
             </div>
-            <h2>{c.nombre}</h2>
+            <h2>
+              <Link href={"/proveedores/" + c.id}>{c.nombre}</Link>
+            </h2>
             <p className="muted">
               {String(c.contacto || "Sin contacto registrado")}
             </p>
@@ -146,6 +150,9 @@ export default async function Proveedores({
               {String(c.correo || "")}
             </p>
             <p className="subtitulo">{c.monedas.join(" · ")}</p>
+            <Link className="boton secundario" href={"/proveedores/" + c.id}>
+              Productos, recepciones y cuenta →
+            </Link>
             <details>
               <summary>Ver y editar datos</summary>
               <Formulario dato={c} />

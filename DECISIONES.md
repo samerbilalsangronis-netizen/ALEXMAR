@@ -16,7 +16,7 @@
 - Preservar los importes completos sin redondear. Migración nueva a numeric sin escala fija; controles de entrada hasta 80 decimales y magnitud menor a 10^16, sin truncar los valores admitidos.
 
 ## Propuestas pendientes antes de operar
-- Costeo promedio ponderado por variante y conservación de costo por venta.
+- Conservación de costo histórico por venta. El costo de catálogo se confirma como último costo recibido en la decisión de compras del 17 de noviembre, sustituyendo la propuesta de promedio ponderado.
 - Consumo de materiales de trabajos al confirmar entrega, con evento único compartido con factura.
 - El redondeo de futuras operaciones comerciales requiere su propia regla; la migración histórica no redondea.
 - Conciliación histórica: regla de la vista verificada localmente y aprobada. Antes de cargar en el proyecto nuevo deben aplicarse las migraciones y revisarse la simulación y sus conteos.
@@ -53,3 +53,9 @@
 ## Referencias visuales generadas por IA
 - El propietario autoriza generar las imágenes aquí como alternativa a Higgsfield, que no está disponible en el chat. Veinte referencias uniformes con etiqueta explícita; no se presentan como fotos originales.
 - Fotos subidas tienen prioridad. Imágenes estáticas genéricas no modifican la base ni certifican compatibilidades. Los grupos ambiguos quedan pendientes.
+
+## Compras recibidas y cuenta del proveedor · 2026-11-17
+- El propietario confirma que queda pendiente el precio de venta y elige último costo recibido, no promedio ponderado. Ejemplo: cinco unidades a 100 suman cinco unidades y 500 de cuenta por pagar.
+- Registrar compra y recibir juntos mediante confirmación transaccional. Producto nuevo se crea dentro de esa transacción con venta NULL; producto existente conserva su precio de venta. No se vuelve a abrir el stock del inventario completo.
+- Administrador/inventario consultan cuentas y reciben; solo administrador registra pagos y anulaciones protegidas. Facturación existente descuenta del mismo stock. La venta no cancela deuda al proveedor.
+- Retirar las etiquetas de IA en fotos, galería y textos de interfaz a solicitud expresa; conservar la procedencia de los recursos en la documentación.

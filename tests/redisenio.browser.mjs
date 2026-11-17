@@ -257,7 +257,7 @@ try {
     await page.goto(base + "/inventario");
     if (width === 1440) {
       const generada = page.getByRole("img", {
-        name: "Imagen generada por IA · Fiesta · ejemplo de Ford",
+        name: "Vehículo de referencia · Fiesta · ejemplo de Ford",
         exact: true,
       });
       await expect(generada).toBeVisible();
@@ -294,7 +294,7 @@ try {
     ).toBeVisible();
     await expect(
       page.getByRole("img", {
-        name: "Imagen generada por IA · Fiesta · ejemplo de Ford",
+        name: "Vehículo de referencia · Fiesta · ejemplo de Ford",
         exact: true,
       }),
     ).toHaveCount(0);
@@ -334,6 +334,8 @@ try {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(base + "/inventario/imagenes");
   await expect(page.locator(".imagen-coleccion")).toHaveCount(20);
+  await expect(page.getByText("REFERENCIA IA", { exact: true })).toHaveCount(0);
+  await expect(page.locator(".origen-imagen")).toHaveCount(0);
   await expect(
     page.getByRole("link", { name: "Descargar PNG", exact: true }),
   ).toHaveCount(20);

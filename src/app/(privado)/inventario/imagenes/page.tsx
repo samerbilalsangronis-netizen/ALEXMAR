@@ -8,7 +8,7 @@ export default function ImagenesVehiculos() {
     <>
       <Cabecera
         titulo="Tu colección de vehículos"
-        subtitulo="20 imágenes generadas por IA para reconocer modelos en el inventario. No certifican generación, año ni compatibilidad."
+        subtitulo="20 imágenes de vehículos para reconocer modelos en el inventario. No certifican generación, año ni compatibilidad."
       >
         <Link className="boton secundario" href="/inventario">
           <ArrowLeft size={17} /> Volver al inventario
@@ -24,13 +24,12 @@ export default function ImagenesVehiculos() {
           <article className="panel imagen-coleccion" key={v.slug}>
             <Image
               src={"/vehiculos/" + v.slug + ".png"}
-              alt={"Referencia generada por IA · " + v.nombre}
+              alt={"Vehículo de referencia · " + v.nombre}
               width={1536}
               height={1024}
               sizes="(max-width:700px) 90vw, (max-width:1100px) 45vw, 400px"
             />
             <div>
-              <span className="etiqueta">REFERENCIA IA</span>
               <h2>{v.nombre}</h2>
               <a
                 className="boton secundario"
