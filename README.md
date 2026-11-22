@@ -66,6 +66,8 @@ La identidad del autor de los commits también puede afectar los despliegues seg
 
 ## Importación de datos anteriores
 
+El propietario autorizó descartar los datos de prueba y volver a cargar los cuatro CSV recientes. Ver [limpieza con copia privada y recuperación](docs/LIMPIEZA_PRUEBAS.md). La utilidad se ejecuta manualmente solo en el Supabase nuevo, conserva usuarios/fotos/configuración y no modifica el origen; publicar código no limpia ni importa datos. La pantalla actual requiere SQL 007 también para reconocer una base vacía.
+
 En **Importación**, carga `inventario_rows.csv`, `clientes_rows.csv`, `detalle_cuentas_rows.csv` y `notas_rows.csv` en sus campos respectivos. Ejecuta primero **Analizar y conciliar**. La simulación no escribe en la base.
 
 **Regla comprobada y aprobada:** el saldo se calcula igual que `vista_saldos_clientes` del origen: cargos menos abonos no eliminados; TITULO no cambia el saldo. El campo `total_adeudado` exportado estaba en cero en los clientes vigentes; se conserva como dato original, sin usarlo para crear ajustes ni borrar deuda. Las diferencias de procedencia se muestran en la simulación y no se ocultan.

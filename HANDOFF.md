@@ -1,5 +1,15 @@
 # HANDOFF · ALEXMAR
 
+## Reinicio autorizado de los datos de prueba · 2026-11-22
+
+El propietario confirma SQL 011 instalado y solicita expresamente **HAGAMOS LA LIMPIEZA**, después de acordar descartar la importación/operaciones de prueba y cargar de cero los cuatro CSV recientes. Para este reinicio sustituye la recomendación anterior de actualizar por diferencias. El origen sigue siendo la aplicación de trabajo; no tocarlo. No afirmar que el borrado remoto ocurrió: no hay conector ni credenciales administrativos de Supabase en este entorno.
+
+Se entregan utilidades manuales versionadas en supabase/utilidades: limpiar_pruebas_con_respaldo_v1.sql y restaurar_respaldo_pruebas_v1.sql. No son migraciones ni RPC; publicar no las ejecuta. La primera respalda todas las tablas alexmar dentro del esquema privado alexmar_respaldo_pruebas_20261122_v1 y vacía la lista explícita de datos comerciales (también lotes/procedencia, compras, proveedores y clasificaciones por producto), conserva Auth/perfiles/consultas/fotos/Storage/auditoría y reinicia numeración de prueba. Copia y limpieza en transacción, bloqueo de importador/tablas, sin CASCADE, guardas de alcance y de ejecución única. La segunda restaura solo con el destino aún vacío, verifica filas/decimales/columnas y recupera numeración sin pisar nuevas cargas. Copia protegida por RLS/revocación; nunca publicar datos del respaldo. No reemplaza un backup externo del proyecto.
+
+**Corrección importante sobre 007:** la pantalla actual de Importar archivos exige estado_importacion incluso para una carga inicial; el resultado del reinicio indica sql_007_instalado. Si falta, ejecutar 007 completo una sola vez antes de abrir el importador. La utilidad de limpieza funciona con o sin 007/010 y rechaza 007 parcial. No repetir 001–006 ni 011. Tras limpiar y comprobar ceros, importar los cuatro CSV recientes como Primera carga del historial, analizar, conciliar y confirmar. Conservar el respaldo privado. Ver docs/LIMPIEZA_PRUEBAS.md.
+
+Pruebas específicas locales: dos recorridos Postgres con datos sintéticos, restauración exacta de facturas/cobros/compras/revisiones/columnas generadas, preservación de configuración/Auth/Storage y bloqueo de copias para roles web. Fallos por FK ajena/tablas nuevas/007 parcial revierten; repetir limpieza o restaurar después de reimportar no borra la carga nueva. Nueva carga permite stock y deuda exactos sin duplicar. Ver docs/PRUEBAS.md para resultado general.
+
 ## Facturación y situación real confirmada · 2026-11-22
 
 **Estado vigente:** el propietario sigue operando exclusivamente en la aplicación anterior. La importación realizada fue una prueba y está desactualizada. No considerar el corte realizado ni activar una carga automáticamente. Mantener Importar archivos hasta aviso. Los apartados históricos inferiores que daban por terminada la carga describen entregas previas, no un corte definitivo.

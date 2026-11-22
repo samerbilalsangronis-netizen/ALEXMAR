@@ -78,3 +78,10 @@
 - Clientes conservan el historial anterior y las descripciones originales de sus productos separado de las facturas nuevas. No transformar movimientos antiguos en facturas ni cargar dos veces la deuda.
 - Documento con logo ALEXMAR sin teléfono y ubicación confirmada Tovar, Mérida, Venezuela; calle/RIF no confirmados no se inventan.
 - SQL 011 incorpora cobros posteriores por factura, idempotencia y anulación con reversión de todos los cobros y comprobación de versión. La emisión rápida respeta el precio actual del catálogo. No define costeo ni integración fiscal.
+
+## Limpieza de pruebas autorizada · 2026-11-22
+
+- El propietario confirma SQL 011 aplicado y solicita vaciar datos comerciales de prueba para una nueva carga inicial reciente. En este caso sustituye la actualización por diferencias; no borrar el sistema anterior.
+- Conservar usuarios/roles, filtros, fotos/Storage, estructura, diseño y auditoría. Descartar catálogo/manuales ligados a producto, clientes, movimientos, notas, documentos, proveedores/compras/pagos y procedencia, con copia privada previa. Numeración de prueba reiniciada.
+- Utilidad manual con respaldo y limpieza atómicos, sin CASCADE y con guarda de una sola ejecución; recuperación posible solo mientras el destino siga vacío. No instalar borrado como migración automática ni ofrecer RPC de borrado en la web.
+- La pantalla actual de carga requiere estado_importacion de SQL 007 también para una base vacía. Si el resultado indica que falta 007, el propietario lo aplica una vez antes de cargar. Mantener Importar archivos. No se ejecutó borrado remoto desde desarrollo.

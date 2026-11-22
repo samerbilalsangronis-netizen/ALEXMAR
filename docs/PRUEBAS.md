@@ -1,3 +1,12 @@
+# Limpieza de pruebas autorizada · 2026-11-22
+
+- `npm test`: **23 pruebas aprobadas**; incluye dos recorridos nuevos en PGlite real para los scripts manuales de limpieza/recuperación. Se prueban base con todas las migraciones y base sin 007/010, datos importados, factura/cobros, compras, revisiones con identidad, columnas generadas e importes exactos. La limpieza conserva Auth, Storage, perfiles, filtros, fotos y auditoría; las copias no son accesibles al rol autenticado.
+- El destino se vacía y se reinicia la numeración de prueba. La recuperación devuelve filas/valores originales y el próximo número de factura; no sustituye una importación nueva. Fallos por FK ajena/tablas desconocidas/007 parcial no dejan borrado ni copia parcial. Repetir limpieza se rechaza. Instalar 007 después y cargar cuatro conjuntos recientes devuelve stock y deuda nuevos sin duplicar.
+- `npm run typecheck` y `npm run build`: correctos. No cambia la interfaz ni se agregan operaciones de borrado a la aplicación.
+- Las utilidades no se ejecutan automáticamente por despliegue. No se conectó ni limpió un Supabase remoto, no se exportaron datos comerciales y no se tocó el sistema anterior. El propietario ejecuta la utilidad completa en SQL Editor del destino nuevo. Copia de recuperación en la misma base, sin sustituir un respaldo externo.
+
+---
+
 # Verificación vigente · 2026-11-22
 
 - `npm test`: 21 pruebas aprobadas. Incluye SQL 011 real sobre PGlite sin 007: actualización sobre un borrador existente sin cambiar importes, emisión directa atómica y reintentos, precio de catálogo, contado/crédito, cobros parciales/completos sin sobrepago, anulación y reembolso de todos los cobros, versión, saldo histórico separado con correcciones, total global de 35 facturas en dos páginas, búsqueda y límites de fechas Caracas. Cantidad de cuatro decimales × precio de 80 cobrada íntegramente. Conserva pruebas anteriores de compras/importaciones/permisos.

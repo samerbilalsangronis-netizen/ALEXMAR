@@ -36,3 +36,12 @@ Consulta también los [pasos de compatibilidades](../docs/COMPATIBILIDADES.md) y
 ## Diagnóstico del origen en un único resultado
 
 [Diagnóstico único del origen](utilidades/diagnostico_origen_unico.sql): una consulta de solo lectura en el Supabase ANTERIOR. Exporta una fila con las definiciones de vistas, triggers y conteos de seis tablas; evita perder resultados al exportar varias consultas separadas. Comparte el CSV de forma privada.
+
+## Reiniciar los datos de prueba antes de importar de cero
+
+**Solo por autorización del propietario, en el Supabase NUEVO. No son migraciones de despliegue.**
+
+- [Limpiar pruebas con respaldo privado · v1](utilidades/limpiar_pruebas_con_respaldo_v1.sql): copia las tablas y vacía los datos comerciales de prueba en una transacción. Conserva acceso, fotos, filtros y auditoría. No permite repetir el borrado sobre una nueva carga.
+- [Restaurar la copia de pruebas · v1](utilidades/restaurar_respaldo_pruebas_v1.sql): recuperación opcional, solo si el destino sigue vacío. No ejecutar como continuación normal de la limpieza.
+
+Ver [alcance, respaldo y pasos de nueva importación](../docs/LIMPIEZA_PRUEBAS.md). El resultado indica si SQL 007 está instalado; si falta, instalarlo una vez antes de usar la pantalla actual de Importar archivos. No se ha ejecutado la limpieza en Supabase desde el entorno de desarrollo.
