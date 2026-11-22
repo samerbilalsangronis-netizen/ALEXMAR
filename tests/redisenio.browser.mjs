@@ -80,7 +80,7 @@ const fotoPublica=${JSON.stringify(join(dir, "public/foto-prueba.png"))};
 const filas=[{id:'p1',nombre:'Faro Fiesta de muestra',categoria:'Iluminación',categoria_origen:'FORD',vehiculos:['Fiesta'],precio:'25',costo:'10',fisico:'3',reservado:'0',disponible:'3',minimo:'1',marca:'',referencia:'MUESTRA',ubicacion:'A1',activo:true},{id:'p2',nombre:'Espejo NPR de muestra',categoria:'Carrocería',vehiculos:['NPR'],precio:'40',fisico:'2',reservado:'0',disponible:'2',minimo:'1',marca:'',referencia:'',ubicacion:'B2',activo:true}];
 function filtrar(p){return filas.filter(a=>(!p.marca_vehiculo||(p.marca_vehiculo==='Ford'?a.id==='p1':a.id==='p2'))&&(!p.modelo||a.vehiculos.includes(p.modelo)));}
 const categorias=[{nombre:'Iluminación',productos:12,costo:'800',venta:'1400',margen:'600',porcentaje:'42.857'},{nombre:'Carrocería',productos:7,costo:'320',venta:'500',margen:'180',porcentaje:'36'},{nombre:'Audio',productos:8,costo:'600',venta:'480',margen:'-120',porcentaje:'-25'}];
-async function rpc(n,{p={}}={}){if(n==='mi_perfil')return {data:JSON.parse(await readFile(perfilArchivo,'utf8')),error:null};if(n==='guardar_foto_vehiculo'){await writeFile(fotoArchivo,JSON.stringify([{nombre:arguments[1].p_nombre,archivo:arguments[1].p_archivo}]));return {data:null,error:null};}if(n==='fotos_vehiculos')return {data:JSON.parse(await readFile(fotoArchivo,'utf8')),error:null};if(n==='analitica_comercial')return {data:{desde:'2026-06-01',hasta:'2026-11-17',inventario:{costo:'1720',venta:'2380',margen:'660',porcentaje:'27.73',completos:27,total:40,sin_costo:10,sin_precio:5,costo_cero:2,stock_negativo:0,categorias},ventas:{total:'4250',facturas:28,ticket:'151.785',serie:[{mes:'2026-06',total:'200',facturas:2},{mes:'2026-07',total:'650',facturas:5},{mes:'2026-08',total:'350',facturas:3},{mes:'2026-09',total:'1100',facturas:7},{mes:'2026-10',total:'700',facturas:4},{mes:'2026-11',total:'1250',facturas:7}],clientes:[{id:'c1',nombre:'Cliente de ejemplo',total:'750',facturas:6}]},historial_clientes:[{id:'c2',nombre:'Histórico de ejemplo',cargos:'1800',abonos:'900'}]},error:null};if(n==='grupos_inventario')return {data:{total:filtrar(p).length,categorias:[{nombre:'Iluminación',total:1}],vehiculos:filtrar(p).flatMap(a=>a.vehiculos).map(nombre=>({nombre,total:1})),marcas_vehiculo:[{nombre:'Ford',total:1},{nombre:'Isuzu / Chevrolet',total:1}]},error:null};throw new Error('RPC no simulada '+n);}
+async function rpc(n,{p={}}={}){if(n==='configuracion_facturacion')return {data:{version:11,moneda:'USD'},error:null};if(n==='buscar_clientes')return {data:{filas:[{id:'c1',nombre:'Cliente de muestra',documento:'PRUEBA'}],total:1,pagina:1,paginas:1},error:null};if(n==='buscar_productos')return {data:{filas:[{id:'p1',variante_id:'v1',nombre:'Faro de muestra',precio:'25',disponible:'3'}],total:1,pagina:1,paginas:1},error:null};if(n==='mi_perfil')return {data:JSON.parse(await readFile(perfilArchivo,'utf8')),error:null};if(n==='guardar_foto_vehiculo'){await writeFile(fotoArchivo,JSON.stringify([{nombre:arguments[1].p_nombre,archivo:arguments[1].p_archivo}]));return {data:null,error:null};}if(n==='fotos_vehiculos')return {data:JSON.parse(await readFile(fotoArchivo,'utf8')),error:null};if(n==='analitica_comercial')return {data:{desde:'2026-06-01',hasta:'2026-11-17',inventario:{costo:'1720',venta:'2380',margen:'660',porcentaje:'27.73',completos:27,total:40,sin_costo:10,sin_precio:5,costo_cero:2,stock_negativo:0,categorias},ventas:{total:'4250',facturas:28,ticket:'151.785',serie:[{mes:'2026-06',total:'200',facturas:2},{mes:'2026-07',total:'650',facturas:5},{mes:'2026-08',total:'350',facturas:3},{mes:'2026-09',total:'1100',facturas:7},{mes:'2026-10',total:'700',facturas:4},{mes:'2026-11',total:'1250',facturas:7}],clientes:[{id:'c1',nombre:'Cliente de ejemplo',total:'750',facturas:6}]},historial_clientes:[{id:'c2',nombre:'Histórico de ejemplo',cargos:'1800',abonos:'900'}]},error:null};if(n==='grupos_inventario')return {data:{total:filtrar(p).length,categorias:[{nombre:'Iluminación',total:1}],vehiculos:filtrar(p).flatMap(a=>a.vehiculos).map(nombre=>({nombre,total:1})),marcas_vehiculo:[{nombre:'Ford',total:1},{nombre:'Isuzu / Chevrolet',total:1}]},error:null};throw new Error('RPC no simulada '+n);}
 const db = {
  rpc,
  auth: {getUser:async()=>({data:{user:{id:'11111111-1111-4111-8111-111111111111'}}})},
@@ -314,17 +314,19 @@ try {
       caret: "initial",
     });
     await page.goto(base + "/facturacion/nueva");
-    await page.getByRole("button", { name: /Cliente de muestra/ }).click();
-    await page.getByRole("button", { name: /Faro de muestra/ }).click();
+    await page.getByRole("combobox", { name: "Buscar cliente" }).focus();
+    await page.getByRole("option", { name: /Cliente de muestra/ }).click();
+    await page.getByRole("combobox", { name: "Añadir producto" }).focus();
+    await page.getByRole("option", { name: /Faro de muestra/ }).click();
     await expect(
-      page.getByRole("textbox", { name: "Cantidad 1", exact: true }),
+      page.getByRole("textbox", { name: "Cantidad Faro de muestra" }),
     ).toHaveValue("1");
-    await page
-      .getByRole("button", { name: "Contado · total completo" })
-      .click();
-    await expect(page.getByLabel("Pago inicial USD")).toHaveValue("25");
-    await page.getByRole("button", { name: "A crédito", exact: true }).click();
-    await expect(page.getByLabel("Pago inicial USD")).toHaveValue("0");
+    await expect(
+      page.getByRole("radio", { name: "Contado", exact: true }),
+    ).toBeChecked();
+    await expect(page.locator(".factura-barra")).toContainText("25,00");
+    await page.getByRole("radio", { name: "Crédito", exact: true }).check();
+    await expect(page.getByLabel("Abono inicial USD")).toHaveValue("0");
     await page.screenshot({
       path: join(repo, "test-results", `factura-${width}.png`),
       fullPage: true,

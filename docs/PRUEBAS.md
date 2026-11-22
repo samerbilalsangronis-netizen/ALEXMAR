@@ -1,13 +1,25 @@
+# Verificación vigente · 2026-11-22
+
+- `npm test`: 21 pruebas aprobadas. Incluye SQL 011 real sobre PGlite sin 007: actualización sobre un borrador existente sin cambiar importes, emisión directa atómica y reintentos, precio de catálogo, contado/crédito, cobros parciales/completos sin sobrepago, anulación y reembolso de todos los cobros, versión, saldo histórico separado con correcciones, total global de 35 facturas en dos páginas, búsqueda y límites de fechas Caracas. Cantidad de cuatro decimales × precio de 80 cobrada íntegramente. Conserva pruebas anteriores de compras/importaciones/permisos.
+- `npm run typecheck` y `npm run build`: correctos.
+- `node tests/facturacion.browser.mjs`: recorrido del código real con sesión/backend simulados; teclado, búsqueda por palabras, cliente nuevo sin perder líneas, precio automático, contado/crédito, borrador, emisión directa revisada, abonos consecutivos del mismo monto con claves distintas, historial anterior y enlace de exportación exclusivo del origen, impresión con HTML escapado, claro/oscuro a 1440/390 sin errores ni desbordamiento. Revisión visual de editor y documento.
+- `node tests/redisenio.browser.mjs`: regresión de temas, métricas, navegación de inventario, fotos/Storage simulado, logo y nuevo editor a 1440/390, aprobada.
+- No se utilizaron datos comerciales en fixtures ni se ejecutaron ventas/cobros/importaciones reales. No se verificó Supabase remoto ni un despliegue Vercel Ready. Las capturas de navegador son locales y sintéticas, no demostración de datos vigentes del negocio.
+
+---
+
 # Pruebas de la entrega 1
 
 Ejecutadas el 2026-11-15, sin acceso a bases reales.
 
 ## Resultado
+
 - `npm run typecheck`: correcto.
 - `npm run build`: correcto; 14 rutas y proxy. Funciona la compilación sin variables del proyecto y el acceso muestra conexión pendiente.
 - `npm test`: cinco pruebas correctas.
 
 ## Cobertura técnica
+
 1. Instalación completa en PostgreSQL embebido PGlite con extensiones reales unaccent y pg_trgm.
 2. Búsqueda sin tildes y palabras en distinto orden; existencia inicial de cinco unidades.
 3. Reintento de ajuste con la misma clave sin doble movimiento.
@@ -17,6 +29,7 @@ Ejecutadas el 2026-11-15, sin acceso a bases reales.
 7. Validación de CSV, encabezados, comas entrecomilladas, referencias rotas, IDs repetidos, negativos y precisión decimal.
 
 ## Pendiente de verificar
+
 - Instalación final en Supabase real, Auth, permisos de todas las rutas y acceso con usuarios nuevos.
 - Navegación visual completa en PC y teléfono. El Chromium local no pudo arrancar por restricciones del entorno (`socket() failed: Operation not permitted`); no se afirma una revisión visual realizada.
 - Despliegue Vercel y despliegue automático desde GitHub de la cuenta de destino.
@@ -26,6 +39,7 @@ Ejecutadas el 2026-11-15, sin acceso a bases reales.
 Las pruebas de PGlite validan SQL real pero no reproducen todas las particularidades del entorno Supabase/PostgREST. Es obligatoria una prueba en el proyecto nuevo antes de operar.
 
 ## Continuación: compatibilidades verificadas
+
 - `npm test`: 6 pruebas aprobadas (ninguna omitida), incluyendo la migración nueva después de la base en PGlite.
 - `npm run typecheck` y `npm run build`: correctos.
 - Alta, edición, eliminación repetida sin doble auditoría, pertenencia al producto y duplicados ignorando tildes.
@@ -36,6 +50,7 @@ Las pruebas de PGlite validan SQL real pero no reproducen todas las particularid
 - Pendiente: navegación autenticada y prueba en Supabase independiente. No se verificó conexión remota ni datos reales.
 
 ## Identidad, proveedores y reportes
+
 - 8 pruebas aprobadas: migraciones completas, CRUD de proveedores, filtrado sin tildes/estado/moneda, errores de validación, auditoría, usuario inactivo y permisos por rol.
 - 1.051 proveedores: última página accesible. Inventario completo de 1.051 productos recuperado mediante el mismo colector que usan los reportes; lectura sin campos de costo.
 - Métricas con reservas, mínimos y cuentas decimales exactas; USD/VES/COP separadas. Sin cuentas confidenciales para inventario/lectura; sin proveedores para ventas/lectura.
@@ -44,6 +59,7 @@ Las pruebas de PGlite validan SQL real pero no reproducen todas las particularid
 - Sin revisión autenticada de formularios/exportaciones contra Supabase remoto, ni importación de datos reales. La web publicada quedó bloqueada por la red local (CONNECT 403).
 
 ## Publicación de la migración exacta
+
 - `npm test`: 10 pruebas aprobadas, ninguna omitida. Las pruebas de la base original se mantienen para verificar su comportamiento histórico; las nuevas pruebas ejecutan las cuatro migraciones.
 - `npm run typecheck` y `npm run build`: correctos.
 - Migración 004: numeric sin escala fija, saldos según la vista aprobada, preservación del campo original, conciliación exacta antes/después, rechazos transaccionales, permisos e idempotencia con detección de reutilización de huella para otro contenido.
@@ -51,11 +67,13 @@ Las pruebas de PGlite validan SQL real pero no reproducen todas las particularid
 - No se ejecutaron escrituras en Supabase remoto. No se afirma un despliegue Vercel exitoso solo por publicar en GitHub.
 
 ## Regresión del formulario de importación
+
 - `node tests/importador.browser.mjs`: Chromium sobre fixture aislado del componente con datos sintéticos y API simulada; nunca conecta a Supabase. Requiere Chromium en /usr/bin/chromium o indicar CHROMIUM_PATH.
 - Antes del cambio falla la comprobación de archivos retenidos (esperado uno, recibido cero). Después: analizar y confirmar envían los cuatro CSV y la huella, Confirmar exige aceptación, cambiar un archivo invalida la simulación y un error HTTP 502 mantiene archivos y muestra un aviso legible.
 - `npm test`: diez pruebas correctas; `npm run typecheck` y `npm run build`: correctos. No se modificaron SQL ni reglas de dinero.
 
 ## Catálogo organizado tras importar
+
 - `npm test`: 11 pruebas correctas. 005 se prueba sobre productos existentes, además de inserciones posteriores. Clasificación por nombre aunque la etiqueta original sea una marca, filtros combinados, año no inferido, personalización/restablecimiento, originales conservados, auditoría y permisos por rol.
 - Grupos sobre 1.051 productos y última página accesible; las métricas y exportación completa siguen recuperando todos los registros. Las sugerencias se almacenan para evitar recalcular reglas en cada página.
 - `node tests/catalogo.browser.mjs`: escritorio 1440 y móvil 390 sin desbordamiento; cambiar a vehículo, elegir Fiesta, reflejar el filtro en el selector y conservarlo en el enlace de retorno. Se probó también el catálogo con RPC 005 ausente. Fixture sintético y sesión simulada, sin escrituras remotas.
@@ -64,6 +82,7 @@ Las pruebas de PGlite validan SQL real pero no reproducen todas las particularid
 - No se ha ejecutado SQL 005 en el Supabase remoto desde este entorno.
 
 ## Facturación inicial y simplificación del tablero
+
 - Nueva prueba SQL con todas las migraciones: presupuestos/borradores sin stock/cuenta/pagos, cliente/conceptos congelados al emitir, descuentos/gratuidad autorizados, precios de catálogo para ventas, impuesto 0, total decimal exacto, pago parcial, stock menos reservas, variantes repetidas agregadas, reintento sin duplicados y versión optimista del borrador.
 - Anulación con reembolso obligatorio si hubo pago; stock y cuenta neutralizados mediante reversiones, sin borrar originales. Dos ventas compiten por stock insuficiente: la segunda se rechaza sin cargo, número ni salida parcial. PGlite valida estos casos secuenciales; falta prueba de sesiones concurrentes en Supabase independiente.
 - Listado con más de mil documentos y controles por rol/usuario activo. Funciones y tablas privadas inaccesibles a roles no autorizados.
@@ -74,6 +93,7 @@ Las pruebas de PGlite validan SQL real pero no reproducen todas las particularid
 - Resultado de la entrega: `npm test` ejecutó 13 pruebas correctas, sin omisiones. Facturación y catálogo pasaron sus recorridos de navegador con backend simulado; tipos y compilación correctos.
 
 ## Actualización posterior del origen
+
 - 14 pruebas correctas, sin omisiones, incluidas las regresiones de inventario, facturación y carga inicial.
 - Nueva prueba SQL de actualización: primera carga y luego altas de productos/clientes/movimientos/notas; stock ajustado por diferencia, precisión completa, reintento sin duplicación, versiones y reversiones financieras sin alterar el original.
 - Preservación de clasificación personalizada y campos locales no afectados, bloqueo de conflictos sobre el mismo dato, archivos incompletos/antiguos y estado local cambiado desde la simulación. Roles no autorizados bloqueados.

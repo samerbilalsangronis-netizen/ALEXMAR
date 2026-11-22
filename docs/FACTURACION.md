@@ -1,47 +1,54 @@
-# Facturación: primera fase operativa
+# Facturación y cuentas de clientes · 22 de noviembre de 2026
+
+El propietario confirma que sigue operando **solo en la aplicación anterior**. La importación actual fue una prueba y está desactualizada. Esta entrega no actualiza esos datos ni realiza el corte definitivo.
 
 ## Activar desde el navegador
 
-1. En el **Supabase NUEVO → SQL Editor → New query**, copia completo [20261115000600_facturacion.sql](../supabase/migrations/20261115000600_facturacion.sql) y ejecuta **Run** una sola vez, después de las migraciones anteriores ya instaladas.
-2. No repitas la importación: esta actualización agrega documentos y funciones, sin modificar los saldos históricos ni las existencias al instalarse.
-3. En Vercel comprueba el despliegue del último commit de main como **Ready**, recarga y abre **Facturación**. Si el SQL falta, la página indica cómo activar el módulo.
+1. Abre el **Supabase NUEVO → SQL Editor → New query**.
+2. Si ya tienes las migraciones anteriores de facturación, ejecuta completo, una sola vez, [SQL 011](../supabase/migrations/20261122001100_facturacion_clientes.sql). Requiere la base hasta SQL 006; no depende de SQL 007 ni modifica migraciones aplicadas. Para compras y fotos siguen aplicándose sus migraciones correspondientes.
+3. No repitas la importación inicial. Instalar 011 no cambia stock, deuda histórica ni números de facturas existentes; clasifica documentos existentes según su pago inicial y agrega las nuevas funciones/campos.
+4. En Vercel comprueba el último despliegue de `main` como **Ready**, recarga y abre **Facturación**. El listado y el editor avisan si falta 011; guardar borrador usa una RPC exclusiva de esta migración para impedir escrituras con una instalación anterior.
 
-No se ejecutó esta migración en el Supabase remoto desde el entorno de desarrollo. La validación técnica se hizo con PGlite y datos sintéticos. Verifica la configuración y el flujo en una base independiente antes de utilizarlo para operaciones reales.
+El entorno de desarrollo no tiene credenciales de producción. No se ha aplicado SQL remoto ni emitido ventas o cobros reales. La publicación del código no instala la migración.
 
-## Crear y emitir
+## Listado de facturas
 
-Disponible para **administrador y ventas**. La primera fase usa **USD**, como el catálogo, e **impuesto 0**, indicado por el propietario. No hay conversiones automáticas.
+Búsqueda por número, cliente, documento/teléfono o palabras del producto; las palabras pueden aparecer en diferente orden. Un número completo, como V-000001, busca esa factura exacta. Filtros Todas, Por cobrar, Pagadas, Anuladas y Borradores, con fechas en America/Caracas. Paginación real de 30 documentos; totales de todo el conjunto filtrado, sin limitarse a la página visible.
 
-1. Pulsa **Nueva factura** y selecciona un cliente existente mediante búsqueda paginada.
-2. Busca productos por nombre/referencia/vehículo y selecciona los resultados del inventario. Añade servicios por descripción, cantidad y precio cuando corresponda.
-3. Indica cantidades, pago inicial y método de pago. Pago inicial 0 significa crédito; total completo, contado; un importe intermedio, pago parcial. El pago no puede superar el total.
-4. Guarda como borrador de factura o presupuesto. Ambos conservan líneas y condiciones, sin descontar existencias ni registrar cobros/deuda.
-5. Revisa el borrador y su total exacto, cliente, precios y pago inicial. Puedes editarlo antes de emitir.
-6. Marca la confirmación y pulsa **Emitir factura**. La DB asigna un número V-000001, V-000002, etc., descuenta solo productos y registra el cargo y el pago inicial juntos. Los servicios no generan movimientos de inventario.
-7. Abre **Imprimir / PDF** para el documento completo con el logo y los datos del cliente. Es un documento comercial; no se afirma integración fiscal.
+Facturado suma totales de documentos confirmados; Cobrado suma sus pagos netos; Por cobrar suma total menos pagos. Borradores/anuladas no suman. El crédito importado se consulta en Clientes y no se inventan facturas para representarlo. USD es la moneda de referencia de esta fase, impuesto 0; no se convierten bolívares ni pesos.
 
-Los importes y totales se calculan en Postgres numeric; no se redondea el valor guardado. El formato monetario visible usa dos decimales y el documento muestra también el total exacto. Las cantidades admiten hasta cuatro decimales. Los datos del cliente y los conceptos se conservan como snapshot al emitir.
+## Nueva factura
 
-Ventas usa el precio del catálogo para productos; el administrador puede autorizar otro precio, descuentos o líneas gratuitas. Los precios pendientes deben completarse; cero no equivale a un precio pendiente. Una línea gratuita requiere autorización explícita del administrador.
+1. Busca al cliente por nombre o primeras letras, documento o teléfono. Las sugerencias admiten flechas, Enter y Escape. **Cliente nuevo** registra y selecciona sin perder las líneas de la factura.
+2. Busca piezas por nombre o palabras: por ejemplo, `filt toy`. La búsqueda consulta todo el catálogo con paginación, conserva resultados durante la consulta y tiene caché pequeña por consulta en memoria de esa pantalla. No descarga el catálogo completo ni almacena cuentas en localStorage. Las primeras sugerencias se precargan en servidor, sin enviar costos al navegador.
+3. Selecciona producto: coloca automáticamente el precio de venta del catálogo. Seleccionar nuevamente la misma variante incrementa cantidad. Precios pendientes se muestran y no pueden seleccionarse; asignarlos en Inventario. No se exige código.
+4. **Contado** está seleccionado inicialmente: el cobro se actualiza al cambiar productos/cantidades/descuento. Elige el método realmente recibido. **Crédito** permite abono inicial 0 o parcial y vencimiento opcional. El saldo es total menos abono.
+5. Puedes agregar servicios por descripción, cantidad y precio. El administrador puede aplicar descuento y autorizar líneas gratuitas; el formulario rápido conserva el precio de catálogo de las piezas.
+6. **Guardar borrador** conserva el documento sin afectar stock ni deuda. **Revisar y emitir** muestra cliente, líneas, cantidades, precios, total, cobro y saldo antes de confirmar. La emisión directa guarda y emite en una transacción; una emisión fallida no deja un borrador parcial.
+7. Al emitir se asigna V-000001, se comprueba existencia física menos reservas, se descuentan productos y se registran cargo y cobro inicial. Servicios no mueven stock. Los reintentos con mismo contenido no duplican efectos; otro contenido con el mismo identificador se rechaza. No se permite sustituir por otro precio de catálogo al confirmar.
 
-Los reintentos de guardar o emitir no duplican documentos, cargos, pagos ni stock. El borrador tiene versión para impedir confirmar totales modificados desde otra sesión. Se bloquean variantes en orden estable y se revisa disponible físico menos reservas activas antes de emitir.
+Valores finales en Postgres `numeric`, cálculos de revisión con Decimal de 128 dígitos. Hasta cuatro decimales en cantidad y 80 en precio; cobros admiten 84 para cancelar exactamente el producto de ambos, siempre bajo 10^16. No se redondea lo guardado; la presentación monetaria usa dos decimales y muestra también el total exacto. Cliente/conceptos quedan como snapshot al emitir.
 
-## Anular
+## Documento y cobros
 
-Solo el administrador puede anular, con motivo. Se conservan documento y movimientos originales. En una factura emitida se agregan reversiones de stock y cuenta; no se borra historia. Si hubo pago inicial, el operador debe confirmar que efectivamente revirtió el cobro o entregó el reembolso; se registra su reversión. Repetir la anulación no duplica efectos.
+Vista previa e impresión comparten el mismo documento: logo sin teléfono, nombre ALEXMAR, ubicación confirmada **Tovar, Mérida, Venezuela**, número, fecha, moneda, condición, cliente, líneas, total, cobrado y saldo actual. No se inventan RIF, calle, firma ni sello. **Imprimir / PDF** abre la versión completa; el navegador permite guardar PDF. Es un documento comercial, sin integración fiscal.
 
-La anulación completa no sustituye una devolución parcial. Un presupuesto o borrador anulado no genera movimientos financieros ni de stock.
+En una factura con saldo: **Registrar cobro → Revisar cobro → Confirmar cobro recibido**. Solo registrar dinero efectivamente recibido. La función transaccional bloquea el documento, impide sobrepagos, guarda pago y abono a la cuenta del cliente y protege reintentos con clave y firma. No vuelve a descontar stock ni modifica cuentas de proveedor. Al completarse el pago, la factura queda Pagada y conserva su condición original de crédito.
 
-## Alcance pendiente
+Solo administrador anula, con motivo y confirmación de reembolso/reversión de todos los cobros. La versión revisada debe seguir vigente. Se conservan originales y se agregan reversiones de stock, cargo y pagos; repetir no duplica. No hay transferencias o reembolsos bancarios automáticos. La RPC antigua se conserva por compatibilidad, actualizada para revertir todos los cobros.
 
-Pagos posteriores a la emisión y aplicación de anticipos a facturas, devoluciones parciales/notas de crédito, compras/recepciones, otras monedas/tasas e impuestos, integración fiscal y márgenes/costos históricos requieren fases posteriores. Esta entrega no define un método de costeo ni inventa rentabilidad. La búsqueda de productos usa las variantes actualmente expuestas por el catálogo (principal); no consolida variantes incompatibles.
+## Cliente: pasado y facturas nuevas
 
-## Navegación
+Cada cliente muestra su cuenta total por moneda, saldo del sistema anterior y resto de operaciones. Las tarjetas son de toda la cuenta; los filtros inferiores afectan el detalle y sus totales de periodo.
 
-Importación se retiró del menú y del resumen porque el propietario confirmó la carga. Se mantienen los datos, lotes y controles de seguridad del importador; no se repite la carga.
+- **Facturas nuevas:** documentos y saldos propios de esta web, en USD, paginados y filtrables por cobro/fecha.
+- **Historial del sistema anterior:** descripciones originales de los productos, cantidades y precios unitarios originales cuando existen, cargos, abonos, títulos y correcciones auditadas. Incluye originales y reversiones para conservar la trazabilidad. Solo movimientos activos de procedencia `supabase_anterior`/`actualizacion_origen`, sin `venta_id`. No expone costos ni presupone vínculos por nombres similares.
+- **Cuenta completa:** todos los movimientos activos, incluidas facturas y cobros nuevos. Se conservan exportación CSV e impresión/PDF completos. La exportación del historial anterior respeta esa procedencia y recorre todas sus páginas; no mezcla facturas nuevas.
 
-En Inventario, **Minimizar** permite plegar tanto Categorías y vehículos como Filtros personalizados. El buscador sigue visible y la preferencia se recuerda en el navegador. Los filtros activos permanecen aplicados; puedes quitarlos con sus etiquetas o Limpiar todos.
+USD, VES y COP permanecen separados en el historial. No se suman monedas entre sí. El saldo importado no se vuelve a cargar al crear la primera factura; queda como parte de la cuenta anterior. El cobro nuevo se aplica a la factura seleccionada; no liquida automáticamente deudas anteriores.
 
-## Actualización posterior del menú
+## Antes del cambio definitivo
 
-Por petición posterior del propietario, Importar archivos vuelve temporalmente al menú y al resumen del administrador para incorporar lo registrado en la aplicación anterior. Ver ACTUALIZAR_ORIGEN.md. No se oculta automáticamente al terminar: el propietario avisará cuándo retirarlo.
+Mantener **Importar archivos** hasta aviso del propietario. Cuando decida el corte, tomar los cuatro CSV completos y recientes del sistema anterior, respaldar, usar la actualización por diferencias (SQL 007), revisar conflictos y conciliar cantidades/saldos por cliente. No repetir aperturas ni reemplazar la base. El código no inicia esa actualización automáticamente.
+
+Pendientes de fases posteriores: aplicación de pagos a deuda histórica, anticipos, devoluciones parciales/notas de crédito, otras monedas/tasas, integración fiscal y costo histórico por venta. No se considera terminado todo el sistema ni se afirma un corte de operación.

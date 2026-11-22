@@ -1,5 +1,19 @@
 # HANDOFF · ALEXMAR
 
+## Facturación y situación real confirmada · 2026-11-22
+
+**Estado vigente:** el propietario sigue operando exclusivamente en la aplicación anterior. La importación realizada fue una prueba y está desactualizada. No considerar el corte realizado ni activar una carga automáticamente. Mantener Importar archivos hasta aviso. Los apartados históricos inferiores que daban por terminada la carga describen entregas previas, no un corte definitivo.
+
+Referencia: capturas de Tierra Santa suministradas por el propietario; no se modifica ese sistema. Nueva facturación con lista de documentos, filtros por estado/cobro/fechas, búsqueda por número/cliente/producto y totales globales paginados. Editor compacto con sugerencias iniciales precargadas sin costos, búsqueda de todo el catálogo por palabras, teclado, caché pequeña por consulta y cliente nuevo sin perder líneas. Precio de venta automático, contado inicialmente (cobro sigue el total), crédito/abono, borrador y revisión antes de emisión directa atómica. USD/impuesto 0.
+
+SQL 011 nuevo: mantiene las RPC existentes, agrega emisión directa con idempotencia, pagos posteriores por factura y anulación con reversión de todos los cobros/versión revisada; los cobros no mueven stock. Cantidad 4 × precio 80 permite cobros exactos de hasta 84 decimales. Historial anterior independiente de SQL 007, con descripciones, cantidad/precio original, correcciones y exportación completa sin costos. Clientes presentan histórico, facturas nuevas y cuenta completa, sin fabricar facturas ni duplicar deuda.
+
+Vista previa e impresión comparten documento con logo sin teléfono y ubicación confirmada Tovar, Mérida, Venezuela. No inventar calle ni RIF. Permisos administrador/ventas en servidor/API/DB y esquema privado intactos. Documentación vigente: docs/FACTURACION.md. El propietario aplica SQL 011 completo una vez en Supabase NUEVO; no repetir anteriores ni reimportar para instalarlo. No se ha aplicado SQL ni emitido ventas/cobros sobre producción desde este entorno; tampoco se ha verificado un despliegue remoto Ready.
+
+Pruebas locales: 21 pruebas SQL/lógica aprobadas, tipos y compilación correctos. SQL real PGlite sin 007 comprueba reintentos, falta de stock, precio cambiado, contado/crédito, cobros, sobrepago, anulación, fecha Caracas, precisión 84 y 35 facturas en dos páginas; historial original/correcciones separado. Navegador con backend simulado: selección por teclado, cliente nuevo, precio automático, borrador, emisión directa revisada, cobro, historia separada, HTML escapado, claro/oscuro y 1440/390. Regresión de inventario/fotos/gráficos y nuevo editor aprobada. Ver docs/PRUEBAS.md.
+
+Pendientes: aplicar 011 remoto y comprobar Vercel Ready; terminar ajustes antes del corte; exportación reciente de cuatro CSV y actualización por diferencias con 007, respaldo y conciliación antes de operar. Cobros a deuda anterior, anticipos, devoluciones parciales, otras monedas, fiscal y costo histórico por venta siguen pendientes. No declarar terminado todo el sistema.
+
 ## Compras y recepciones de proveedores · 2026-11-17
 
 El propietario pide registrar lo que trae un proveedor, sumar existencias y generar la deuda automáticamente. Confirma que queda pendiente el precio de venta, y elige último costo recibido (no promedio ponderado). SQL 010 nuevo agrega compras/líneas/pagos privados, RLS/auditoría, idempotencia y bloqueo de variantes en orden compatible con ventas. Compra y recepción se confirman juntas: 5×100 → +5 unidades y USD 500 de deuda. Nuevo producto dentro de la misma transacción, con precio de venta NULL; existente conserva su precio. Se guarda el costo histórico de recepción y se actualiza el costo de catálogo.
@@ -48,7 +62,6 @@ La migración remota 008 queda a cargo del administrador en SQL Editor. La publi
 
 El propietario pidió restablecer Importar archivos temporalmente para incorporar operaciones posteriores registradas solo en la aplicación anterior. La carga inicial ya se completó y no se debe repetir. Se incorpora actualización por diferencias con SQL 007, revisión e idempotencia. Mantener visible hasta que el propietario avise que terminó y solicite retirarlo; ver docs/ACTUALIZAR_ORIGEN.md.
 
-
 Última actualización: 2026-11-17 (America/Caracas).
 Destino: continuación del proyecto en Codex.
 Repositorio: https://github.com/samerbilalsangronis-netizen/ALEXMAR
@@ -96,21 +109,21 @@ No hay aún ventas nuevas, compras, pagos nuevos, presupuestos, devoluciones, tr
 
 ## 4. Archivos y rutas para continuar
 
-| Área | Archivos |
-|---|---|
-| Alcance completo | `docs/ALCANCE.md` |
-| Instalación y límites | `README.md` |
-| Reglas | `AGENTS.md`, `DECISIONES.md` |
-| Base nueva | `supabase/migrations/20261115000100_base_catalogo_historial.sql` |
-| Primer administrador | `supabase/utilidades/crear_administrador.sql` |
-| Inspección de origen sin escribir | `supabase/utilidades/inspeccionar_origen_solo_lectura.sql` |
-| Sesión y consultas | `src/lib/supabase.ts`, `src/proxy.ts` |
-| Escrituras de formularios | `src/app/actions.ts` |
-| Analizador de migración | `src/lib/migracion.ts` |
-| API de migración | `src/app/api/migracion/route.ts` |
-| Pantalla de simulación | `src/components/importador.tsx`, `src/app/(privado)/migracion/page.tsx` |
-| Exportación histórica | `src/app/api/exportar/route.ts` |
-| Pruebas y resultados | `tests/base.test.ts`, `tests/migracion.test.ts`, `docs/PRUEBAS.md` |
+| Área                              | Archivos                                                                |
+| --------------------------------- | ----------------------------------------------------------------------- |
+| Alcance completo                  | `docs/ALCANCE.md`                                                       |
+| Instalación y límites             | `README.md`                                                             |
+| Reglas                            | `AGENTS.md`, `DECISIONES.md`                                            |
+| Base nueva                        | `supabase/migrations/20261115000100_base_catalogo_historial.sql`        |
+| Primer administrador              | `supabase/utilidades/crear_administrador.sql`                           |
+| Inspección de origen sin escribir | `supabase/utilidades/inspeccionar_origen_solo_lectura.sql`              |
+| Sesión y consultas                | `src/lib/supabase.ts`, `src/proxy.ts`                                   |
+| Escrituras de formularios         | `src/app/actions.ts`                                                    |
+| Analizador de migración           | `src/lib/migracion.ts`                                                  |
+| API de migración                  | `src/app/api/migracion/route.ts`                                        |
+| Pantalla de simulación            | `src/components/importador.tsx`, `src/app/(privado)/migracion/page.tsx` |
+| Exportación histórica             | `src/app/api/exportar/route.ts`                                         |
+| Pruebas y resultados              | `tests/base.test.ts`, `tests/migracion.test.ts`, `docs/PRUEBAS.md`      |
 
 Variables: `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (alternativa admitida: `NEXT_PUBLIC_SUPABASE_ANON_KEY`). Esta entrega no requiere clave de servicio.
 
@@ -118,12 +131,12 @@ Variables: `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (
 
 ### Archivos recibidos, privados y fuera de git
 
-| Archivo | Total | Vigentes | Eliminados |
-|---|---:|---:|---:|
-| inventario_rows.csv | 910 | 848 | 62 |
-| clientes_rows.csv | 163 | 108 | 55 |
-| detalle_cuentas_rows.csv | 3.637 | 2.737 | 900 |
-| notas_rows.csv | 77 | 12 | 65 |
+| Archivo                  | Total | Vigentes | Eliminados |
+| ------------------------ | ----: | -------: | ---------: |
+| inventario_rows.csv      |   910 |      848 |         62 |
+| clientes_rows.csv        |   163 |      108 |         55 |
+| detalle_cuentas_rows.csv | 3.637 |    2.737 |        900 |
+| notas_rows.csv           |    77 |       12 |         65 |
 
 También se recibió `Supabase Snippet Untitled query (1).csv`: estructura de 132 columnas entre 14 tablas/vistas. El primer CSV de estructura tenía solo 100 filas y estaba truncado; usar el segundo.
 
@@ -143,6 +156,7 @@ Los adjuntos no están incluidos en este repositorio. Si no llegan al nuevo ento
 ### Qué significan realmente las 104 diferencias
 
 Revisión posterior a la entrega:
+
 1. Los **108 clientes vigentes tienen total_adeudado en cero**.
 2. En 104 de ellos, cargos vigentes menos abonos vigentes da un valor distinto de cero.
 3. Por eso la comparación automática señala 104 diferencias. No demuestra por sí sola que el historial o la deuda mostrada en el sistema anterior sean incorrectos.
@@ -171,6 +185,7 @@ Hay números exportados con más de cuatro decimales, algunos con apariencia de 
 ## 6. Pruebas realizadas y límites
 
 Sobre el commit de implementación:
+
 - `npm run typecheck`: correcto.
 - `npm run build`: correcto, incluso sin variables del Supabase nuevo.
 - `npm test`: cinco pruebas aprobadas.
@@ -187,6 +202,7 @@ Esta actualización del HANDOFF modifica documentación únicamente; no cambia c
 ## 7. Trabajo siguiente
 
 Continuar sin rehacer lo implementado:
+
 1. Comprobar situación del Supabase/Vercel nuevo y leer alcance/documentación.
 2. Completar catálogo: variantes, unidades, compatibilidades estructuradas, proveedores, fotos, sugerencias con teclado y filtros restantes.
 3. Compras/recepciones/cuentas por pagar; ventas de productos y servicios, presupuestos, pagos y aplicaciones, devoluciones/anulaciones transaccionales.
@@ -198,10 +214,10 @@ Propuestas no confirmadas: costo promedio ponderado por variante con costo hist�
 
 Documentar avances y mantener este HANDOFF actualizado. No declarar listo para operar hasta completar las funciones y criterios de aceptación del prompt maestro.
 
-
 ## Continuaciones en este entorno (registro cronológico; ver última actualización)
 
 ## Continuación: compatibilidades verificadas (2026-11-15)
+
 - Ficha de inventario: consulta paginada, alta, edición y eliminación confirmada de marca/modelo, rango de años o universal. Administrador/inventario editan; ventas/lectura consultan. Las acciones comprueban rol y las RPC repiten la autorización. Se conserva la búsqueda de retorno y ambas paginaciones.
 - Nueva migración `20261115000200_compatibilidades.sql`; no se modificó la base. Aprovecha RLS y auditoría existentes; valida rangos, duplicados normalizados y pertenencia al producto.
 - Corregido filtro combinado de vehículo/año: ambos deben corresponder a la misma compatibilidad. Una compatibilidad sin ningún año conocido no confirma años concretos; el texto histórico sigue separado.
@@ -210,6 +226,7 @@ Documentar avances y mantener este HANDOFF actualizado. No declarar listo para o
 - Siguiente bloque del catálogo: variantes con precio y existencia independientes, unidades y proveedores; después compras/ventas. Siguen pendientes las decisiones de costeo y conciliación histórica de DECISIONES.md.
 
 ## Continuación: identidad, proveedores y reportes (2026-11-15)
+
 - El propietario confirmó despliegue en alexmar.vercel.app y creación del administrador. Compartió un CSV con presencia del índice y las tres RPC de compatibilidades; no constituye validación funcional remota completa.
 - Logo recibido, preparado como PNG transparente en public/logo-alexmar.png e integrado en acceso y navegación. Interfaz naranja/grafito, navegación con ruta activa y mejoras de legibilidad/móvil. Los cambios anteriores se conservaron.
 - Directorio real de proveedores (roles administrador/inventario), filtros, edición, desactivación y auditoría. Nueva migración 20261115000300_proveedores_reportes.sql; no se ejecutó remotamente.
@@ -219,6 +236,7 @@ Documentar avances y mantener este HANDOFF actualizado. No declarar listo para o
 - Código y archivos locales sin push ni publicación. No modificar el borrador del entorno ni publicar por instrucción vigente del propietario. Para desplegar este código hará falta una instrucción explícita posterior.
 
 ## Revisión de CSV recibidos (2026-11-15)
+
 - Ya se recibieron nuevamente los cuatro CSV comerciales. Se analizaron localmente sin escrituras en Supabase; informe y diferencias en privado/revision-historica/ (ignorado por Git). Los originales permanecen en attachments, fuera del checkout.
 - Conteos: 910 productos/848 vigentes; 163 clientes/108 vigentes; 3.637 movimientos/2.737 vigentes; 77 notas/12 vigentes. Sin errores de formato ni referencias rotas detectados por el analizador actual.
 - Confirmadas 104 discrepancias de saldo, que persisten calculando con precisión completa. Exactamente 7 valores de detalle_cuentas.total_linea exceden cuatro decimales. No se aprobó redondeo ni se cambió ninguna cifra.
@@ -228,6 +246,7 @@ Documentar avances y mantener este HANDOFF actualizado. No declarar listo para o
 - No se importaron datos, no se modificó lógica ni migraciones anteriores y no se publicó nada.
 
 ## Diagnóstico completo del origen recibido (2026-11-15)
+
 - Recibido CSV con vistas, triggers y conteos. Los cuatro conteos de origen coinciden exactamente con los archivos recibidos (totales y vigentes); proveedores y movimientos_proveedor tienen cero filas, según resultado aportado por el propietario.
 - vista_saldos_clientes calcula cargos menos abonos de movimientos no eliminados y no utiliza clientes.total_adeudado. Los triggers devueltos solo actualizan updated_at; no mantienen el campo de saldo.
 - Se reprodujo localmente la definición recibida de la vista en PGlite, cargando los CSV sin redondeo en numeric. Los 108 saldos de clientes vigentes coinciden con el cálculo decimal independiente; 104 difieren del campo total_adeudado por más de 0.0001. Esto confirma la regla de la vista; no demuestra qué campo muestra cada pantalla del sistema anterior ni por qué se desactualizó/difiere el otro campo.
@@ -236,6 +255,7 @@ Documentar avances y mantener este HANDOFF actualizado. No declarar listo para o
 - No se ejecutó importación remota ni se publicaron cambios.
 
 ## Publicación autorizada y prueba de carga exacta
+
 - Se integró origin/main (incluida la aclaración sobre total_adeudado en cero), preservando documentación remota y continuaciones locales.
 - Regla de vista y preservación de precisión aprobadas por "procede y publica". Nueva migración 004, sin editar migraciones anteriores. Firma nueva de importar_inicial exige la conciliación exacta; retira la función anterior para evitar cargas con reglas diferentes.
 - El analizador conserva diferencias de procedencia como información y sigue bloqueando errores. El servidor vuelve a analizar y la DB valida todas las filas y concilia saldos antes y después de insertar. Numeric sin escala fija y aritmética decimal exacta dentro del rango validado.
@@ -244,6 +264,7 @@ Documentar avances y mantener este HANDOFF actualizado. No declarar listo para o
 - Se autoriza publicar este código en main. La publicación del entorno cloud es independiente y no se solicitó cambiar su borrador. Verificar Vercel separadamente; un push no prueba un despliegue exitoso.
 
 ## Corrección del bucle de importación
+
 - El propietario reportó que Confirmar exigía seleccionar de nuevo los CSV, y volver a seleccionarlos invalidaba la simulación.
 - Reproducido en Chromium: form action de React reinicia los file inputs tras resolver la simulación. La prueba del componente detectó cero archivos donde debía quedar uno por campo.
 - Corregido con envío manual onSubmit/preventDefault y captura explícita del botón pulsado; se conservan los archivos entre analizar y confirmar. Durante la petición se bloquea la selección de archivos, y al cambiarlos se invalida la simulación y la aceptación. Errores HTTP no JSON muestran estado sin perder los CSV.
@@ -251,6 +272,7 @@ Documentar avances y mantener este HANDOFF actualizado. No declarar listo para o
 - Diez pruebas SQL/analizador, comprobación de tipos y build correctos. No requiere nuevas migraciones. Se publica la corrección en main bajo la autorización vigente.
 
 ## Inventario organizado después de la importación
+
 - Importación remota completada según confirmación del propietario. No se repitió ninguna carga remota.
 - Nueva migración 005: conserva categorías/compatibilidad originales y agrega sugerencias almacenadas derivadas del texto, con clasificación manual independiente y auditada. Reemplaza consultas mediante RPC autorizadas, sin exponer esquema privado ni costos a roles no permitidos.
 - Inventario empieza con grupos por pieza/vehículo, conteos de todo el resultado, filtros combinables y consultas personales existentes. Los grupos no son una simple agrupación de la página visible. Fiesta se detecta también en nombres y etiquetas; no se certifica compatibilidad ni año desde texto libre. Los casos ambiguos quedan disponibles para revisión.
@@ -260,6 +282,7 @@ Documentar avances y mantener este HANDOFF actualizado. No declarar listo para o
 - tests/catalogo.browser.mjs: agrupación, filtro Fiesta reflejado en formulario, regreso a ficha, falta de 005 y pantallas de 1440/390 px con datos/sesión simulados. Tipos/build correctos. SQL 005 no aplicado remotamente desde este entorno; propietario debe ejecutarlo una sola vez. No requiere migrar los datos de nuevo.
 
 ## Facturación, retiro de Importación y paneles plegables
+
 - Incorporado menú Facturación para administrador/ventas y acceso desde Resumen. Importación retirada de ambos lugares; se mantienen datos y funciones históricas protegidas.
 - Categorías/vehículos y filtros personalizados tienen Minimizar/Mostrar, preferencia local y atributos accesibles. Buscador visible y filtros activos conservados al minimizar.
 - Nueva migración 006: ventas, líneas, pago inicial y FK de cuenta; RLS/esquema privado, RPC con autorización. Borradores/presupuestos editables sin efecto financiero. Emisión numerada, snapshot cliente/conceptos, stock disponible (reservas descontadas), cargo y abono inicial atómicos. Idempotencia, versión del borrador y bloqueos de variantes en orden estable.
@@ -270,6 +293,7 @@ Documentar avances y mantener este HANDOFF actualizado. No declarar listo para o
 - Pendiente para activar en remoto: SQL 006 una sola vez y despliegue Ready del commit nuevo. No reimportar datos. Se documenta esta como primera fase de facturación, no como finalización del sistema completo.
 
 ## Restauración temporal de Importar archivos y actualización de origen
+
 - Solicitado por el propietario; confirmó operaciones nuevas solo en el sistema anterior. Restaurado acceso de administrador en menú y resumen. No autoocultar después de confirmar; esperar su aviso para retirarlo.
 - El importador inicial no admite destinos con datos. Nueva migración 007 sin modificar SQL anteriores: revisiones de procedencia, estado de carga y RPC de actualización transaccional, exclusivamente administrador.
 - Comparación por IDs y campos normalizados entre última versión del origen y valor actual. Conserva campos locales no modificados en origen; bloquea cambios incompatibles, IDs colisionados, archivos incompletos y versiones anteriores. El estado simulado se verifica otra vez bajo bloqueos antes de confirmar.

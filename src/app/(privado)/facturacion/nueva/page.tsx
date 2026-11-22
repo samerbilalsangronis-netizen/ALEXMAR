@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ActivarFacturacion } from "@/components/activar-facturacion";
 import { randomUUID } from "node:crypto";
 import { notFound } from "next/navigation";
 import { sesion } from "@/lib/supabase";
@@ -11,6 +13,12 @@ export default async function Nueva({
 }) {
   const { db, perfil } = await sesion();
   if (!["administrador", "ventas"].includes(perfil.rol)) notFound();
+  const { data: config, error: pendiente } = await db.rpc(
+    "configuracion_facturacion",
+  );
+  if (pendiente && !["PGRST202", "42883"].includes(pendiente.code))
+    throw new Error(pendiente.message);
+  if (!config || config.version !== 11) return <ActivarFacturacion />;
   const p = await searchParams;
   let inicial: Venta | null = null;
   if (p.editar) {
@@ -20,16 +28,52 @@ export default async function Nueva({
     if (!data || data.estado !== "borrador") notFound();
     inicial = data;
   }
+  const [clientes, productos] = await Promise.all([
+    db.rpc("buscar_clientes", { p: { pagina: 1, estado: "activos" } }),
+    db.rpc("buscar_productos", { p: { pagina: 1, estado: "activos" } }),
+  ]);
+  if (clientes.error || productos.error)
+    throw new Error(clientes.error?.message || productos.error?.message);
+  const seleccion = {
+    filas: productos.data.filas.map(
+      (r: {
+        id: string;
+        variante_id: string;
+        nombre: string;
+        precio: string | null;
+        disponible: string;
+      }) => ({
+        id: r.id,
+        variante_id: r.variante_id,
+        nombre: r.nombre,
+        precio: r.precio,
+        disponible: r.disponible,
+      }),
+    ),
+    paginas: productos.data.paginas,
+  };
   return (
     <>
+      <Link href="/facturacion">← Facturación</Link>
       <Cabecera
         titulo={inicial ? "Editar borrador" : "Nueva factura"}
-        subtitulo="Selecciona cliente y piezas por nombre. Revisa el borrador antes de emitir."
+        subtitulo="Venta en USD · El número se asigna al emitir."
       />
       <EditorVenta
         clave={inicial?.id || randomUUID()}
         administrador={perfil.rol === "administrador"}
         inicial={inicial}
+        clientes={{
+          filas: clientes.data.filas.map(
+            (r: { id: string; nombre: string; documento?: string }) => ({
+              id: r.id,
+              nombre: r.nombre,
+              documento: r.documento,
+            }),
+          ),
+          paginas: clientes.data.paginas,
+        }}
+        productos={seleccion}
       />
     </>
   );

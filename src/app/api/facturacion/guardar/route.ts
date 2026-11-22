@@ -24,11 +24,16 @@ export async function POST(req: NextRequest) {
     if (new TextEncoder().encode(texto).length > 200000)
       throw new Error("La venta supera el tamaño permitido.");
     const p = JSON.parse(texto);
-    const { data, error } = await db.rpc("guardar_venta", { p });
+    const { data, error } = await db.rpc(
+      req.nextUrl.searchParams.get("emitir") === "1"
+        ? "emitir_factura"
+        : "guardar_borrador_factura",
+      { p },
+    );
     if (error) {
       if (error.code === "PGRST202")
         throw new Error(
-          "Falta activar la facturación con la migración 006 en el proyecto nuevo.",
+          "Falta activar la actualización de facturación (SQL 011) en el proyecto nuevo.",
         );
       throw new Error(error.message);
     }

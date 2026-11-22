@@ -34,10 +34,15 @@ export async function GET(req: NextRequest) {
     const filas: Estado["filas"] = [];
     let estado: Estado | undefined;
     for (let i = 1; ; i++) {
-      const { data, error } = await db.rpc("estado_cliente", {
-        ...base,
-        p_pagina: i,
-      });
+      const { data, error } = await db.rpc(
+        p.get("origen") === "anterior"
+          ? "historial_cliente_anterior"
+          : "estado_cliente",
+        {
+          ...base,
+          p_pagina: i,
+        },
+      );
       if (error) throw new Error(error.message);
       const d = data as Estado;
       if (!d.cliente) throw new Error("Cliente no encontrado.");
@@ -54,6 +59,10 @@ export async function GET(req: NextRequest) {
       );
     const metadatos = [
       ["ALEXMAR · Estado de cuenta", info.cliente!.nombre],
+      [
+        "Origen",
+        p.get("origen") === "anterior" ? "Sistema anterior" : "Cuenta completa",
+      ],
       ["Moneda", info.moneda],
       ["Desde", p.get("desde") || "Inicio"],
       ["Hasta", p.get("hasta") || "Hoy"],
@@ -62,10 +71,19 @@ export async function GET(req: NextRequest) {
       ["Saldo anterior", info.anterior],
       ["Saldo final", info.final],
     ];
-    const cabecera = ["Fecha", "Descripción", "Cargo", "Abono", "Saldo"];
+    const historico = p.get("origen") === "anterior";
+    const cabecera = [
+      "Fecha",
+      "Descripción",
+      ...(historico ? ["Cantidad original", "Precio unitario original"] : []),
+      "Cargo",
+      "Abono",
+      "Saldo",
+    ];
     const valores = filas.map((f) => [
       fecha(f.fecha),
       f.descripcion,
+      ...(historico ? [f.cantidad || "", f.precio_unitario || ""] : []),
       f.tipo === "CARGO" ? f.importe : "",
       f.tipo === "ABONO" ? f.importe : "",
       f.saldo,

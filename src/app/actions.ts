@@ -304,7 +304,8 @@ export async function anularVenta(f: FormData) {
     if (perfil.rol !== "administrador")
       throw new Error("Solo el administrador puede anular.");
     if (f.get("confirmar") !== "on") throw new Error("Confirma la anulación.");
-    const { error } = await db.rpc("anular_venta", {
+    const { error } = await db.rpc("anular_factura_revisada", {
+      p_version: Number(f.get("version")),
       p_id: id,
       p_motivo: String(f.get("motivo") || ""),
       p_reembolso: f.get("reembolso") === "on",

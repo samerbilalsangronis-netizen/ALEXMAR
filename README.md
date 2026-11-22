@@ -4,6 +4,8 @@ Aplicación privada en español para Autoperiquitos y Rotulados Alexmar. **Entre
 
 ## Qué funciona
 
+- [Facturación y clientes actualizados](docs/FACTURACION.md): búsqueda rápida por palabras, precio automático, contado/crédito, saldos/pagos por factura, impresión con logo y ubicación e historial anterior separado (SQL 011). La importación actual sigue siendo una prueba desactualizada: el propietario opera únicamente en la aplicación anterior hasta el corte definitivo.
+
 - [Compras y recepciones de proveedores](docs/COMPRAS_RECEPCIONES.md): mercancía recibida suma stock y deuda; último costo, precio de venta pendiente para productos nuevos, pagos y cuenta por proveedor (SQL 010).
 
 - Veinte imágenes de vehículos generadas por IA para las tarjetas, con fotos propias prioritarias y [galería descargable](docs/IMAGENES_GENERADAS.md). Sin SQL adicional.

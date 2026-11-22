@@ -17,6 +17,9 @@ export type Venta = {
   descuento: string;
   total: string;
   abono: string;
+  pagado: string;
+  saldo: string;
+  condicion: "contado" | "credito";
   metodo_pago: string | null;
   vence: string | null;
   observaciones: string;

@@ -10,6 +10,9 @@ await mkdir(join(repo, "test-results"), { recursive: true });
 const dir = await mkdtemp(join(repo, "test-results/facturacion-"));
 for (const sub of [
   "app/facturacion/nueva",
+  "app/clientes/[id]",
+  "app/api/facturacion/cobrar",
+  "app/api/facturacion/cliente",
   "app/facturacion/[id]",
   "app/api/facturacion/buscar",
   "app/api/facturacion/guardar",
@@ -38,19 +41,32 @@ await writeFile(
 const copiar = async (dest, src, reemplazos = []) => {
   let s = await readFile(join(repo, src), "utf8");
   for (const [a, b] of reemplazos) s = s.replaceAll(a, b);
-  for (const modulo of ["formatos", "ventas", "origen"]) {
+  for (const modulo of ["formatos", "ventas", "origen", "documento-factura"]) {
     let destino = relative(dirname(join(dir, dest)), join(dir, "app", modulo));
     if (!destino.startsWith(".")) destino = "./" + destino;
     s = s.replaceAll("@/lib/" + modulo, destino);
   }
+  let aviso = relative(
+    dirname(join(dir, dest)),
+    join(dir, "app/activar-facturacion"),
+  );
+  if (!aviso.startsWith(".")) aviso = "./" + aviso;
+  s = s.replaceAll("@/components/activar-facturacion", aviso);
   await writeFile(
     join(dir, dest),
     "// @ts-nocheck -- fixture con sesión y backend simulados\n" + s,
   );
 };
+await copiar(
+  "app/activar-facturacion.tsx",
+  "src/components/activar-facturacion.tsx",
+);
 await copiar("app/origen.ts", "src/lib/origen.ts");
 await copiar("app/formatos.ts", "src/lib/formatos.ts");
 await copiar("app/ventas.ts", "src/lib/ventas.ts");
+await copiar("app/documento-factura.ts", "src/lib/documento-factura.ts");
+await copiar("app/tabla-facturas.tsx", "src/components/tabla-facturas.tsx");
+await copiar("app/cobro-factura.tsx", "src/components/cobro-factura.tsx");
 await copiar("app/editor-venta.tsx", "src/components/editor-venta.tsx");
 await copiar("app/navegacion.tsx", "src/components/navegacion.tsx");
 await copiar("app/comunes.tsx", "src/components/comunes.tsx");
@@ -66,6 +82,8 @@ for (const sub of ["page.tsx", "nueva/page.tsx", "[id]/page.tsx"]) {
       ["@/lib/supabase", nivel + "datos"],
       ["@/components/comunes", nivel + "comunes"],
       ["@/components/editor-venta", nivel + "editor-venta"],
+      ["@/components/tabla-facturas", nivel + "tabla-facturas"],
+      ["@/components/cobro-factura", nivel + "cobro-factura"],
       ["@/app/actions", nivel + "actions"],
     ],
   );
@@ -85,6 +103,26 @@ await copiar(
   "src/app/api/facturacion/[id]/imprimir/route.ts",
   [["@/lib/supabase", "../../../../datos"]],
 );
+await copiar(
+  "app/clientes/[id]/page.tsx",
+  "src/app/(privado)/clientes/[id]/page.tsx",
+  [
+    ["@/lib/supabase", "../../datos"],
+    ["@/components/tabla-facturas", "../../tabla-facturas"],
+    ["@/components/comunes", "../../comunes"],
+  ],
+);
+for (const ruta of ["cobrar", "cliente"])
+  await copiar(
+    "app/api/facturacion/" + ruta + "/route.ts",
+    "src/app/api/facturacion/" + ruta + "/route.ts",
+    [["@/lib/supabase", "../../../datos"]],
+  );
+await mkdir(join(dir, "public"), { recursive: true });
+await writeFile(
+  join(dir, "public/logo-alexmar-sin-telefono.png"),
+  await readFile(join(repo, "public/logo-alexmar-sin-telefono.png")),
+);
 const stateFile = join(dir, "estado.json");
 await writeFile(stateFile, JSON.stringify({ doc: null, emisiones: 0 }));
 await writeFile(
@@ -92,15 +130,22 @@ await writeFile(
   `// @ts-nocheck -- backend simulado, únicamente datos inventados
 import {readFile,writeFile} from 'node:fs/promises';import DecimalBase from 'decimal.js';const Decimal=DecimalBase.clone({precision:128});
 const archivo=${JSON.stringify(stateFile)};
-async function rpc(nombre,args={}){const estado=JSON.parse(await readFile(archivo,'utf8'));if(nombre==='mi_perfil')return {data:{rol:'administrador',nombre:'Prueba'},error:null};
-if(nombre==='buscar_clientes')return {data:{filas:[{id:'11111111-1111-4111-8111-111111111111',nombre:'Cliente de muestra',documento:'PRUEBA'}],total:1,pagina:1,paginas:1},error:null};
-if(nombre==='buscar_productos')return {data:{filas:[{id:'22222222-2222-4222-8222-222222222222',variante_id:'33333333-3333-4333-8333-333333333333',nombre:'Producto de muestra',precio:'10.25',disponible:'8'}],total:1,pagina:1,paginas:1},error:null};
-if(nombre==='guardar_venta'){const p=args.p;const lineas=p.lineas.map((l,i)=>({...l,id:String(i),importe:new Decimal(l.cantidad).times(l.precio).toFixed()}));const subtotal=lineas.reduce((s,l)=>s.plus(l.importe),new Decimal(0)).toFixed();estado.doc={...p,numero:null,estado:'borrador',version:1,subtotal,total:new Decimal(subtotal).minus(p.descuento).toFixed(),creado:'2026-11-15T12:00:00Z',emitido:null,cliente:{nombre:'Cliente de muestra',documento:'PRUEBA',telefono:'',direccion:''},lineas,pagos:[]};await writeFile(archivo,JSON.stringify(estado));return {data:p.id,error:null};}
+async function rpc(nombre,args={}){const estado=JSON.parse(await readFile(archivo,'utf8'));if(nombre==='configuracion_facturacion')return {data:{version:11,moneda:'USD'},error:null};if(nombre==='mi_perfil')return {data:{rol:'administrador',nombre:'Prueba'},error:null};
+const cliente={id:'11111111-1111-4111-8111-111111111111',nombre:'Cliente de muestra',documento:'PRUEBA',telefono:'',direccion:''};
+if(nombre==='buscar_clientes')return {data:{filas:[cliente],total:1,pagina:1,paginas:1},error:null};
+if(nombre==='buscar_productos')return {data:{filas:[{id:'22222222-2222-4222-8222-222222222222',variante_id:'33333333-3333-4333-8333-333333333333',nombre:'Filtro Toyota de muestra',precio:'10.25',disponible:'8'}],total:1,pagina:1,paginas:1},error:null};
+if(nombre==='guardar_cliente')return {data:args.p.id,error:null};
+if(nombre==='guardar_venta'||nombre==='guardar_borrador_factura'||nombre==='emitir_factura'){const p=args.p;const lineas=p.lineas.map((l,i)=>({...l,id:String(i),importe:new Decimal(l.cantidad).times(l.precio).toFixed()}));const subtotal=lineas.reduce((s,l)=>s.plus(l.importe),new Decimal(0)).toFixed();const emite=nombre==='emitir_factura';estado.doc={...p,numero:emite?1:null,estado:emite?'confirmada':'borrador',version:emite?2:1,subtotal,total:new Decimal(subtotal).minus(p.descuento).toFixed(),pagado:emite?p.abono:'0',saldo:emite?new Decimal(subtotal).minus(p.descuento).minus(p.abono).toFixed():'0',creado:'2026-11-22T12:00:00Z',emitido:emite?'2026-11-22T12:00:00Z':null,cliente,lineas,pagos:emite&&new Decimal(p.abono).gt(0)?[{tipo:'cobro',monto:p.abono,metodo:p.metodo_pago,creado:'2026-11-22T12:00:00Z'}]:[]};if(emite)estado.emisiones++;await writeFile(archivo,JSON.stringify(estado));return {data:p.id,error:null};}
 if(nombre==='ficha_venta')return {data:estado.doc,error:null};
-if(nombre==='emitir_venta'){if(estado.doc.estado!=='confirmada'){estado.doc.estado='confirmada';estado.doc.numero=1;estado.doc.emitido='2026-11-15T12:00:00Z';estado.emisiones++;}await writeFile(archivo,JSON.stringify(estado));return {data:args.p_id,error:null};}
-if(nombre==='buscar_ventas')return {data:{filas:estado.doc?[{...estado.doc,cliente:estado.doc.cliente.nombre}]:[],total:estado.doc?1:0,pagina:1,paginas:1},error:null};throw new Error('RPC inesperada '+nombre);}
+if(nombre==='emitir_venta'){if(estado.doc.estado!=='confirmada'){estado.doc.estado='confirmada';estado.doc.numero=1;estado.doc.emitido='2026-11-22T12:00:00Z';estado.doc.pagado=estado.doc.abono;estado.doc.saldo=new Decimal(estado.doc.total).minus(estado.doc.pagado).toFixed();estado.doc.pagos=[{tipo:'cobro',monto:estado.doc.abono,metodo:estado.doc.metodo_pago,creado:estado.doc.emitido}];estado.emisiones++;}await writeFile(archivo,JSON.stringify(estado));return {data:args.p_id,error:null};}
+if(nombre==='cobrar_factura'){if(estado.claves?.includes(args.p.idempotencia))return {data:args.p.idempotencia,error:null};estado.claves??=[];estado.claves.push(args.p.idempotencia);estado.doc.pagado=new Decimal(estado.doc.pagado).plus(args.p.monto).toFixed();estado.doc.saldo=new Decimal(estado.doc.total).minus(estado.doc.pagado).toFixed();estado.doc.pagos.push({tipo:'cobro',monto:args.p.monto,metodo:args.p.metodo,creado:'2026-11-22T12:10:00Z'});await writeFile(archivo,JSON.stringify(estado));return {data:args.p.idempotencia,error:null};}
+if(nombre==='buscar_ventas')return {data:{filas:estado.doc?[{...estado.doc,fecha:estado.doc.emitido||estado.doc.creado,cliente:cliente.nombre,cliente_id:cliente.id}]:[],total:estado.doc?1:0,pagina:1,paginas:1,resumen:{facturado:estado.doc?.total||'0',cobrado:estado.doc?.pagado||'0',pendiente:estado.doc?.saldo||'0',emitidas:estado.emisiones}},error:null};
+if(nombre==='estado_cliente'||nombre==='historial_cliente_anterior')return {data:{cliente,moneda:'USD',anterior:'0',final:nombre==='estado_cliente'?new Decimal(100).plus(estado.doc?.saldo||0).toFixed():'100',cargos:'120',abonos:'20',filas:[{id:'historico-1',fecha:'2026-11-01T12:00:00Z',descripcion:'Faro original del sistema anterior',tipo:'CARGO',importe:'120',saldo:'120'}],total:1,pagina:1,paginas:1},error:null};
+throw new Error('RPC inesperada '+nombre);}
 export async function conexion(){return {rpc,auth:{getUser:async()=>({data:{user:{id:'44444444-4444-4444-8444-444444444444'}}})}};}
 export async function sesion(){return {perfil:{rol:'administrador',nombre:'Prueba'},db:await conexion()};}
+export async function consultar(nombre,args){const r=await rpc(nombre,args);if(r.error)throw new Error(r.error.message);return r.data;}
+
 `,
 );
 const socket = createServer();
@@ -155,52 +200,52 @@ try {
   ).toBeVisible();
   await page.getByRole("link", { name: "Nueva factura", exact: true }).click();
   await page.waitForURL("**/facturacion/nueva");
-  await page.getByRole("button", { name: /Cliente de muestra/ }).click();
-  await page.getByRole("button", { name: /Producto de muestra/ }).click();
+  await page.getByRole("combobox", { name: "Buscar cliente" }).focus();
   await page
-    .getByRole("textbox", { name: "Cantidad 1", exact: true })
+    .getByRole("combobox", { name: "Buscar cliente" })
+    .press("ArrowDown");
+  await page.getByRole("combobox", { name: "Buscar cliente" }).press("Enter");
+  await expect(page.locator(".factura-cliente-elegido")).toContainText(
+    "Cliente de muestra",
+  );
+  await page
+    .getByRole("combobox", { name: "Añadir producto" })
+    .fill("filt toy");
+  await page.getByRole("option", { name: /Filtro Toyota/ }).click();
+  await page
+    .getByRole("textbox", { name: "Cantidad Filtro Toyota de muestra" })
     .fill("2");
+  await expect(page.locator(".factura-barra")).toContainText("20,50");
+  await expect(
+    page.getByRole("radio", { name: "Contado", exact: true }),
+  ).toBeChecked();
+  // Cliente nuevo se guarda sin abandonar el formulario ni perder las piezas.
   await page
-    .getByRole("button", { name: "Añadir servicio", exact: true })
+    .getByRole("button", { name: "+ Cliente nuevo", exact: true })
     .click();
   await page
-    .getByRole("textbox", { name: "Descripción 2", exact: true })
+    .getByLabel("Nombre del cliente", { exact: true })
+    .fill("Cliente de muestra");
+  await page.getByRole("button", { name: "Guardar y seleccionar" }).click();
+  await expect(page.getByRole("dialog")).not.toBeVisible();
+  await expect(page.locator(".factura-barra")).toContainText("20,50");
+  await page.getByRole("button", { name: /Añadir servicio/ }).click();
+  await page
+    .getByRole("textbox", { name: "Descripción servicio 2" })
     .fill("Instalación <demo>");
+  await page.getByRole("textbox", { name: "Precio servicio 2" }).fill("3.50");
+  await page.getByRole("radio", { name: "Crédito", exact: true }).check();
+  await page.getByLabel("Abono inicial USD").fill("5");
   await page
-    .getByRole("textbox", { name: "Precio 2", exact: true })
-    .fill("3.50");
-  await page.getByRole("textbox", { name: /Pago inicial USD/ }).fill("5");
-  await page.getByLabel("Método del pago inicial").selectOption("Efectivo");
-  const guardado = page.waitForResponse((r) =>
-    r.url().includes("/api/facturacion/guardar"),
-  );
-  await page
-    .getByRole("button", { name: "Guardar y revisar borrador" })
+    .getByRole("button", { name: "Guardar borrador", exact: true })
     .click();
-  const rGuardado = await guardado;
-  if (!rGuardado.ok())
-    throw new Error(
-      "Guardar borrador: " +
-        rGuardado.status() +
-        " " +
-        (await rGuardado.text()),
-    );
-  await page.waitForURL(
-    (url) =>
-      url.pathname.startsWith("/facturacion/") &&
-      url.pathname.split("/").at(-1).length === 36,
-  );
+  await page.waitForURL((url) => url.pathname.split("/").at(-1)?.length === 36);
   await expect(
     page.getByRole("heading", { name: "Borrador", exact: true }),
   ).toBeVisible();
   let estado = JSON.parse(await readFile(stateFile, "utf8"));
   expect(estado.emisiones).toBe(0);
   expect(estado.doc.total).toBe("24");
-  expect(estado.doc.lineas.length).toBe(2);
-  await page.screenshot({
-    path: "/tmp/alexmar-factura-borrador.png",
-    fullPage: true,
-  });
   await page
     .locator('form:has(button:text("Emitir factura")) input[name="confirmar"]')
     .check();
@@ -212,7 +257,35 @@ try {
   ).toBeVisible();
   estado = JSON.parse(await readFile(stateFile, "utf8"));
   expect(estado.emisiones).toBe(1);
-  expect(estado.doc.estado).toBe("confirmada");
+  await expect(page.locator(".papel-factura")).toContainText("Tovar · Mérida");
+  await expect(
+    page.getByRole("heading", { name: "Registrar cobro" }),
+  ).toBeVisible();
+  for (const [importe, restante] of [
+    ["7", "12"],
+    ["7", "5"],
+    ["5", "0"],
+  ]) {
+    await page.getByLabel("Monto USD", { exact: true }).fill(importe);
+    await page
+      .getByRole("button", { name: "Revisar cobro", exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: "Confirmar cobro recibido" })
+      .click();
+    await expect
+      .poll(async () => JSON.parse(await readFile(stateFile, "utf8")).doc.saldo)
+      .toBe(restante);
+    if (restante !== "0")
+      await expect(page.getByLabel("Monto USD", { exact: true })).toHaveValue(
+        restante,
+      );
+  }
+  estado = JSON.parse(await readFile(stateFile, "utf8"));
+  expect(new Set(estado.claves).size).toBe(3);
+  await expect(
+    page.getByRole("heading", { name: "Registrar cobro" }),
+  ).toHaveCount(0);
   const respuesta = await page.request.get(
     base + "/api/facturacion/" + estado.doc.id + "/imprimir",
   );
@@ -226,21 +299,77 @@ try {
   ]) {
     await page.setViewportSize({ width: ancho, height: alto });
     await page.reload();
-    if (
+    expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth > innerWidth,
-      )
-    )
-      throw new Error("Desbordamiento horizontal");
+      ),
+    ).toBe(false);
     await page.screenshot({
       path: "/tmp/alexmar-factura-" + nombre + ".png",
       fullPage: true,
     });
   }
+  await page.getByRole("link", { name: /Ver cuenta e historial/ }).click();
+  await page
+    .getByRole("link", { name: "Historial del sistema anterior", exact: true })
+    .click();
+  await expect(
+    page.getByRole("cell", { name: "Faro original del sistema anterior" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "CSV completo" }),
+  ).toHaveAttribute("href", /origen=anterior/);
+  await page.goto(base + "/facturacion");
+  await expect(page.locator(".factura-estado")).toContainText("Pagada");
+  await page.getByRole("link", { name: "Nueva factura", exact: true }).click();
+  await page.getByRole("combobox", { name: "Buscar cliente" }).focus();
+  await page.getByRole("option", { name: /Cliente de muestra/ }).click();
+  await page.getByRole("combobox", { name: "Añadir producto" }).focus();
+  await page.getByRole("option", { name: /Filtro Toyota/ }).click();
+  await page
+    .getByRole("button", { name: "Revisar y emitir", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Revisa tu factura" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Confirmar y emitir" }).click();
+  await page.waitForURL((url) => url.pathname.split("/").at(-1)?.length === 36);
+  estado = JSON.parse(await readFile(stateFile, "utf8"));
+  expect(estado.doc.condicion).toBe("contado");
+  expect(estado.doc.pagado).toBe(estado.doc.total);
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(base + "/facturacion/nueva");
+  await page.screenshot({
+    path: "/tmp/alexmar-editor-escritorio.png",
+    fullPage: true,
+  });
+  await page.evaluate(() =>
+    document.documentElement.setAttribute("data-tema", "oscuro"),
+  );
+  await page.screenshot({
+    path: "/tmp/alexmar-editor-oscuro.png",
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth > innerWidth,
+    ),
+  ).toBe(false);
+  await page.screenshot({
+    path: "/tmp/alexmar-editor-movil.png",
+    fullPage: true,
+  });
   expect(errores).toEqual([]);
   console.log(
-    "Facturación navegador: menú con Importar archivos temporal para administrador; cliente/producto/servicio; borrador revisado antes de emitir; impresión con HTML escapado; 1440/390 px sin errores ni desbordamiento. Sesión/DB simuladas, sin operaciones reales.",
+    "Facturación: teclado, búsqueda por palabras, cliente nuevo sin perder líneas, precio automático, contado/crédito, borrador y emisión directa revisada, cobro, historia separada, impresión escapada y 1440/390 claro/oscuro. DB simulada, sin operaciones reales.",
   );
+} catch (e) {
+  console.error(logs.slice(-6000));
+  const fallo = browser?.contexts()[0]?.pages()[0];
+  if (fallo)
+    console.error((await fallo.locator("body").innerText()).slice(0, 3000));
+  throw e;
 } finally {
   await browser?.close();
   try {
