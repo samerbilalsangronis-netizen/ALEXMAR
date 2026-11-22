@@ -23,7 +23,13 @@ export type ListaFacturas = Pagina<FilaFactura> & {
     emitidas: number;
   };
 };
-export function TablaFacturas({ d }: { d: ListaFacturas }) {
+export function TablaFacturas({
+  d,
+  puedeAnular = false,
+}: {
+  d: ListaFacturas;
+  puedeAnular?: boolean;
+}) {
   return (
     <div className="tabla-contenedor">
       <table className="tabla-facturacion">
@@ -36,6 +42,7 @@ export function TablaFacturas({ d }: { d: ListaFacturas }) {
             <th>Total USD</th>
             <th>Saldo USD</th>
             <th>Estado</th>
+            {puedeAnular && <th>Acciones</th>}
           </tr>
         </thead>
         <tbody>
@@ -77,6 +84,18 @@ export function TablaFacturas({ d }: { d: ListaFacturas }) {
                       : "Anulada"}
                 </span>
               </td>
+              {puedeAnular && (
+                <td>
+                  {v.estado !== "anulada" && (
+                    <Link
+                      className="factura-anular-link"
+                      href={"/facturacion/" + v.id + "?anular=1"}
+                    >
+                      Anular
+                    </Link>
+                  )}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

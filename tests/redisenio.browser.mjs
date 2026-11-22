@@ -80,7 +80,7 @@ const fotoPublica=${JSON.stringify(join(dir, "public/foto-prueba.png"))};
 const filas=[{id:'p1',nombre:'Faro Fiesta de muestra',categoria:'Iluminación',categoria_origen:'FORD',vehiculos:['Fiesta'],precio:'25',costo:'10',fisico:'3',reservado:'0',disponible:'3',minimo:'1',marca:'',referencia:'MUESTRA',ubicacion:'A1',activo:true},{id:'p2',nombre:'Espejo NPR de muestra',categoria:'Carrocería',vehiculos:['NPR'],precio:'40',fisico:'2',reservado:'0',disponible:'2',minimo:'1',marca:'',referencia:'',ubicacion:'B2',activo:true}];
 function filtrar(p){return filas.filter(a=>(!p.marca_vehiculo||(p.marca_vehiculo==='Ford'?a.id==='p1':a.id==='p2'))&&(!p.modelo||a.vehiculos.includes(p.modelo)));}
 const categorias=[{nombre:'Iluminación',productos:12,costo:'800',venta:'1400',margen:'600',porcentaje:'42.857'},{nombre:'Carrocería',productos:7,costo:'320',venta:'500',margen:'180',porcentaje:'36'},{nombre:'Audio',productos:8,costo:'600',venta:'480',margen:'-120',porcentaje:'-25'}];
-async function rpc(n,{p={}}={}){if(n==='configuracion_facturacion')return {data:{version:11,moneda:'USD'},error:null};if(n==='buscar_clientes')return {data:{filas:[{id:'c1',nombre:'Cliente de muestra',documento:'PRUEBA'}],total:1,pagina:1,paginas:1},error:null};if(n==='buscar_productos')return {data:{filas:[{id:'p1',variante_id:'v1',nombre:'Faro de muestra',precio:'25',disponible:'3'}],total:1,pagina:1,paginas:1},error:null};if(n==='mi_perfil')return {data:JSON.parse(await readFile(perfilArchivo,'utf8')),error:null};if(n==='guardar_foto_vehiculo'){await writeFile(fotoArchivo,JSON.stringify([{nombre:arguments[1].p_nombre,archivo:arguments[1].p_archivo}]));return {data:null,error:null};}if(n==='fotos_vehiculos')return {data:JSON.parse(await readFile(fotoArchivo,'utf8')),error:null};if(n==='analitica_comercial')return {data:{desde:'2026-06-01',hasta:'2026-11-17',inventario:{costo:'1720',venta:'2380',margen:'660',porcentaje:'27.73',completos:27,total:40,sin_costo:10,sin_precio:5,costo_cero:2,stock_negativo:0,categorias},ventas:{total:'4250',facturas:28,ticket:'151.785',serie:[{mes:'2026-06',total:'200',facturas:2},{mes:'2026-07',total:'650',facturas:5},{mes:'2026-08',total:'350',facturas:3},{mes:'2026-09',total:'1100',facturas:7},{mes:'2026-10',total:'700',facturas:4},{mes:'2026-11',total:'1250',facturas:7}],clientes:[{id:'c1',nombre:'Cliente de ejemplo',total:'750',facturas:6}]},historial_clientes:[{id:'c2',nombre:'Histórico de ejemplo',cargos:'1800',abonos:'900'}]},error:null};if(n==='grupos_inventario')return {data:{total:filtrar(p).length,categorias:[{nombre:'Iluminación',total:1}],vehiculos:filtrar(p).flatMap(a=>a.vehiculos).map(nombre=>({nombre,total:1})),marcas_vehiculo:[{nombre:'Ford',total:1},{nombre:'Isuzu / Chevrolet',total:1}]},error:null};throw new Error('RPC no simulada '+n);}
+async function rpc(n,{p={}}={}){if(n==='rendimiento_ventas')return {data:{ahora:'2026-11-17T18:00:00Z',hoy:'2026-11-17',lunes:'2026-11-16',moneda:'USD',semana_actual:'300',semana_anterior_comparable:'200',diferencia:'100',variacion_pct:'50',facturas_semana:6,ventas_hoy:'175',dias:Array.from({length:14},(_,i)=>({fecha:new Date(Date.UTC(2026,10,4+i)).toISOString().slice(0,10),total:String(i===3?0:25+i*12.5),facturas:i===3?0:i+1})),semanas:Array.from({length:8},(_,i)=>({fecha:new Date(Date.UTC(2026,8,28+i*7)).toISOString().slice(0,10),total:String(200+i*50),facturas:i+2}))},error:null};if(n==='configuracion_facturacion')return {data:{version:11,moneda:'USD'},error:null};if(n==='buscar_clientes')return {data:{filas:[{id:'c1',nombre:'Cliente de muestra',documento:'PRUEBA'}],total:1,pagina:1,paginas:1},error:null};if(n==='buscar_productos')return {data:{filas:[{id:'p1',variante_id:'v1',nombre:'Faro de muestra',precio:'25',disponible:'3'}],total:1,pagina:1,paginas:1},error:null};if(n==='mi_perfil')return {data:JSON.parse(await readFile(perfilArchivo,'utf8')),error:null};if(n==='guardar_foto_vehiculo'){await writeFile(fotoArchivo,JSON.stringify([{nombre:arguments[1].p_nombre,archivo:arguments[1].p_archivo}]));return {data:null,error:null};}if(n==='fotos_vehiculos')return {data:JSON.parse(await readFile(fotoArchivo,'utf8')),error:null};if(n==='analitica_comercial')return {data:{desde:'2026-06-01',hasta:'2026-11-17',inventario:{costo:'1720',venta:'2380',margen:'660',porcentaje:'27.73',completos:27,total:40,sin_costo:10,sin_precio:5,costo_cero:2,stock_negativo:0,categorias},ventas:{total:'4250',facturas:28,ticket:'151.785',serie:[{mes:'2026-06',total:'200',facturas:2},{mes:'2026-07',total:'650',facturas:5},{mes:'2026-08',total:'350',facturas:3},{mes:'2026-09',total:'1100',facturas:7},{mes:'2026-10',total:'700',facturas:4},{mes:'2026-11',total:'1250',facturas:7}],clientes:[{id:'c1',nombre:'Cliente de ejemplo',total:'750',facturas:6}]},historial_clientes:[{id:'c2',nombre:'Histórico de ejemplo',cargos:'1800',abonos:'900'}]},error:null};if(n==='grupos_inventario')return {data:{total:filtrar(p).length,categorias:[{nombre:'Iluminación',total:1}],vehiculos:filtrar(p).flatMap(a=>a.vehiculos).map(nombre=>({nombre,total:1})),marcas_vehiculo:[{nombre:'Ford',total:1},{nombre:'Isuzu / Chevrolet',total:1}]},error:null};throw new Error('RPC no simulada '+n);}
 const db = {
  rpc,
  auth: {getUser:async()=>({data:{user:{id:'11111111-1111-4111-8111-111111111111'}}})},
@@ -368,16 +368,22 @@ try {
   });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(base + "/panel");
-  await expect(page.locator(".hero-sello .marca-imagen")).toHaveAttribute(
-    "src",
-    /sin-telefono/,
+  await expect(page.locator(".hero-negocio")).toHaveCount(0);
+  await expect(
+    page.getByRole("heading", { name: "Ventas diarias", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Ventas por semana", exact: true }),
+  ).toBeVisible();
+  await expect(page.locator('link[rel="icon"]')).toHaveAttribute(
+    "href",
+    /logo-alexmar-sin-telefono/,
   );
-  if (
-    (await page
-      .locator(".logo-animado")
-      .evaluate((el) => getComputedStyle(el).animationName)) !== "none"
-  )
-    throw new Error("Animación no respeta movimiento reducido");
+  const grafico = page.getByLabel("Ventas por día", { exact: true });
+  await grafico.getByRole("button").first().focus();
+  await expect(page.locator(".grafico-ventas-lectura").first()).toContainText(
+    "25,00",
+  );
   if (errores.length) throw new Error(errores.join("\n"));
   console.log(
     "Rediseño: filtros visuales de un clic, subida real de formulario/API con Storage simulado, foto persistente, logo sin teléfono, acceso centrado, movimiento reducido, claro/oscuro, gráficos y facturación a 1440/390 sin desbordamiento. Datos simulados.",

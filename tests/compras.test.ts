@@ -38,6 +38,7 @@ async function instalar() {
   await db.exec(
     `insert into alexmar.clientes(id,nombre) values('${cliente}','Cliente sintético');set app.usuario='${admin}';set role authenticated;`,
   );
+  await db.query("select public.configurar_descuento_stock(true,1)");
   return db;
 }
 async function rpc<T>(db: PGlite, n: string, p: unknown[] = []) {

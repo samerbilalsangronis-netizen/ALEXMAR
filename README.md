@@ -4,7 +4,9 @@ Aplicación privada en español para Autoperiquitos y Rotulados Alexmar. **Entre
 
 ## Qué funciona
 
-- [Facturación y clientes actualizados](docs/FACTURACION.md): búsqueda rápida por palabras, precio automático, contado/crédito, saldos/pagos por factura, impresión con logo y ubicación e historial anterior separado (SQL 011). La importación actual sigue siendo una prueba desactualizada: el propietario opera únicamente en la aplicación anterior hasta el corte definitivo.
+- [Inventario opcional, anulación visible y rendimiento](docs/STOCK_Y_RENDIMIENTO.md): permite vender sin existencias mientras el descuento esté apagado, ajuste para activarlo, ventas diarias/semanales y logo en pestaña (SQL 012). El propietario confirma terminada la nueva importación; no repetir limpieza ni carga.
+
+- [Facturación y clientes actualizados](docs/FACTURACION.md): búsqueda rápida por palabras, precio automático, contado/crédito, saldos/pagos por factura, impresión con logo y ubicación e historial anterior separado (SQL 011).
 
 - [Compras y recepciones de proveedores](docs/COMPRAS_RECEPCIONES.md): mercancía recibida suma stock y deuda; último costo, precio de venta pendiente para productos nuevos, pagos y cuenta por proveedor (SQL 010).
 

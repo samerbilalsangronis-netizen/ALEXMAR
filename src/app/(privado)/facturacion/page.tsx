@@ -119,7 +119,7 @@ export default async function Facturacion({
             </article>
           </section>
           <section className="panel factura-listado">
-            <TablaFacturas d={d} />
+            <TablaFacturas d={d} puedeAnular={perfil.rol === "administrador"} />
             <Paginacion {...d} ruta="/facturacion" parametros={filtros} />
           </section>
           <p className="muted">

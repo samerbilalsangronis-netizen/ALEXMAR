@@ -16,7 +16,10 @@ test("facturación rápida sin SQL 007: emisión, saldo, cobros, historia separa
     for (const f of (await readdir("supabase/migrations"))
       .filter(
         (f) =>
-          f.endsWith(".sql") && !f.includes("000700") && !f.includes("001100"),
+          f.endsWith(".sql") &&
+          !f.includes("000700") &&
+          !f.includes("001100") &&
+          !f.includes("001200"),
       )
       .sort())
       await db.exec(await readFile("supabase/migrations/" + f, "utf8"));
@@ -57,6 +60,15 @@ test("facturación rápida sin SQL 007: emisión, saldo, cobros, historia separa
       ),
     );
     await db.exec(`set app.usuario='${admin}';set role authenticated;`);
+    await db.exec("reset role");
+    await db.exec(
+      await readFile(
+        "supabase/migrations/20261122001200_control_stock_rendimiento.sql",
+        "utf8",
+      ),
+    );
+    await db.exec("set role authenticated");
+    await db.query("select public.configurar_descuento_stock(true,1)");
     const antiguo = await ficha(previo.id);
     assert.equal(Number(antiguo.total), 20);
     assert.equal(Number(antiguo.abono), 20);

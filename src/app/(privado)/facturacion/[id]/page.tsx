@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ActivarFacturacion } from "@/components/activar-facturacion";
 import { documentoFactura, estiloFactura } from "@/lib/documento-factura";
+import { AnularFactura } from "@/components/anular-factura";
 import { CobroFactura } from "@/components/cobro-factura";
 import { notFound } from "next/navigation";
 import DecimalBase from "decimal.js";
@@ -9,7 +10,7 @@ import { sesion } from "@/lib/supabase";
 import { numeroVenta, type Venta } from "@/lib/ventas";
 import { Cabecera, Avisos } from "@/components/comunes";
 import { monto, fecha } from "@/lib/formatos";
-import { emitirVenta, anularVenta } from "@/app/actions";
+import { emitirVenta } from "@/app/actions";
 export default async function FichaVenta({
   params,
   searchParams,
@@ -42,6 +43,15 @@ export default async function FichaVenta({
         >
           Imprimir / PDF
         </a>
+        {perfil.rol === "administrador" && v.estado !== "anulada" && (
+          <AnularFactura
+            id={id}
+            version={v.version}
+            pagado={v.pagado}
+            emitida={v.estado === "confirmada"}
+            abrir={p.anular === "1"}
+          />
+        )}
       </Cabecera>
       <Avisos p={p} />
       {v.estado === "borrador" && (
@@ -87,8 +97,9 @@ export default async function FichaVenta({
             </label>
             <button>Emitir factura</button>
             <small>
-              Descuenta productos disponibles y registra el cargo y el pago
-              inicial en una sola transacción.
+              Registra el cargo y el cobro inicial en una sola transacción. El
+              descuento de inventario depende de la configuración vigente al
+              emitir.
             </small>
           </form>
         </section>
@@ -120,35 +131,12 @@ export default async function FichaVenta({
           </div>
         </section>
       )}
-      {perfil.rol === "administrador" && v.estado !== "anulada" && (
-        <details className="panel no-imprimir">
-          <summary>Anular documento</summary>
-          <form action={anularVenta} className="formulario">
-            <input type="hidden" name="version" value={v.version} />
-            <input type="hidden" name="id" value={id} />
-            <label>
-              Motivo
-              <input name="motivo" minLength={5} required />
-            </label>
-            {v.estado === "confirmada" && new Decimal(v.pagado).gt(0) && (
-              <label className="checkbox">
-                <input name="reembolso" type="checkbox" required />
-                Confirmo haber revertido el cobro o entregado el reembolso de{" "}
-                {monto(v.pagado)}.
-              </label>
-            )}
-            <label className="checkbox">
-              <input type="checkbox" name="confirmar" required />
-              Confirmo anular este documento conservando su historial.
-            </label>
-            <button>Anular documento</button>
-          </form>
-          <p>
-            Una factura emitida genera movimientos de reversión de stock, cuenta
-            y todos los cobros. Una devolución parcial requiere el módulo de
-            devoluciones.
-          </p>
-        </details>
+      {v.estado === "confirmada" && (
+        <p className="muted">
+          {v.descontar_stock === false
+            ? "Esta factura se emitió sin descontar inventario."
+            : "Esta factura se emitió con el descuento de inventario activado."}
+        </p>
       )}
     </>
   );

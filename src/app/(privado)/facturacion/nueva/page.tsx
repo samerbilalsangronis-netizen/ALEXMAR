@@ -63,6 +63,7 @@ export default async function Nueva({
         clave={inicial?.id || randomUUID()}
         administrador={perfil.rol === "administrador"}
         inicial={inicial}
+        descontarStock={config.descontar_stock ?? true}
         clientes={{
           filas: clientes.data.filas.map(
             (r: { id: string; nombre: string; documento?: string }) => ({

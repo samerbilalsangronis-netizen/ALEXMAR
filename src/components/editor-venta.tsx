@@ -349,12 +349,14 @@ export function EditorVenta({
   inicial,
   clientes,
   productos,
+  descontarStock = true,
 }: {
   clave: string;
   administrador: boolean;
   inicial: Venta | null;
   clientes?: Resultados;
   productos?: Resultados;
+  descontarStock?: boolean;
 }) {
   const router = useRouter(),
     [cliente, setCliente] = useState<ResultadoVenta | null>(
@@ -549,6 +551,14 @@ export function EditorVenta({
   }).format(new Date());
   return (
     <form className="factura-rapida" onSubmit={revisar} aria-busy={ocupado}>
+      <p className="factura-stock-aviso">
+        {descontarStock
+          ? "Inventario activo: al emitir se descontarán las piezas y se comprobará la existencia disponible."
+          : "Descuento de inventario desactivado: puedes vender sin existencia registrada. Esta factura no cambiará las cantidades del inventario."}
+        {administrador && (
+          <a href="/configuracion#inventario"> Configurar inventario →</a>
+        )}
+      </p>
       {error && (
         <p className="aviso" role="alert">
           {error}
@@ -604,8 +614,11 @@ export function EditorVenta({
             <small>Total exacto USD: {total}</small>
           </div>
           <p>
-            Al emitir se descontarán las existencias y se registrarán la factura
-            y su cobro. El número se asigna al emitir.
+            Al emitir se registrarán la factura y su cobro.{" "}
+            {descontarStock
+              ? "Se descontarán las existencias."
+              : "No se descontará inventario."}{" "}
+            El número se asigna al emitir.
           </p>
           <div className="acciones">
             <button

@@ -24,6 +24,7 @@ export type Venta = {
   vence: string | null;
   observaciones: string;
   permite_gratis: boolean;
+  descontar_stock?: boolean;
   version: number;
   creado: string;
   emitido: string | null;

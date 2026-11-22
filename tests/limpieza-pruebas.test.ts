@@ -55,6 +55,7 @@ async function instalar(completa: boolean) {
     .filter(
       (f) =>
         f.endsWith(".sql") &&
+        !f.includes("001200") &&
         (completa || (!f.includes("000700") && !f.includes("001000"))),
     )
     .sort())

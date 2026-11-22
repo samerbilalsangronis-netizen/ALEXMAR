@@ -3223,3 +3223,181 @@ caption {
 .factura-cargando .panel > div:first-child {
   width: 40%;
 }
+/* Rendimiento y control de inventario. */
+.rendimiento-totales {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.rendimiento-totales article > span {
+  font-size: 12px;
+  color: var(--gris);
+}
+.rendimiento-totales article > strong {
+  font-size: 26px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.rendimiento-totales .tendencia-baja {
+  color: var(--rojo);
+}
+.rendimiento-totales .tendencia-alza {
+  color: var(--verde);
+}
+.rendimiento-graficos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.rendimiento-graficos .panel {
+  min-width: 0;
+  padding: 24px;
+  border-radius: 18px;
+}
+.rendimiento-graficos .titulo-seccion {
+  margin: 0 0 12px;
+  align-items: center;
+  gap: 10px;
+}
+.rendimiento-graficos h2 {
+  margin: 4px 0;
+  font-size: 21px;
+}
+.rendimiento-graficos .titulo-seccion > span {
+  font-size: 12px;
+}
+.grafico-ventas-lectura {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-height: 45px;
+}
+.grafico-ventas-lectura > span,
+.grafico-ventas-lectura > small {
+  font-size: 12px;
+  color: var(--gris);
+}
+.grafico-ventas-lectura > strong {
+  font-size: 21px;
+  margin-left: auto;
+}
+.grafico-ventas-barras {
+  display: grid;
+  gap: 5px;
+  height: 210px;
+  border-bottom: 1px solid var(--borde);
+  padding: 12px 0 8px;
+}
+.grafico-ventas-barras > button {
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+  align-items: center;
+  background: transparent;
+  color: var(--gris);
+  border-radius: 6px;
+  padding: 0;
+  min-width: 0;
+  gap: 10px;
+  min-height: 44px;
+  box-shadow: none;
+}
+.grafico-ventas-barras > button:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 3px;
+}
+.grafico-ventas-columna {
+  display: flex;
+  align-items: flex-end;
+  background: var(--elevado);
+  border-radius: 5px;
+  width: 75%;
+  max-width: 42px;
+  height: 160px;
+}
+.grafico-ventas-columna > i {
+  display: block;
+  width: 100%;
+  background: var(--acento);
+  opacity: 0.55;
+  border-radius: 5px;
+}
+.grafico-ventas-barras > button.activa .grafico-ventas-columna > i {
+  opacity: 1;
+}
+.grafico-ventas-barras small {
+  font-size: 10px;
+  line-height: 1.2;
+  max-width: 100%;
+}
+.grafico-ventas-datos {
+  margin-top: 16px;
+  color: var(--gris);
+  font-size: 12px;
+}
+.grafico-ventas-datos summary {
+  cursor: pointer;
+  min-height: 30px;
+}
+.rendimiento-nota {
+  color: var(--gris);
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 0 0 8px;
+}
+.rendimiento-enlace {
+  font-size: 13px;
+  text-decoration: underline;
+  display: inline-block;
+  margin-bottom: 26px;
+}
+.factura-stock-aviso {
+  padding: 12px 16px;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  background: var(--elevado);
+  font-size: 13px;
+  color: var(--gris);
+}
+.factura-stock-aviso a {
+  font-weight: 650;
+  text-decoration: underline;
+  color: var(--tinta);
+}
+button.peligro {
+  color: var(--rojo);
+  border-color: var(--rojo);
+  background: transparent;
+}
+.factura-anular-link {
+  color: var(--rojo);
+  text-decoration: underline;
+  display: inline-block;
+  padding: 10px;
+}
+@media (max-width: 1000px) {
+  .rendimiento-graficos {
+    grid-template-columns: 1fr;
+  }
+  .rendimiento-totales article > strong {
+    font-size: 22px;
+  }
+}
+@media (max-width: 650px) {
+  .rendimiento-totales {
+    grid-template-columns: 1fr;
+  }
+  .rendimiento-graficos .panel {
+    padding: 18px 12px;
+  }
+  .grafico-ventas-barras {
+    gap: 3px;
+  }
+  .grafico-ventas-lectura {
+    gap: 6px;
+  }
+  .grafico-ventas-lectura > strong {
+    font-size: 19px;
+  }
+}

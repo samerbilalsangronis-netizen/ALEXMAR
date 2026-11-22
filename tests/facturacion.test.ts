@@ -22,6 +22,7 @@ test("facturación: borrador, emisión atómica, pago parcial, reintentos, anula
     await db.exec(
       `insert into auth.users values('${admin}','admin@example.com'),('${ventas}','ventas@example.com'),('${inventario}','inv@example.com'),('${lectura}','lectura@example.com');insert into alexmar.perfiles values('${admin}','Admin','administrador',true),('${ventas}','Ventas','ventas',true),('${inventario}','Inventario','inventario',true),('${lectura}','Lectura','lectura',true);insert into alexmar.clientes(id,nombre) values('${cliente}','Cliente sintético');set app.usuario='${admin}';set role authenticated;`,
     );
+    await db.query("select public.configurar_descuento_stock(true,1)");
     const producto = (
       await db.query<{ id: string }>(
         `select public.guardar_producto('{"nombre":"Pieza de prueba","precio":"12.3456","costo":"5","minimo":"0"}') id`,

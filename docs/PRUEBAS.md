@@ -1,3 +1,14 @@
+# Stock opcional y rendimiento · 2026-11-22
+
+- `npm test`: **25 pruebas aprobadas**. Dos recorridos nuevos verifican SQL 012 con existencia cero, control apagado/activado, reservas, cambio de modo entre emisión/anulación, facturas anteriores, reintentos, permisos y versión. Se comprueban precisión decimal, días Caracas, comparación al mismo día/hora, cero sin porcentaje inventado y exclusión de borradores/anuladas/presupuestos/historia anterior.
+- `npm run typecheck` y `npm run build`: correctos.
+- `node tests/facturacion.browser.mjs`: backend simulado, listado → Anular → diálogo, cancelar diálogo, motivo/reembolso y anulación confirmada; Configuración activa/desactiva el descuento y refleja el estado guardado; editor indica modo. Conserva recorrido de emisión/cobros/historia/impresión a 1440/390.
+- `node tests/redisenio.browser.mjs`: backend simulado, favicon real, hero retirado y gráficos diarios/semanales con selección por teclado, temas y 1440/390 sin desbordamiento. Revisión visual de las capturas. No son cifras de producción.
+- Los tests financieros anteriores activan el control explícitamente para seguir verificando descuentos y falta de stock. La limpieza v1 se prueba sobre su esquema soportado hasta 011; con tablas nuevas aborta, como fue diseñada. No se modificó ni repitió esa utilidad aplicada.
+- El propietario confirma importación reciente terminada. No se limpió, reimportó, facturó ni aplicó SQL remoto desde este entorno; SQL 012 queda para aplicación manual y Vercel Ready para comprobación remota.
+
+---
+
 # Limpieza de pruebas autorizada · 2026-11-22
 
 - `npm test`: **23 pruebas aprobadas**; incluye dos recorridos nuevos en PGlite real para los scripts manuales de limpieza/recuperación. Se prueban base con todas las migraciones y base sin 007/010, datos importados, factura/cobros, compras, revisiones con identidad, columnas generadas e importes exactos. La limpieza conserva Auth, Storage, perfiles, filtros, fotos y auditoría; las copias no son accesibles al rol autenticado.

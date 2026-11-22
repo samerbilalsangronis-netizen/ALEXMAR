@@ -1,5 +1,15 @@
 # HANDOFF · ALEXMAR
 
+## Importación terminada; stock opcional y rendimiento · 2026-11-22
+
+**Estado actual confirmado por el propietario:** limpieza ejecutada con resultado de ceros y administrador conservado; SQL 007 faltaba entonces. Después adjuntó exportaciones recientes, se validaron de forma privada/local y ahora confirma **ya está importado**. No repetir la limpieza ni la importación. La anterior referencia a datos de prueba desactualizados es histórica. No se consultó ni escribió Supabase remoto desde desarrollo.
+
+Solicitud nueva: anulación visible, vender mientras hace el inventario, interruptor para descontar después, logo en pestaña y sustitución del hero del resumen por tendencias semanales/diarias. SQL 012 nuevo deja descuento apagado. Configuración → Inventario al facturar permite activarlo solo al administrador. Cada factura conserva el modo de emisión; apagar permite vender sin existencias y sin movimientos de salida. Activar comprueba físico menos reservas y descuenta. No hay descuento retroactivo de las ventas emitidas mientras estuvo apagado. Compras siguen sumando stock. Anular solo devuelve salidas realmente registradas; no fabrica stock para facturas sin descuento. Facturas anteriores preservan su comportamiento. Ver docs/STOCK_Y_RENDIMIENTO.md.
+
+Anular en listado/ficha, con diálogo, motivo, versión y reconocimiento del reembolso de cobros; rol administrador. Cuenta/cobros quedan auditados. El logo existente es el favicon con URL nueva; no se generan nuevas imágenes. Panel y menú Rendimiento reemplazan el hero; tarjetas de hoy, semana y variación al mismo día/hora de semana previa, 14 días y 8 semanas, selección/tabla accesible, claro/oscuro y móvil. Solo facturas confirmadas de la web en USD; no confundir deuda importada con ventas. Se conservan analítica y accesos anteriores.
+
+El propietario debe aplicar SQL 012 completo una vez después de 011 y comprobar Vercel Ready. No se ejecutó SQL remoto ni se probó facturando sobre su base. La utilidad de limpieza v1 queda como recuperación histórica de la entrega anterior, limitada al esquema hasta 011: no ejecutarla después de 012 ni adaptarla para saltar sus guardas. Mantener Importar archivos hasta instrucción expresa de retirarlo.
+
 ## Reinicio autorizado de los datos de prueba · 2026-11-22
 
 El propietario confirma SQL 011 instalado y solicita expresamente **HAGAMOS LA LIMPIEZA**, después de acordar descartar la importación/operaciones de prueba y cargar de cero los cuatro CSV recientes. Para este reinicio sustituye la recomendación anterior de actualizar por diferencias. El origen sigue siendo la aplicación de trabajo; no tocarlo. No afirmar que el borrado remoto ocurrió: no hay conector ni credenciales administrativos de Supabase en este entorno.

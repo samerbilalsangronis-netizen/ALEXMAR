@@ -1,6 +1,6 @@
-import { Marca } from "@/components/marca";
+import { RendimientoVentas } from "@/components/rendimiento-ventas";
 import { Analitica } from "@/components/analitica";
-import { Plus, ArrowUpRight } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 import { consultar, sesion } from "@/lib/supabase";
 import { Cabecera } from "@/components/comunes";
@@ -16,8 +16,8 @@ export default async function Panel({
   return (
     <>
       <Cabecera
-        titulo="Cada pieza cuenta."
-        subtitulo="Tu operación, tus clientes y las oportunidades de hoy."
+        titulo="Rendimiento"
+        subtitulo="La evolución de tus ventas y las cifras de tu negocio."
       >
         {["administrador", "ventas"].includes(perfil.rol) && (
           <Link className="boton" href="/facturacion/nueva">
@@ -25,29 +25,7 @@ export default async function Panel({
           </Link>
         )}
       </Cabecera>
-      <section className="hero-negocio">
-        <div>
-          <span className="etiqueta">ALEXMAR · EN MOVIMIENTO</span>
-          <h2>
-            Más control.
-            <br />
-            <em>Mejores decisiones.</em>
-          </h2>
-          <p>
-            La pieza correcta, el cliente indicado y tu negocio siempre a la
-            vista.
-          </p>
-          <Link href="/inventario" className="boton">
-            Explorar inventario <ArrowUpRight size={18} />
-          </Link>
-        </div>
-        <div className="hero-sello" aria-hidden="true">
-          <div className="logo-animado">
-            <Marca />
-          </div>
-          <small>REPUESTOS / ACCESORIOS / ROTULADOS</small>
-        </div>
-      </section>
+      <RendimientoVentas />
       <section className="indicadores">
         <article>
           <small>PRODUCTOS VIGENTES</small>

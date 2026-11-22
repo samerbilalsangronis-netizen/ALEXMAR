@@ -85,3 +85,11 @@
 - Conservar usuarios/roles, filtros, fotos/Storage, estructura, diseño y auditoría. Descartar catálogo/manuales ligados a producto, clientes, movimientos, notas, documentos, proveedores/compras/pagos y procedencia, con copia privada previa. Numeración de prueba reiniciada.
 - Utilidad manual con respaldo y limpieza atómicos, sin CASCADE y con guarda de una sola ejecución; recuperación posible solo mientras el destino siga vacío. No instalar borrado como migración automática ni ofrecer RPC de borrado en la web.
 - La pantalla actual de carga requiere estado_importacion de SQL 007 también para una base vacía. Si el resultado indica que falta 007, el propietario lo aplica una vez antes de cargar. Mantener Importar archivos. No se ejecutó borrado remoto desde desarrollo.
+
+## Inventario opcional y rendimiento · 2026-11-22
+
+- El propietario confirma la nueva importación completada. No repetir limpieza ni carga. Mantener el importador hasta aviso explícito.
+- Solicita vender sin existencias durante el conteo, dejando el descuento de inventario apagado por ahora y un ajuste para activarlo después. Opción global administrada en Configuración, aplicada al emitir y guardada en cada factura. Con control apagado no se registra salida; activarlo no descuenta retroactivamente.
+- La anulación conserva cargo/cobros/historial y devuelve solo las existencias realmente descontadas por esa factura. Acceso visible en lista/ficha; administrador, motivo y reembolso reconocido cuando corresponda.
+- Logo existente sin teléfono como icono de pestaña. Sustituir hero promocional por Rendimiento: ventas de hoy, semana, comparación al mismo día/hora previos, 14 días y 8 semanas. USD, horario Caracas; solo facturas confirmadas nuevas, excluyendo historia importada, borradores y anuladas. No confundir importe facturado con cobros o ganancia.
+- SQL 012 nuevo y manual, sin limpieza/reimportación. Se preservan las decisiones y datos importados anteriores.

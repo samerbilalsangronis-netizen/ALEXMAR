@@ -331,3 +331,30 @@ export async function anularVenta(f: FormData) {
   }
   redirect(ruta + "?guardado=1");
 }
+
+export async function configurarInventario(f: FormData) {
+  const ruta = "/configuracion";
+  try {
+    const { db, perfil } = await sesion();
+    if (perfil.rol !== "administrador")
+      throw new Error("Solo el administrador puede configurar inventario.");
+    const { error } = await db.rpc("configurar_descuento_stock", {
+      p_activo: f.get("descontar_stock") === "on",
+      p_version: Number(f.get("version_stock")),
+    });
+    if (error) throw new Error(error.message);
+    for (const p of [ruta, "/facturacion", "/facturacion/nueva", "/panel"])
+      revalidatePath(p);
+  } catch (e) {
+    redirect(
+      ruta +
+        "?error=" +
+        encodeURIComponent(
+          e instanceof Error
+            ? e.message
+            : "No se pudo guardar la configuración.",
+        ),
+    );
+  }
+  redirect(ruta + "?guardado=1#inventario");
+}

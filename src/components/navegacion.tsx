@@ -14,7 +14,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 const enlaces = [
-  ["/panel", "Resumen", LayoutDashboard, "todos"],
+  ["/panel", "Rendimiento", LayoutDashboard, "todos"],
   ["/facturacion", "Facturación", FileText, "ventas"],
   ["/inventario", "Inventario", Package, "todos"],
   ["/proveedores", "Proveedores", Truck, "inventario"],
@@ -22,7 +22,7 @@ const enlaces = [
   ["/reportes", "Reportes", ChartNoAxesCombined, "todos"],
   ["/notas", "Notas", StickyNote, "admin"],
   ["/migracion", "Importar archivos", Upload, "admin"],
-  ["/configuracion", "Usuarios", Settings, "admin"],
+  ["/configuracion", "Configuración", Settings, "admin"],
 ] as const;
 export function Navegacion({ rol }: { rol: string }) {
   const ruta = usePathname();
