@@ -1,3 +1,12 @@
+# Órdenes y abonos de proveedores · SQL 014 · 2026-11-23
+
+- `npm test`: 29 pruebas correctas; dos nuevas instalan todas las migraciones y aplican 014 sobre orden/abono existentes. Edición exacta, stock por diferencia, costo anterior, abonos corregidos/anulados, totales de cuenta, auditoría, permisos, versiones, reintentos y rollback integral con movimiento posterior.
+- `npm run typecheck` y `npm run build`: correctos.
+- `node tests/compras.browser.mjs`: componentes y acciones reales con DB simulada, edición de orden/abono, error que conserva campos, anulación de abono/orden, regresión de recepción/producto/precio/pago, permisos y pantallas de 1440/390 px sin desbordamiento del documento.
+- Ningún SQL, abono ni anulación se ejecutó sobre Supabase remoto. El propietario debe aplicar 014 una vez; no limpiar ni reimportar.
+
+---
+
 # Accesos de personal · 2026-11-23
 
 - `npm test`: **27 pruebas aprobadas**. El recorrido nuevo sobre esquema completo verifica conversión de roles, perfil nuevo, sesión/portal real, catálogo con campos permitidos y precisión exacta, denegación de RPC de gestión/costos/cuentas/métricas, bloqueo con JWT existente, desactivación, protección del administrador, permisos de Storage, sesión deduplicada y paginación de 30 entradas. Incluye emisión/anulación administrativa sobre todas las migraciones actuales.

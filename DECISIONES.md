@@ -101,3 +101,9 @@
 - Identidades por Supabase Auth, con usuario normalizado o correo. Creación administrativa opcional usando clave de servicio solo en servidor, o manual en Authentication y asignación de perfil. No habilitar registro público, guardar claves en tablas propias ni publicar la contraseña aportada. La cuenta solicitada queda pendiente de registro remoto, no creada desde desarrollo.
 - Manifiesto e iconos de instalación con logo real. Puede requerir renovar el acceso directo anterior. No se promete modo sin conexión ni se cachean datos privados.
 - SQL 013 nuevo, sin limpieza ni reimportación. Mantener la cuenta administrativa existente y su protección contra quitarse el acceso propio.
+
+## Correcciones de proveedores · 2026-11-23
+
+- El propietario pide editar la orden, corregir abonos/importes y retirar pruebas. Cantidad/costo determinan el total; stock por diferencia y cuenta por pagar recalculada, con versión y auditoría.
+- Anular conserva documentos y abonos anulados y retira sus efectos, con revisión del pago real o prueba y cualquier reintegro. Si hay operaciones posteriores sobre la mercancía, se requiere devolución/conciliación; no se reescriben ventas ni existencias consumidas. No se incorpora borrado físico de comprobantes.
+- SQL 014 nuevo, manual tras 013; sin limpiar ni reimportar.

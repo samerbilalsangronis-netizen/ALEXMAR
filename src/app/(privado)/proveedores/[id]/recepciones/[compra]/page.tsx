@@ -6,6 +6,10 @@ import { sesion } from "@/lib/supabase";
 import { Cabecera, Avisos, Paginacion } from "@/components/comunes";
 import { ActivarCompras } from "@/components/activar-compras";
 import { PrecioVentaCompra } from "@/components/precio-venta-compra";
+import {
+  EditarOrdenCompra,
+  CorregirAbonoCompra,
+} from "@/components/editar-orden-compra";
 import { PagoCompra } from "@/components/pago-compra";
 import { Imprimir } from "@/components/imprimir";
 import { anularCompra } from "@/app/compras-actions";
@@ -73,6 +77,24 @@ export default async function ComprobanteCompra({
           <strong>{monto(c.saldo)}</strong>
         </article>
       </section>
+      {perfil.rol === "administrador" &&
+        c.estado === "confirmada" &&
+        (c.version ? (
+          <EditarOrdenCompra compra={c} />
+        ) : (
+          <p className="aviso">
+            Para editar órdenes, corregir abonos y anular órdenes con pagos,
+            aplica el{" "}
+            <a
+              href="https://github.com/samerbilalsangronis-netizen/ALEXMAR/blob/main/supabase/migrations/20261123001400_edicion_ordenes_proveedores.sql"
+              target="_blank"
+              rel="noreferrer"
+            >
+              SQL 014 en Supabase
+            </a>{" "}
+            y recarga esta página.
+          </p>
+        ))}
       {c.estado === "confirmada" &&
         c.lineas.some((l) => l.precio_venta === null) && (
           <section className="panel precios-pendientes">
@@ -156,7 +178,8 @@ export default async function ComprobanteCompra({
         <h2>Pagos registrados</h2>
         <p className="muted">
           Página {c.pagos.pagina} de {c.pagos.paginas} · {c.pagos.total} pagos
-          en total. Los indicadores incluyen todos los pagos.
+          en total. Los indicadores incluyen todos los abonos vigentes; los
+          anulados quedan en el historial.
         </p>
         {c.pagos.total ? (
           <div className="tabla-contenedor tabla-compras">
@@ -167,6 +190,7 @@ export default async function ComprobanteCompra({
                   <th>Método</th>
                   <th>Referencia</th>
                   <th>Monto USD</th>
+                  <th>Estado y acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -176,6 +200,22 @@ export default async function ComprobanteCompra({
                     <td>{pg.metodo}</td>
                     <td>{pg.referencia || "—"}</td>
                     <td>{monto(pg.monto)}</td>
+                    <td>
+                      <span
+                        className={"estado " + (pg.anulado ? "ambar" : "verde")}
+                      >
+                        {pg.anulado ? "Anulado" : "Vigente"}
+                      </span>
+                      {pg.motivo_correccion && (
+                        <p className="muted">{pg.motivo_correccion}</p>
+                      )}
+                      {perfil.rol === "administrador" &&
+                        c.estado === "confirmada" &&
+                        c.version &&
+                        !pg.anulado && (
+                          <CorregirAbonoCompra compra={c} pago={pg} />
+                        )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -191,29 +231,41 @@ export default async function ComprobanteCompra({
         parametros={{}}
         parametroPagina="pagos_pagina"
       />
-      {perfil.rol === "administrador" && c.estado === "confirmada" && (
-        <details className="panel no-imprimir">
-          <summary>Anular una recepción incorrecta</summary>
-          <p className="muted">
-            Solo si no tiene pagos, operaciones posteriores ni cambios de costo,
-            y las unidades siguen libres. Se revierten stock y deuda y se
-            restaura el costo anterior; el comprobante se conserva.
-          </p>
-          <form action={anularCompra} className="formulario">
-            <input type="hidden" name="id" value={c.id} />
-            <input type="hidden" name="proveedor" value={id} />
-            <label>
-              Motivo de la anulación
-              <textarea name="motivo" required minLength={5} maxLength={2000} />
-            </label>
-            <label className="checkbox">
-              <input name="revisado" type="checkbox" required /> Confirmo que
-              esta recepción es incorrecta y revisé su reversión.
-            </label>
-            <button>Anular recepción y revertir</button>
-          </form>
-        </details>
-      )}
+      {perfil.rol === "administrador" &&
+        c.estado === "confirmada" &&
+        c.version && (
+          <details className="panel no-imprimir">
+            <summary>Anular orden / eliminar registro de prueba</summary>
+            <p className="muted">
+              Revierte la mercancía recibida, la deuda y los abonos de esta
+              orden. Requiere unidades libres y sin operaciones ni cambios de
+              costo posteriores. El comprobante y los abonos se conservan como
+              anulados. Esta acción no transfiere dinero: si hubo pagos reales,
+              resuelve primero su reintegro.
+            </p>
+            <form action={anularCompra} className="formulario">
+              <input type="hidden" name="id" value={c.id} />
+              <input type="hidden" name="version" value={c.version} />
+              <input type="hidden" name="proveedor" value={id} />
+              <label>
+                Motivo de la anulación
+                <textarea
+                  name="motivo"
+                  required
+                  minLength={5}
+                  maxLength={2000}
+                />
+              </label>
+              <label className="checkbox">
+                <input name="revisado" type="checkbox" required /> Confirmo que
+                esta orden es incorrecta y revisé la reversión de las unidades y
+                cualquier reintegro de los abonos, o que era una prueba sin
+                pagos reales.
+              </label>
+              <button>Anular orden y revertir</button>
+            </form>
+          </details>
+        )}
     </>
   );
 }

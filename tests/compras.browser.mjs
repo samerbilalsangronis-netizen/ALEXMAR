@@ -111,18 +111,28 @@ import {readFile,writeFile} from 'node:fs/promises';import Decimal from 'decimal
 const archivo=${JSON.stringify(estadoFile)},archivoRol=${JSON.stringify(rolFile)},proveedor=${JSON.stringify(proveedor)};
 const datosProveedor={id:proveedor,nombre:'Proveedor de Starlink de prueba',documento:'PRUEBA',activo:true,monedas:['USD'],telefono:''};
 const perfil=async()=>({rol:JSON.parse(await readFile(archivoRol,'utf8')),nombre:'Usuario de prueba'});
-function doc(e,id){const c=e.compras[id];if(!c)return null;const pagos=e.pagos.filter(p=>p.compra_id===id);const pagado=pagos.reduce((s,p)=>s.plus(p.monto),new Decimal(0)).toFixed();return {...c,pagado,saldo:new Decimal(c.total).minus(pagado).toFixed(),lineas:c.lineas.map(l=>({...l,precio_venta:e.productos.find(a=>a.variante_id===l.variante_id).precio})),pagos:{filas:pagos,total:pagos.length,pagina:1,paginas:1}};}
+function doc(e,id){const c=e.compras[id];if(!c)return null;const pagos=e.pagos.filter(p=>p.compra_id===id);const pagado=pagos.filter(p=>!p.anulado).reduce((s,p)=>s.plus(p.monto),new Decimal(0)).toFixed();return {...c,pagado,saldo:c.estado==='anulada'?'0':new Decimal(c.total).minus(pagado).toFixed(),lineas:c.lineas.map(l=>({...l,precio_venta:e.productos.find(a=>a.variante_id===l.variante_id).precio})),pagos:{filas:pagos,total:pagos.length,pagina:1,paginas:1}};}
 async function rpc(n,args={}){const e=JSON.parse(await readFile(archivo,'utf8'));
 if(n==='mi_perfil')return {data:await perfil(),error:null};
 if(n==='buscar_productos')return {data:{filas:e.productos.filter(a=>!args.p.q||a.nombre.toLowerCase().includes(args.p.q.toLowerCase())),total:e.productos.length,pagina:1,paginas:1},error:null};
 if(n==='buscar_proveedores')return {data:{filas:[datosProveedor],total:1,pagina:1,paginas:1},error:null};
 if(n==='ficha_compra')return {data:doc(e,args.p_id),error:null};
 if(n==='ficha_proveedor_compras'){
-const compras=Object.keys(e.compras).map(id=>doc(e,id));const comprado=compras.reduce((s,c)=>s.plus(c.total),new Decimal(0));const pagado=e.pagos.reduce((s,p)=>s.plus(p.monto),new Decimal(0));const productos=e.productos.filter(a=>compras.some(c=>c.lineas.some(l=>l.variante_id===a.variante_id))).map(a=>({id:a.variante_id,producto_id:a.id,nombre:a.nombre,cantidad_recibida:compras.flatMap(c=>c.lineas).filter(l=>l.variante_id===a.variante_id).reduce((s,l)=>s.plus(l.cantidad),new Decimal(0)).toFixed(),ultimo_costo:a.costo,precio_venta:a.precio,ultima_recepcion:'2026-11-17T15:00:00Z'}));return {data:{proveedor:datosProveedor,resumen:{comprado:comprado.toFixed(),pagado:pagado.toFixed(),saldo:comprado.minus(pagado).toFixed()},compras:{filas:compras,total:compras.length,pagina:1,paginas:1},productos:{filas:productos,total:productos.length,pagina:1,paginas:1}},error:null};}
+const compras=Object.keys(e.compras).map(id=>doc(e,id));const comprado=compras.filter(c=>c.estado==='confirmada').reduce((s,c)=>s.plus(c.total),new Decimal(0));const pagado=e.pagos.filter(p=>!p.anulado).reduce((s,p)=>s.plus(p.monto),new Decimal(0));const productos=e.productos.filter(a=>compras.some(c=>c.lineas.some(l=>l.variante_id===a.variante_id))).map(a=>({id:a.variante_id,producto_id:a.id,nombre:a.nombre,cantidad_recibida:compras.flatMap(c=>c.lineas).filter(l=>l.variante_id===a.variante_id).reduce((s,l)=>s.plus(l.cantidad),new Decimal(0)).toFixed(),ultimo_costo:a.costo,precio_venta:a.precio,ultima_recepcion:'2026-11-17T15:00:00Z'}));return {data:{proveedor:datosProveedor,resumen:{comprado:comprado.toFixed(),pagado:pagado.toFixed(),saldo:comprado.minus(pagado).toFixed()},compras:{filas:compras,total:compras.length,pagina:1,paginas:1},productos:{filas:productos,total:productos.length,pagina:1,paginas:1}},error:null};}
 if(n==='asignar_precio_venta'){const a=e.productos.find(a=>a.id===args.p.producto_id);a.precio=args.p.precio;await writeFile(archivo,JSON.stringify(e));return {data:a.id,error:null};}
 if(n==='recibir_compra'){
-const p=args.p;if(e.compras[p.id])return {data:p.id,error:null};let total=new Decimal(0);const lineas=p.lineas.map((l,i)=>{let a=e.productos.find(a=>a.variante_id===l.variante_id);if(!a){a={id:l.nuevo.id,variante_id:l.nuevo.id,nombre:l.nuevo.nombre,precio:null,costo:null,fisico:'0',disponible:'0',referencia:''};e.productos.push(a);}a.costo=l.costo_unitario;a.fisico=new Decimal(a.fisico).plus(l.cantidad).toFixed();a.disponible=a.fisico;const importe=new Decimal(l.cantidad).times(l.costo_unitario).toFixed();total=total.plus(importe);return {id:String(i),orden:i+1,variante_id:a.variante_id,producto_id:a.id,descripcion:a.nombre,cantidad:l.cantidad,costo_unitario:l.costo_unitario,importe,precio_venta:a.precio};});e.compras[p.id]={id:p.id,numero:Object.keys(e.compras).length+1,proveedor_id:proveedor,proveedor_snapshot:datosProveedor,referencia:p.referencia,total:total.toFixed(),moneda:'USD',estado:'confirmada',creado:'2026-11-17T15:00:00Z',observaciones:p.observaciones,lineas};await writeFile(archivo,JSON.stringify(e));return {data:p.id,error:null};}
-if(n==='pagar_compra'){const p=args.p;if(!e.pagos.some(x=>x.id===p.id)){if(new Decimal(p.monto).gt(doc(e,p.compra_id).saldo))return {data:null,error:{message:'El pago supera el saldo pendiente.'}};e.pagos.push({...p,creado:'2026-11-17T15:00:00Z'});await writeFile(archivo,JSON.stringify(e));}return {data:p.id,error:null};}
+const p=args.p;if(e.compras[p.id])return {data:p.id,error:null};let total=new Decimal(0);const lineas=p.lineas.map((l,i)=>{let a=e.productos.find(a=>a.variante_id===l.variante_id);if(!a){a={id:l.nuevo.id,variante_id:l.nuevo.id,nombre:l.nuevo.nombre,precio:null,costo:null,fisico:'0',disponible:'0',referencia:''};e.productos.push(a);}a.costo=l.costo_unitario;a.fisico=new Decimal(a.fisico).plus(l.cantidad).toFixed();a.disponible=a.fisico;const importe=new Decimal(l.cantidad).times(l.costo_unitario).toFixed();total=total.plus(importe);return {id:String(i),orden:i+1,variante_id:a.variante_id,producto_id:a.id,descripcion:a.nombre,cantidad:l.cantidad,costo_unitario:l.costo_unitario,importe,precio_venta:a.precio};});e.compras[p.id]={id:p.id,version:1,numero:Object.keys(e.compras).length+1,proveedor_id:proveedor,proveedor_snapshot:datosProveedor,referencia:p.referencia,total:total.toFixed(),moneda:'USD',estado:'confirmada',creado:'2026-11-17T15:00:00Z',observaciones:p.observaciones,lineas};await writeFile(archivo,JSON.stringify(e));return {data:p.id,error:null};}
+if(n==='pagar_compra'){const p=args.p;if(!e.pagos.some(x=>x.id===p.id)){if(new Decimal(p.monto).gt(doc(e,p.compra_id).saldo))return {data:null,error:{message:'El pago supera el saldo pendiente.'}};e.compras[p.compra_id].version++;e.pagos.push({...p,creado:'2026-11-17T15:00:00Z'});await writeFile(archivo,JSON.stringify(e));}return {data:p.id,error:null};}
+if(n==='editar_compra'){
+const p=args.p,c=e.compras[p.id];if(c.version!==p.version)return {error:{message:'La orden cambió. Recarga y revisa los datos antes de guardar.'}};
+const total=p.lineas.reduce((s,l)=>s.plus(new Decimal(l.cantidad).times(l.costo_unitario)),new Decimal(0));if(total.lt(doc(e,c.id).pagado))return {error:{message:'El total no puede quedar por debajo de los abonos vigentes.'}};
+for(const x of p.lineas){const l=c.lineas.find(l=>l.id===x.id),a=e.productos.find(a=>a.variante_id===l.variante_id);a.fisico=new Decimal(a.fisico).plus(x.cantidad).minus(l.cantidad).toFixed();a.costo=x.costo_unitario;l.cantidad=x.cantidad;l.costo_unitario=x.costo_unitario;l.importe=new Decimal(x.cantidad).times(x.costo_unitario).toFixed();}
+c.total=total.toFixed();c.referencia=p.referencia;c.observaciones=p.observaciones;c.version++;await writeFile(archivo,JSON.stringify(e));return {data:null,error:null};}
+if(n==='corregir_pago_compra'){
+const p=args.p,c=e.compras[p.compra_id],pg=e.pagos.find(x=>x.id===p.id);if(c.version!==p.version)return {error:{message:'La orden cambió. Recarga y revisa los datos antes de guardar.'}};
+if(p.accion==='anular')pg.anulado=true;else {pg.monto=p.monto;pg.metodo=p.metodo;pg.referencia=p.referencia;}c.version++;await writeFile(archivo,JSON.stringify(e));return {data:null,error:null};}
+if(n==='anular_orden_compra'){
+const c=e.compras[args.p_id];for(const l of c.lineas){const a=e.productos.find(a=>a.variante_id===l.variante_id);a.fisico=new Decimal(a.fisico).minus(l.cantidad).toFixed();}c.estado='anulada';c.motivo_anulacion=args.p_motivo;c.version++;for(const pg of e.pagos.filter(p=>p.compra_id===c.id))pg.anulado=true;await writeFile(archivo,JSON.stringify(e));return {data:null,error:null};}
 throw new Error('RPC no simulada '+n);}
 const db={rpc,auth:{getUser:async()=>({data:{user:{id:'11111111-1111-4111-8111-111111111111'}}})}};
 export async function conexion(){return db;}export async function sesion(){return {db,perfil:await perfil()};}export async function consultar(n,p={}){const d=await rpc(n,p);return d.data;}
@@ -296,6 +306,80 @@ try {
   expect(conPrecio.precio).toBe("150");
   expect(conPrecio.costo).toBe("100");
   expect(conPrecio.fisico).toBe("5");
+  // Edición con acciones reales y errores que conservan los valores escritos.
+  const orden = page.locator("#editar-orden");
+  await orden.locator("summary").click();
+  await orden.getByLabel("Cantidad", { exact: true }).fill("6");
+  await orden.getByLabel("Costo unitario USD", { exact: true }).fill("110");
+  await orden
+    .getByLabel("Motivo de la corrección")
+    .fill("Corregir recepción de prueba");
+  await orden
+    .getByRole("button", { name: "Guardar cambios de la orden" })
+    .click();
+  await expect(page.locator(".indicadores article").first()).toContainText(
+    "660",
+  );
+  e = JSON.parse(await readFile(estadoFile, "utf8"));
+  const actualId = Object.keys(e.compras).at(-1);
+  expect(e.productos.at(-1).fisico).toBe("6");
+  expect(e.productos.at(-1).costo).toBe("110");
+  await page.getByText("Registrar pago al proveedor", { exact: true }).click();
+  await page.getByLabel("Importe pagado USD").fill("100");
+  await page
+    .getByLabel("Método del pago", { exact: true })
+    .selectOption("Efectivo");
+  await page
+    .getByRole("checkbox", {
+      name: "Confirmo que este pago se realizó al proveedor.",
+    })
+    .check();
+  await page
+    .getByRole("button", { name: "Registrar pago realizado", exact: true })
+    .click();
+  await expect(page.locator(".indicadores article").last()).toContainText(
+    "560",
+  );
+  await orden.getByLabel("Cantidad", { exact: true }).fill("1");
+  await orden.getByLabel("Costo unitario USD", { exact: true }).fill("1");
+  await orden
+    .getByLabel("Motivo de la corrección")
+    .fill("No perder estos datos");
+  await orden
+    .getByRole("button", { name: "Guardar cambios de la orden" })
+    .click();
+  await expect(orden.getByRole("alert")).toContainText("por debajo");
+  await expect(orden.getByLabel("Cantidad", { exact: true })).toHaveValue("1");
+  await expect(orden.getByLabel("Motivo de la corrección")).toHaveValue(
+    "No perder estos datos",
+  );
+  const abono = page.locator("td details").last();
+  await abono.locator("summary").click();
+  await abono.getByLabel("Importe correcto USD").fill("150");
+  await abono.getByLabel("Método de pago").selectOption("Transferencia");
+  await abono
+    .getByLabel("Motivo de la corrección")
+    .fill("Ajustar abono sintético");
+  await abono.getByRole("checkbox").check();
+  await abono
+    .getByRole("button", { name: "Guardar corrección del abono" })
+    .click();
+  await expect(page.locator(".indicadores article").last()).toContainText(
+    "510",
+  );
+  e = JSON.parse(await readFile(estadoFile, "utf8"));
+  expect(e.compras[actualId].total).toBe("660");
+  expect(e.pagos.at(-1).monto).toBe("150");
+  if (!(await abono.getByLabel("Acción").isVisible()))
+    await abono.locator("summary").click();
+  await abono.getByLabel("Acción").selectOption("anular");
+  await abono.getByRole("button", { name: "Anular este abono" }).click();
+  await expect(page.locator(".indicadores article").last()).toContainText(
+    "660",
+  );
+  await expect(page.getByText("Anulado", { exact: true })).toBeVisible();
+  // Cerrar edición tras la corrección para revisar la vista general.
+  await page.goto(page.url());
   const docUrl = page.url();
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 1000 });
@@ -306,6 +390,7 @@ try {
     ]) {
       await page.goto(path);
       await expect(page.locator("main h1")).toBeVisible();
+      if (path === docUrl) await page.locator("#editar-orden summary").click();
       if (
         await page.evaluate(
           () => document.documentElement.scrollWidth > innerWidth,
@@ -326,6 +411,23 @@ try {
       caret: "initial",
     });
   }
+  await page.goto(docUrl);
+  await page
+    .getByText("Anular orden / eliminar registro de prueba", { exact: true })
+    .click();
+  await page
+    .getByLabel("Motivo de la anulación")
+    .fill("Orden de prueba sin pago real");
+  await page
+    .getByRole("checkbox", { name: /esta orden es incorrecta/ })
+    .check();
+  await page
+    .getByRole("button", { name: "Anular orden y revertir", exact: true })
+    .click();
+  await expect(page.getByText(/Recepción anulada:/)).toBeVisible();
+  e = JSON.parse(await readFile(estadoFile, "utf8"));
+  expect(e.compras[actualId].estado).toBe("anulada");
+  expect(e.productos.at(-1).fisico).toBe("0");
   const antes = await readFile(estadoFile, "utf8");
   const origenAjeno = await page.request.post(base + "/api/compras/recibir", {
     headers: { origin: "https://otro.example" },
@@ -356,7 +458,7 @@ try {
   expect(await readFile(estadoFile, "utf8")).toBe(antes);
   if (errores.length) throw new Error(errores.join("\n"));
   console.log(
-    "Compras navegador: proveedor → producto existente/nuevo → 5 × 100 → revisión sin escritura → stock y deuda 500; último costo, precio de venta pendiente, pago parcial, permisos y 1440/390 sin desbordamiento. DB simulada.",
+    "Compras navegador: proveedor → producto existente/nuevo → 5 × 100 → revisión sin escritura → stock y deuda 500; último costo, precio de venta pendiente, pago parcial, edición de orden/abono, error sin perder campos, anulación de abono/orden, permisos y 1440/390 sin desbordamiento. DB simulada.",
   );
 } finally {
   await browser?.close();

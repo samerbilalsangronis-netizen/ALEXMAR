@@ -9,6 +9,7 @@ export type LineaRecepcion = {
 export type Compra = {
   id: string;
   numero: number;
+  version?: number;
   proveedor_id: string;
   proveedor_snapshot: { nombre: string; documento: string };
   referencia: string;
@@ -33,6 +34,8 @@ export type Compra = {
   pagos: Pagina<{
     id: string;
     monto: string;
+    anulado?: boolean;
+    motivo_correccion?: string;
     metodo: string;
     referencia: string;
     creado: string;

@@ -4,6 +4,8 @@ Aplicación privada en español para Autoperiquitos y Rotulados Alexmar. **Entre
 
 ## Qué funciona
 
+- [Edición de órdenes y abonos de proveedores](docs/EDITAR_ORDENES_PROVEEDORES.md): correcciones de importes/cantidades, anulación con abonos y stock por diferencia, con historial y versiones (SQL 014).
+
 - [Accesos de personal y logo de escritorio](docs/ACCESOS_PERSONAL.md): Administrativo completo y General de consulta de precios, registro de entradas y bloqueo general con control en servidor/DB (SQL 013). Nuevas identidades desde panel con clave administrativa solo de servidor, o desde Authentication con asignación posterior.
 
 - [Inventario opcional, anulación visible y rendimiento](docs/STOCK_Y_RENDIMIENTO.md): permite vender sin existencias mientras el descuento esté apagado, ajuste para activarlo, ventas diarias/semanales y logo en pestaña (SQL 012). El propietario confirma terminada la nueva importación; no repetir limpieza ni carga.

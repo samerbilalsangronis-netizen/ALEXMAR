@@ -1,5 +1,13 @@
 # HANDOFF · ALEXMAR
 
+## Edición de órdenes y abonos de proveedor · 2026-11-23
+
+El propietario creó proveedor/abono de prueba y solicita editar órdenes para corregir importes y abonos o eliminarlas. SQL 014 nuevo incorpora edición de cantidades/costos, referencia/observaciones, corrección/anulación de pagos y anulación integral de orden con abonos. No borrar documentos financieros: quedan anulados y auditados. Reintegros reales se resuelven fuera de la aplicación y se reconocen explícitamente; la prueba sin desembolso también está contemplada. Desactivar proveedor sigue disponible; no borra saldo ni comprobantes.
+
+Solo administrador en servidor/DB. Versiones con incremento por abono y edición, bloqueo de orden/variantes, dinero exacto, stock por diferencia y restauración del costo previo al anular. No alterar cantidades/costos de mercancía con operaciones posteriores; referencia/observaciones siguen editables. Total nunca inferior a pagos vigentes. SQL 014 reemplaza consultas de pago/saldo para excluir abonos anulados, conserva paginación/historial y revoca llamada pública a la anulación antigua sin versión. Nuevas funciones transaccionales: fallo de stock revierte también anulaciones de abonos. La UI conserva campos ante errores con envío manual a acciones React, evitando el reinicio automático de formularios.
+
+Verificación local: 29 pruebas, tipos y build correctos; navegador con acciones reales/DB simulada verifica edición, errores sin perder campos, abonos, anulación y 1440/390 px. Activación remota pendiente: propietario aplica SQL 014 una vez tras 013, en Supabase nuevo y recarga el despliegue listo. No se modificó Supabase remoto, ni se anuló su prueba, ni se limpió/reimportó nada desde desarrollo. Sigue pendiente la aclaración de abonos del corte del sistema anterior. Ver docs/EDITAR_ORDENES_PROVEEDORES.md.
+
 ## Separación de accesos y escritorio · 2026-11-23
 
 El propietario reclamó que la separación confirmada como idea no estaba implementada. Ahora se implementa con SQL 013 nuevo: administrador completo y lectura como General, exclusivamente catálogo de precios. Los perfiles previos ventas/inventario pasan a lectura; no elevarlos a administrador ni mantener puertas de gestión heredadas para generales. SQL privado/RLS, roles consultados en DB en cada operación y proxy/servidor para rutas/API. General usa /consulta; no devuelve costos, stock, cuentas, métricas ni usuarios. Dos entradas visibles con contraseña Supabase Auth; elegir el portal no cambia el rol.
