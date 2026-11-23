@@ -3544,3 +3544,137 @@ button.peligro {
   white-space: nowrap;
   border: 0;
 }
+
+/* Hojas de notas: tinta sobre papel legible en ambos temas. */
+.cuaderno-nota {
+  max-width: 1000px;
+  margin-inline: auto;
+}
+.nota-cabecera,
+.nota-barra {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.nota-cabecera {
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.nota-controles {
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.nota-barra {
+  padding: 16px;
+  border: 1px solid var(--borde);
+  border-radius: 16px;
+  background: var(--superficie);
+}
+.nota-barra button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 10px;
+}
+.nota-barra label {
+  display: grid;
+  gap: 5px;
+  font-size: 13px;
+}
+.nota-barra select {
+  min-height: 44px;
+}
+.nota-stickers {
+  margin-block: 16px;
+}
+.nota-stickers summary {
+  min-height: 44px;
+  display: list-item;
+  padding-block: 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
+.nota-stickers .acciones {
+  padding-block: 12px;
+}
+.nota-stickers button span {
+  font-size: 24px;
+}
+.nota-ayuda {
+  font-size: 14px;
+}
+.nota-papel,
+.nota-texto {
+  background: #fffef8;
+  color: #172b3a;
+}
+.nota-papel {
+  color-scheme: light;
+  border: 1px solid #dad8cd;
+  border-radius: 16px;
+  padding: clamp(20px, 4vw, 48px);
+  margin-block: 20px;
+  box-shadow: 0 12px 36px rgb(0 0 0 / 5%);
+}
+.nota-papel input.nota-titulo {
+  background: transparent;
+  color: #172b3a;
+  border: 0;
+  border-bottom: 1px solid #d9d6c8;
+  border-radius: 0;
+  padding: 12px 0 20px;
+  margin-bottom: 20px;
+  font-size: clamp(24px, 4vw, 34px);
+  font-weight: 700;
+  width: 100%;
+}
+.nota-hoja {
+  min-height: 420px;
+  outline-offset: 8px;
+  font-size: 18px;
+  line-height: 1.85;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.nota-hoja:empty::before {
+  content: "Escribe aquí…";
+  color: #687782;
+  pointer-events: none;
+}
+.nota-texto {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.8;
+  padding: 20px;
+  border: 1px solid #e8e3cf;
+  border-radius: 12px;
+}
+.notas-listado .nota-texto {
+  max-height: 260px;
+  overflow: auto;
+  margin-bottom: 20px;
+}
+.notas-listado .nota {
+  min-width: 0;
+}
+@media (max-width: 600px) {
+  .nota-cabecera {
+    gap: 10px;
+  }
+  .nota-cabecera .muted {
+    order: 3;
+    width: 100%;
+  }
+  .nota-barra {
+    gap: 8px;
+    padding: 12px;
+  }
+  .nota-barra label {
+    flex: 1;
+    min-width: 115px;
+  }
+  .nota-hoja {
+    min-height: 360px;
+  }
+}

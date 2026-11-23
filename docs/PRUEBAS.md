@@ -1,3 +1,12 @@
+# Hoja de notas · 2026-11-23
+
+- `npm test`: 32 pruebas correctas. Tres nuevas comprueban formato seguro, texto heredado, límites, estilos/stickers y RPC reales existentes sobre Postgres local: guardar/editar/reintentar sin duplicados y permisos administrativo/General/anon.
+- `npm run typecheck` y `npm run build`: correctos.
+- `node tests/notas.browser.mjs`: hoja y acción reales con sesión/DB simuladas; creación, selección de texto, color/resaltado/negrita, sticker, error que conserva campos, guardado/reapertura/edición, pegado HTML reducido a texto, denegación de General y 1440/390 en claro/oscuro. Captura móvil revisada.
+- Sin SQL adicional ni cambios remotos en notas/datos. Guardado explícito en contenido mediante las RPC existentes; sin caché privada o autosave.
+
+---
+
 # Órdenes y abonos de proveedores · SQL 014 · 2026-11-23
 
 - `npm test`: 29 pruebas correctas; dos nuevas instalan todas las migraciones y aplican 014 sobre orden/abono existentes. Edición exacta, stock por diferencia, costo anterior, abonos corregidos/anulados, totales de cuenta, auditoría, permisos, versiones, reintentos y rollback integral con movimiento posterior.

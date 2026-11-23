@@ -107,3 +107,8 @@
 - El propietario pide editar la orden, corregir abonos/importes y retirar pruebas. Cantidad/costo determinan el total; stock por diferencia y cuenta por pagar recalculada, con versión y auditoría.
 - Anular conserva documentos y abonos anulados y retira sus efectos, con revisión del pago real o prueba y cualquier reintegro. Si hay operaciones posteriores sobre la mercancía, se requiere devolución/conciliación; no se reescriben ventas ni existencias consumidas. No se incorpora borrado físico de comprobantes.
 - SQL 014 nuevo, manual tras 013; sin limpiar ni reimportar.
+
+## Notas enriquecidas · 2026-11-23
+
+- El propietario solicita Nueva nota visible, hoja para escribir, color de letra, resaltado y stickers. Se añade edición de notas existentes, preservando el texto anterior hasta guardar.
+- Guardado explícito en la base existente, sin nuevo SQL ni caché privada. Texto/estilos permitidos en formato propio, render seguro sin HTML ejecutable. Acceso administrativo exclusivamente.

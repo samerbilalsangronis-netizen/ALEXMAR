@@ -30,7 +30,7 @@ Aplicación privada en español para Autoperiquitos y Rotulados Alexmar. **Entre
 - Directorio de proveedores con contactos, condiciones, monedas, filtros y auditoría (administrador/inventario).
 - Reportes de inventario: métricas globales, detalle filtrable, CSV e impresión/PDF completos; cuentas históricas resumidas por moneda según rol. Ver [alcance y SQL nuevo](docs/PROVEEDORES_REPORTES.md).
 - Facturación en USD con impuesto 0: borradores/presupuestos, productos y servicios, emisión transaccional, pago inicial contado/crédito/parcial, impresión/PDF y anulación auditada. Ver [funcionamiento y SQL 006](docs/FACTURACION.md).
-- Notas privadas del administrador.
+- [Notas con hoja de escritura](docs/NOTAS.md): nueva nota visible, edición, colores de letra, resaltadores y stickers; conserva notas importadas y no necesita SQL adicional.
 - Actualización posterior desde los cuatro CSV completos: compara procedencia, detecta conflictos locales y registra cambios sin duplicar stock ni dinero. Ver [actualizar el origen y SQL 007](docs/ACTUALIZAR_ORIGEN.md).
 - Importación inicial de cuatro CSV: simulación, duplicados, vínculos, precisión y conciliación por cliente. Bloqueada ante errores, saldos que no coinciden con la simulación o un destino con datos. Transacción e identificación de lote; repetir el mismo lote no duplica.
 

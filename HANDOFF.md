@@ -1,5 +1,13 @@
 # HANDOFF · ALEXMAR
 
+## Hoja de notas, colores y stickers · 2026-11-23
+
+El propietario no encontraba la creación porque estaba debajo de todo el listado. Nueva nota visible en cabecera abre hoja propia (`/notas?nueva=1`); cada tarjeta permite Abrir y editar conservando página/ID. Título y contenido con color, resaltado, negrita/cursiva/subrayado, deshacer/rehacer y ocho stickers incluidos, insertados en cursor. Hoja clara legible en ambos temas, herramientas adaptables y errores que conservan contenido. Cambios solo se guardan al pulsar Guardar; no hay caché privada ni autosave. Advertencia al cerrar/recargar y al volver desde la hoja.
+
+Sin SQL nuevo. Formato de fragmentos JSON dentro de contenido usando guardar_nota/listar_notas existentes. Texto importado se conserva literal hasta editarlo; no interpretar HTML. Render React con paleta permitida, pegado de solo texto, límites 50.000 caracteres/3000 fragmentos y título 200. Página/acción exigen administrador y DB mantiene exigir administrador. General no accede. IDs estables permiten reintentar/editar sin duplicar.
+
+Verificación: 32 pruebas, tipos y build correctos; navegador real con backend simulado confirma formato persistido, edición sin duplicados, error sin pérdida, pegado seguro, permisos y 1440/390 en ambos temas. Ver docs/NOTAS.md. No se escribieron notas remotas, no se limpió ni reimportó. La consulta sobre instalación completa de SQL 014 sigue pendiente del resultado remoto; esta entrega de Notas no depende de 014. El corte de abonos del sistema anterior también sigue pendiente, sin cambios.
+
 ## Edición de órdenes y abonos de proveedor · 2026-11-23
 
 El propietario creó proveedor/abono de prueba y solicita editar órdenes para corregir importes y abonos o eliminarlas. SQL 014 nuevo incorpora edición de cantidades/costos, referencia/observaciones, corrección/anulación de pagos y anulación integral de orden con abonos. No borrar documentos financieros: quedan anulados y auditados. Reintegros reales se resuelven fuera de la aplicación y se reconocen explícitamente; la prueba sin desembolso también está contemplada. Desactivar proveedor sigue disponible; no borra saldo ni comprobantes.
