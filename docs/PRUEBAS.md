@@ -1,3 +1,13 @@
+# Cuenta continua y eliminar notas · 2026-11-23
+
+- `npm test`: 34 pruebas correctas. Dos nuevas instalan todo el esquema y verifican cuenta acumulada/comprobantes, asignación de abonos, hasta 84 decimales, idempotencia, saldo obsoleto, sobreabonos, cancelación sin doble reversión, rollback sin aplicaciones parciales ante incoherencia, paginación/filtros, eliminación de notas y permisos.
+- `npm run typecheck` y `npm run build`: correctos.
+- `node tests/facturacion.browser.mjs`: regresión completa de facturación y nuevo flujo cliente → historial con filtros cerrados → abono → cargo a crédito con cliente fijo → retorno a cuenta, en 1440/390 y temas. API/componentes reales, backend simulado.
+- `node tests/notas.browser.mjs`: regresión de hoja/colores/stickers y eliminación con diálogo, cancelar y confirmar; comprueba que desaparece solo la nota elegida. Sesión/DB simuladas.
+- Captura móvil de cuenta revisada. No se escribió en Supabase remoto. SQL 015 nuevo/manual, sin limpiar ni reimportar.
+
+---
+
 # Hoja de notas · 2026-11-23
 
 - `npm test`: 32 pruebas correctas. Tres nuevas comprueban formato seguro, texto heredado, límites, estilos/stickers y RPC reales existentes sobre Postgres local: guardar/editar/reintentar sin duplicados y permisos administrativo/General/anon.

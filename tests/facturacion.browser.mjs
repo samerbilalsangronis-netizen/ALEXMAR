@@ -13,6 +13,7 @@ for (const sub of [
   "app/clientes/[id]",
   "app/configuracion",
   "app/api/facturacion/cobrar",
+  "app/api/clientes/abonar",
   "app/api/facturacion/cliente",
   "app/facturacion/[id]",
   "app/api/facturacion/buscar",
@@ -91,6 +92,8 @@ await copiar("app/ventas.ts", "src/lib/ventas.ts");
 await copiar("app/documento-factura.ts", "src/lib/documento-factura.ts");
 await copiar("app/tabla-facturas.tsx", "src/components/tabla-facturas.tsx");
 await copiar("app/cobro-factura.tsx", "src/components/cobro-factura.tsx");
+await copiar("app/abono-cuenta.tsx", "src/components/abono-cuenta.tsx");
+await copiar("app/plegable.tsx", "src/components/plegable.tsx");
 await copiar("app/anular-factura.tsx", "src/components/anular-factura.tsx", [
   ["@/app/actions", "./actions"],
 ]);
@@ -136,6 +139,9 @@ await copiar(
   [
     ["@/lib/supabase", "../../datos"],
     ["@/components/tabla-facturas", "../../tabla-facturas"],
+    ["@/components/abono-cuenta", "../../abono-cuenta"],
+    ["@/components/plegable", "../../plegable"],
+    ["@/components/editor-venta", "../../editor-venta"],
     ["@/components/comunes", "../../comunes"],
   ],
 );
@@ -159,6 +165,11 @@ await copiar(
     ["@/app/actions", "../actions"],
   ],
 );
+await copiar(
+  "app/api/clientes/abonar/route.ts",
+  "src/app/api/clientes/abonar/route.ts",
+  [["@/lib/supabase", "../../../datos"]],
+);
 const stateFile = join(dir, "estado.json");
 await writeFile(stateFile, JSON.stringify({ doc: null, emisiones: 0 }));
 await writeFile(
@@ -178,8 +189,9 @@ if(nombre==='guardar_venta'||nombre==='guardar_borrador_factura'||nombre==='emit
 if(nombre==='ficha_venta')return {data:estado.doc,error:null};
 if(nombre==='emitir_venta'){if(estado.doc.estado!=='confirmada'){estado.doc.estado='confirmada';estado.doc.numero=1;estado.doc.emitido='2026-11-22T12:00:00Z';estado.doc.pagado=estado.doc.abono;estado.doc.saldo=new Decimal(estado.doc.total).minus(estado.doc.pagado).toFixed();estado.doc.pagos=[{tipo:'cobro',monto:estado.doc.abono,metodo:estado.doc.metodo_pago,creado:estado.doc.emitido}];estado.emisiones++;}await writeFile(archivo,JSON.stringify(estado));return {data:args.p_id,error:null};}
 if(nombre==='cobrar_factura'){if(estado.claves?.includes(args.p.idempotencia))return {data:args.p.idempotencia,error:null};estado.claves??=[];estado.claves.push(args.p.idempotencia);estado.doc.pagado=new Decimal(estado.doc.pagado).plus(args.p.monto).toFixed();estado.doc.saldo=new Decimal(estado.doc.total).minus(estado.doc.pagado).toFixed();estado.doc.pagos.push({tipo:'cobro',monto:args.p.monto,metodo:args.p.metodo,creado:'2026-11-22T12:10:00Z'});await writeFile(archivo,JSON.stringify(estado));return {data:args.p.idempotencia,error:null};}
+if(nombre==='abonar_cuenta_cliente'){if(estado.abonosClaves?.includes(args.p.id))return {data:args.p.id,error:null};estado.abonosClaves??=[];estado.abonosClaves.push(args.p.id);estado.cuentaAbonos=new Decimal(estado.cuentaAbonos||0).plus(args.p.monto).toFixed();await writeFile(archivo,JSON.stringify(estado));return {data:args.p.id,error:null};}
 if(nombre==='buscar_ventas')return {data:{filas:estado.doc?[{...estado.doc,fecha:estado.doc.emitido||estado.doc.creado,cliente:cliente.nombre,cliente_id:cliente.id}]:[],total:estado.doc?1:0,pagina:1,paginas:1,resumen:{facturado:estado.doc?.total||'0',cobrado:estado.doc?.pagado||'0',pendiente:estado.doc?.saldo||'0',emitidas:estado.emisiones}},error:null};
-if(nombre==='estado_cliente'||nombre==='historial_cliente_anterior')return {data:{cliente,moneda:'USD',anterior:'0',final:nombre==='estado_cliente'?new Decimal(100).plus(estado.doc?.saldo||0).toFixed():'100',cargos:'120',abonos:'20',filas:[{id:'historico-1',fecha:'2026-11-01T12:00:00Z',descripcion:'Faro original del sistema anterior',tipo:'CARGO',importe:'120',saldo:'120'}],total:1,pagina:1,paginas:1},error:null};
+if(nombre==='estado_cliente'||nombre==='historial_cliente_anterior')return {data:{cliente,moneda:'USD',anterior:'0',final:nombre==='estado_cliente'?new Decimal(100).minus(estado.cuentaAbonos||0).plus(estado.doc?.saldo||0).toFixed():'100',cargos:'120',abonos:'20',filas:[{id:'historico-1',fecha:'2026-11-01T12:00:00Z',descripcion:'Faro original del sistema anterior',tipo:'CARGO',importe:'120',saldo:'120'}],total:1,pagina:1,paginas:1},error:null};
 throw new Error('RPC inesperada '+nombre);}
 export async function conexion(){return {rpc,auth:{getUser:async()=>({data:{user:{id:'44444444-4444-4444-8444-444444444444'}}})}};}
 export async function sesion(){return {perfil:{rol:'administrador',nombre:'Prueba'},db:await conexion()};}
@@ -350,15 +362,26 @@ try {
     });
   }
   await page.getByRole("link", { name: /Ver cuenta e historial/ }).click();
-  await page
-    .getByRole("link", { name: "Historial del sistema anterior", exact: true })
-    .click();
+  await expect(
+    page.getByRole("heading", { name: "Historial completo", exact: true }),
+  ).toBeVisible();
   await expect(
     page.getByRole("cell", { name: "Faro original del sistema anterior" }),
   ).toBeVisible();
   await expect(
     page.getByRole("link", { name: "CSV completo" }),
-  ).toHaveAttribute("href", /origen=anterior/);
+  ).not.toHaveAttribute("href", /origen=anterior/);
+  await expect(page.getByLabel("Desde", { exact: true })).not.toBeVisible();
+  await page
+    .getByRole("button", { name: "Mostrar filtros del historial", exact: true })
+    .click();
+  await expect(page.getByLabel("Desde", { exact: true })).toBeVisible();
+  await page
+    .getByRole("button", {
+      name: "Minimizar filtros del historial",
+      exact: true,
+    })
+    .click();
   await page.goto(base + "/facturacion");
   await expect(page.locator(".factura-estado")).toContainText("Pagada");
   await page.getByRole("link", { name: "Anular", exact: true }).click();
@@ -441,9 +464,71 @@ try {
     path: "/tmp/alexmar-editor-movil.png",
     fullPage: true,
   });
+  const cuentaRuta = "/clientes/11111111-1111-4111-8111-111111111111";
+  await page.goto(base + cuentaRuta);
+  await page
+    .getByRole("link", { name: "Registrar abono", exact: true })
+    .click();
+  await page.getByLabel("Monto USD", { exact: true }).fill("25");
+  await page
+    .getByRole("button", { name: "Revisar abono", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Confirmar abono recibido", exact: true })
+    .click();
+  await expect
+    .poll(
+      async () => JSON.parse(await readFile(stateFile, "utf8")).cuentaAbonos,
+    )
+    .toBe("25");
+  await page
+    .getByRole("link", { name: "Cargar productos", exact: true })
+    .click();
+  await expect(
+    page.getByRole("combobox", { name: "Buscar cliente", exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("radio", { name: "Contado", exact: true }),
+  ).toHaveCount(0);
+  await expect(page.locator(".factura-cliente-elegido")).toContainText(
+    "Cliente de muestra",
+  );
+  await page
+    .getByRole("combobox", { name: "Añadir producto", exact: true })
+    .focus();
+  await page.getByRole("option", { name: /Filtro Toyota/ }).click();
+  await page
+    .getByRole("button", { name: "Revisar cargo", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Confirmar cargo a la cuenta", exact: true })
+    .click();
+  await page.waitForURL(/clientes\/.*guardado=1/);
+  const cuentaEstado = JSON.parse(await readFile(stateFile, "utf8"));
+  expect(cuentaEstado.doc.cliente_id).toBe(
+    "11111111-1111-4111-8111-111111111111",
+  );
+  expect(cuentaEstado.doc.condicion).toBe("credito");
+  expect(cuentaEstado.doc.abono).toBe("0");
+  await expect(
+    page.getByRole("heading", { name: "Historial completo", exact: true }),
+  ).toBeVisible();
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 1000 });
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth > innerWidth,
+      ),
+    ).toBe(false);
+    await page.screenshot({
+      path: "/tmp/alexmar-cuenta-" + width + ".png",
+      fullPage: true,
+      caret: "initial",
+    });
+  }
   expect(errores).toEqual([]);
   console.log(
-    "Facturación: teclado, búsqueda por palabras, cliente nuevo sin perder líneas, precio automático, contado/crédito, borrador y emisión directa revisada, cobro, historia separada, impresión escapada y 1440/390 claro/oscuro. DB simulada, sin operaciones reales.",
+    "Facturación: teclado, búsqueda por palabras, cliente nuevo sin perder líneas, precio automático, contado/crédito, borrador y emisión directa revisada, cobro, cuenta continua con filtros cerrados, abono y cargo directo a crédito, impresión escapada y 1440/390 claro/oscuro. DB simulada, sin operaciones reales.",
   );
 } catch (e) {
   console.error(logs.slice(-6000));

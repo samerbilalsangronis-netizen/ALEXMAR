@@ -1,5 +1,13 @@
 # HANDOFF · ALEXMAR
 
+## Cuenta continua y eliminar notas · 2026-11-23
+
+El propietario solicita una única cuenta por cliente, filtros minimizados y productos/abonos desde el cliente sin buscarlo ni escoger contado/crédito. La ficha abre estado_cliente completo, indicadores globales de saldo/cargos/abonos, filtros cerrados por defecto y comprobantes secundarios plegados. Se mantienen procedencias y libros contables, sin fabricar facturas históricas. SQL 015 amplía estado_cliente con cantidad/precio original y descripciones de líneas de cargos de factura. Exportación completa y paginación real conservadas.
+
+Cargar productos reutiliza editor/transacción de facturación con cliente fijo, crédito y retorno a la cuenta; conserva reglas de precio, stock opcional, revisión e idempotencia. Registrar abono usa nueva RPC administrativa: saldo esperado, aplicación primero a deuda sin factura y luego comprobantes por antigüedad, pagos de factura mediante cobrar_factura sin duplicar ABONO global, registro privado de aplicaciones y exactitud decimal. Cerrojo compartido con sincronización del origen, cliente/documentos bloqueados, verificación de reducción exacta y transacción completa. No se permiten anticipos/sobreabonos. No se confirma el corte pendiente ni se modifican archivos del sistema anterior.
+
+Verificación: 34 pruebas, tipos y build correctos; recorridos de navegador de facturación/cuenta y notas aprobados, con backend simulado y 1440/390. Notas añade Eliminar nota con diálogo, confirmar/cancelar, activo=false y auditoría. Guardar desde pestaña anterior rechaza una nota eliminada. SQL 015 nuevo, una vez; no repetir 014 ni limpiar/reimportar. No se aplicó SQL ni se operaron cuentas/notas reales desde desarrollo. La comprobación remota de instalación de 014 sigue pendiente del resultado del propietario.
+
 ## Hoja de notas, colores y stickers · 2026-11-23
 
 El propietario no encontraba la creación porque estaba debajo de todo el listado. Nueva nota visible en cabecera abre hoja propia (`/notas?nueva=1`); cada tarjeta permite Abrir y editar conservando página/ID. Título y contenido con color, resaltado, negrita/cursiva/subrayado, deshacer/rehacer y ocho stickers incluidos, insertados en cursor. Hoja clara legible en ambos temas, herramientas adaptables y errores que conservan contenido. Cambios solo se guardan al pulsar Guardar; no hay caché privada ni autosave. Advertencia al cerrar/recargar y al volver desde la hoja.

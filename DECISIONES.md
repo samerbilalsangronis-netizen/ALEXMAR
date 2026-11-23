@@ -112,3 +112,9 @@
 
 - El propietario solicita Nueva nota visible, hoja para escribir, color de letra, resaltado y stickers. Se añade edición de notas existentes, preservando el texto anterior hasta guardar.
 - Guardado explícito en la base existente, sin nuevo SQL ni caché privada. Texto/estilos permitidos en formato propio, render seguro sin HTML ejecutable. Acceso administrativo exclusivamente.
+
+## Cuenta continua y eliminación de notas · 2026-11-23
+
+- El propietario pide cuenta unificada, sin separación visual entre sistemas, filtros cerrados y productos/abonos cargados en el cliente. Se conserva la procedencia técnica y los comprobantes sin duplicar deuda. Los productos desde cuenta se registran a crédito con cliente fijo; facturación general conserva contado/crédito.
+- Abonos de cuenta: primero saldo sin factura, después comprobantes por antigüedad, todos reflejados en la misma cuenta. Saldo esperado, exactitud, idempotencia y aplicación transaccional. No anticipos/sobreabonos. SQL 015 manual, sin limpiar ni reimportar.
+- Eliminar notas las retira del listado, con confirmación y auditoría, sin afectar datos financieros.

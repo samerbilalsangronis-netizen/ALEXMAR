@@ -46,3 +46,32 @@ export async function guardarHojaNota(
     };
   }
 }
+
+export async function eliminarHojaNota(
+  _: { error?: string; eliminado?: boolean },
+  f: FormData,
+): Promise<{ error?: string; eliminado?: boolean }> {
+  try {
+    const { db, perfil } = await sesion();
+    if (perfil.rol !== "administrador")
+      throw new Error("Solo el personal administrativo puede eliminar notas.");
+    if (f.get("confirmado") !== "on")
+      throw new Error("Confirma que quieres eliminar esta nota.");
+    const { error } = await db.rpc("eliminar_nota", {
+      p_id: String(f.get("id") || ""),
+    });
+    if (error) {
+      if (["PGRST202", "42883"].includes(error.code))
+        throw new Error(
+          "Aplica el SQL 015 para activar la eliminación de notas.",
+        );
+      throw new Error(error.message);
+    }
+    revalidatePath("/notas");
+    return { eliminado: true };
+  } catch (e) {
+    return {
+      error: e instanceof Error ? e.message : "No se pudo eliminar la nota.",
+    };
+  }
+}

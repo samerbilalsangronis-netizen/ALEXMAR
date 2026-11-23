@@ -350,6 +350,7 @@ export function EditorVenta({
   clientes,
   productos,
   descontarStock = true,
+  cuentaCliente,
 }: {
   clave: string;
   administrador: boolean;
@@ -357,6 +358,7 @@ export function EditorVenta({
   clientes?: Resultados;
   productos?: Resultados;
   descontarStock?: boolean;
+  cuentaCliente?: ResultadoVenta;
 }) {
   const router = useRouter(),
     [cliente, setCliente] = useState<ResultadoVenta | null>(
@@ -366,7 +368,7 @@ export function EditorVenta({
             nombre: inicial.cliente.nombre,
             documento: inicial.cliente.documento || undefined,
           }
-        : null,
+        : cuentaCliente || null,
     ),
     [lineas, setLineas] = useState<LineaVenta[]>(inicial?.lineas || []);
   const [condicion, setCondicion] = useState<"contado" | "credito">(
@@ -375,7 +377,9 @@ export function EditorVenta({
             (new Decimal(inicial.abono).eq(inicial.total)
               ? "contado"
               : "credito")
-        : "contado",
+        : cuentaCliente
+          ? "credito"
+          : "contado",
     ),
     [abono, setAbono] = useState(inicial?.abono || "0"),
     [descuento, setDescuento] = useState(inicial?.descuento || "0"),
@@ -535,7 +539,11 @@ export function EditorVenta({
         ),
         d = await r.json();
       if (!r.ok) throw new Error(d.error || "No se pudo guardar.");
-      router.push("/facturacion/" + d.id);
+      router.push(
+        cuentaCliente && emitir
+          ? "/clientes/" + cuentaCliente.id + "?guardado=1"
+          : "/facturacion/" + d.id,
+      );
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "No se pudo guardar.");
@@ -571,7 +579,11 @@ export function EditorVenta({
           tabIndex={-1}
         >
           <span className="eyebrow">ANTES DE EMITIR</span>
-          <h2>Revisa tu factura</h2>
+          <h2>
+            {cuentaCliente
+              ? "Revisa el cargo a la cuenta"
+              : "Revisa tu factura"}
+          </h2>
           <p>
             <strong>{cliente?.nombre}</strong> ·{" "}
             {condicion === "contado" ? "Contado" : "Crédito"} · USD
@@ -635,7 +647,11 @@ export function EditorVenta({
               onClick={() => guardar(true)}
             >
               <Check size={16} />
-              {ocupado ? "Emitiendo…" : "Confirmar y emitir"}
+              {ocupado
+                ? "Guardando…"
+                : cuentaCliente
+                  ? "Confirmar cargo a la cuenta"
+                  : "Confirmar y emitir"}
             </button>
           </div>
         </section>
@@ -643,49 +659,59 @@ export function EditorVenta({
         <>
           <section className="panel factura-cabecera-form">
             <div className="factura-cliente">
-              <Busqueda
-                tipo="clientes"
-                elegir={setCliente}
-                key={"clientes-" + busquedaVersion}
-                inicial={busquedaVersion === 0 ? clientes : undefined}
-              />
+              {!cuentaCliente && (
+                <Busqueda
+                  tipo="clientes"
+                  elegir={setCliente}
+                  key={"clientes-" + busquedaVersion}
+                  inicial={busquedaVersion === 0 ? clientes : undefined}
+                />
+              )}
               {cliente && (
                 <div className="factura-cliente-elegido">
                   <Check size={16} />
                   <strong>{cliente.nombre}</strong>
                   <small>{cliente.documento}</small>
-                  <button
-                    type="button"
-                    className="texto"
-                    onClick={() => setCliente(null)}
-                  >
-                    Cambiar
-                  </button>
+                  {!cuentaCliente && (
+                    <button
+                      type="button"
+                      className="texto"
+                      onClick={() => setCliente(null)}
+                    >
+                      Cambiar
+                    </button>
+                  )}
                 </div>
               )}
-              <NuevoCliente elegir={setCliente} />
+              {!cuentaCliente && <NuevoCliente elegir={setCliente} />}
             </div>
             <div className="factura-fecha">
               <small>Fecha de emisión</small>
               <strong>{hoy}</strong>
               <span className="etiqueta">USD · Impuesto 0</span>
             </div>
-            <fieldset className="factura-condicion">
-              <legend>Condición de venta</legend>
-              <div className="factura-segmentos">
-                {(["contado", "credito"] as const).map((c) => (
-                  <label key={c}>
-                    <input
-                      type="radio"
-                      name="condicion"
-                      checked={condicion === c}
-                      onChange={() => setCondicion(c)}
-                    />
-                    <span>{c === "contado" ? "Contado" : "Crédito"}</span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
+            {cuentaCliente ? (
+              <p className="etiqueta">
+                Cargo a la cuenta del cliente · Crédito
+              </p>
+            ) : (
+              <fieldset className="factura-condicion">
+                <legend>Condición de venta</legend>
+                <div className="factura-segmentos">
+                  {(["contado", "credito"] as const).map((c) => (
+                    <label key={c}>
+                      <input
+                        type="radio"
+                        name="condicion"
+                        checked={condicion === c}
+                        onChange={() => setCondicion(c)}
+                      />
+                      <span>{c === "contado" ? "Contado" : "Crédito"}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            )}
           </section>
           <section className="panel factura-productos">
             <Busqueda
@@ -697,7 +723,11 @@ export function EditorVenta({
             {lineas.length === 0 ? (
               <div className="factura-vacia">
                 <Search size={28} />
-                <h2>¿Qué vas a facturar?</h2>
+                <h2>
+                  {cuentaCliente
+                    ? "¿Qué productos vas a cargar?"
+                    : "¿Qué vas a facturar?"}
+                </h2>
                 <p>
                   Busca por nombre o primeras letras. El precio de venta se
                   coloca solo.
@@ -932,19 +962,21 @@ export function EditorVenta({
               <strong>{total ? monto(total) : "—"}</strong>
             </div>
             <div className="acciones">
-              <button
-                type="button"
-                className="secundario"
-                disabled={ocupado}
-                onClick={() => guardar(false)}
-              >
-                {ocupado ? "Guardando…" : "Guardar borrador"}
-              </button>
+              {!cuentaCliente && (
+                <button
+                  type="button"
+                  className="secundario"
+                  disabled={ocupado}
+                  onClick={() => guardar(false)}
+                >
+                  {ocupado ? "Guardando…" : "Guardar borrador"}
+                </button>
+              )}
               <button
                 type="submit"
                 disabled={ocupado || !lineas.length || !cliente}
               >
-                Revisar y emitir
+                {cuentaCliente ? "Revisar cargo" : "Revisar y emitir"}
               </button>
             </div>
           </footer>

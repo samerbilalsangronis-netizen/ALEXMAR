@@ -78,13 +78,14 @@ await writeFile(rolFile, JSON.stringify("administrador"));
 await writeFile(falloFile, "false");
 await writeFile(
   join(dir, "datos.ts"),
-  `
+  `// @ts-nocheck -- sesión/DB sintéticas de navegador
 import {readFile,writeFile} from 'node:fs/promises';
 const archivo=${JSON.stringify(estadoFile)},rol=${JSON.stringify(rolFile)},fallo=${JSON.stringify(falloFile)};
 async function perfil(){return {rol:JSON.parse(await readFile(rol,'utf8')),nombre:'Admin de prueba'}}
 const db={rpc:async(n,args)=>{
  const notas=JSON.parse(await readFile(archivo,'utf8'));
  if(n==='listar_notas') return {data:{filas:notas,total:notas.length,pagina:1,paginas:1}};
+ if(n==='eliminar_nota'){const siguientes=notas.filter(x=>x.id!==args.p_id);await writeFile(archivo,JSON.stringify(siguientes));return {data:null};}
  if(n==='guardar_nota'){
   if(JSON.parse(await readFile(fallo,'utf8'))) return {error:{message:'Fallo simulado de guardado. Reintenta.'}};
   if((await perfil()).rol!=='administrador')return {error:{message:'Sin permiso'}};
@@ -267,6 +268,30 @@ try {
   await page.getByRole("button", { name: "Guardar nota", exact: true }).click();
   await page.waitForURL(/guardado=1/);
   expect(JSON.parse(await readFile(estadoFile, "utf8"))).toHaveLength(2);
+  const anterior = page.locator("article.nota").filter({
+    has: page.getByRole("heading", { name: "Nota anterior", exact: true }),
+  });
+  await anterior
+    .getByRole("button", { name: "Eliminar nota", exact: true })
+    .click();
+  await page
+    .getByRole("dialog", { name: "Eliminar nota", exact: true })
+    .getByRole("button", { name: "Cancelar", exact: true })
+    .click();
+  await expect(anterior).toBeVisible();
+  await anterior
+    .getByRole("button", { name: "Eliminar nota", exact: true })
+    .click();
+  const eliminar = page.getByRole("dialog", {
+    name: "Eliminar nota",
+    exact: true,
+  });
+  await eliminar.getByRole("checkbox").check();
+  await eliminar
+    .getByRole("button", { name: "Confirmar eliminación", exact: true })
+    .click();
+  await expect(anterior).toHaveCount(0);
+  expect(JSON.parse(await readFile(estadoFile, "utf8"))).toHaveLength(1);
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 1000 });
     await page.goto(base + "/notas?nueva=1");

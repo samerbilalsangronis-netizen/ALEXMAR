@@ -10,7 +10,7 @@ La hoja es clara y legible en ambos temas. En escritorio y móvil, el botón de 
 
 ## Publicación y datos
 
-Esta mejora **no necesita SQL adicional, limpieza ni importación**. Utiliza las funciones existentes `guardar_nota` y `listar_notas` y la columna `contenido`. El contenido enriquecido lleva un identificador de formato y fragmentos JSON con texto/estilos permitidos; se muestran con React como texto, sin insertar HTML. Se permiten hasta 50.000 caracteres y 3000 fragmentos, y títulos de 200 caracteres. Al pegar, se admite texto sin ejecutar HTML, imágenes ni enlaces externos.
+El editor **no necesita SQL adicional, limpieza ni importación**. Para **Eliminar nota**, aplica SQL 015; ver [cuenta continua y eliminación](CUENTA_CONTINUA.md). Utiliza las funciones existentes `guardar_nota` y `listar_notas` y la columna `contenido`. El contenido enriquecido lleva un identificador de formato y fragmentos JSON con texto/estilos permitidos; se muestran con React como texto, sin insertar HTML. Se permiten hasta 50.000 caracteres y 3000 fragmentos, y títulos de 200 caracteres. Al pegar, se admite texto sin ejecutar HTML, imágenes ni enlaces externos.
 
 Acceso exclusivo Administrativo, comprobado en página, acción de servidor y funciones existentes de la base. General continúa sin acceso. Se mantienen IDs al editar y al reintentar guardar; no se duplican notas con un mismo ID. El historial de la base continúa auditando las modificaciones. No se modifica el sistema anterior.
 

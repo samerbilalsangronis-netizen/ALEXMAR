@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { randomUUID } from "node:crypto";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Plus, FilePenLine, StickyNote } from "lucide-react";
 import { sesion } from "@/lib/supabase";
 import { type Pagina, pagina } from "@/lib/formatos";
 import { Cabecera, Paginacion, Avisos } from "@/components/comunes";
 import { ContenidoNota } from "@/components/contenido-nota";
+import { EliminarNota } from "@/components/eliminar-nota";
 import { EditorNota } from "@/components/editor-nota";
 type Nota = { id: string; titulo: string; contenido: string };
 export default async function Notas({
@@ -31,6 +32,7 @@ export default async function Notas({
   });
   if (error) throw new Error(error.message);
   const d = data as Pagina<Nota>;
+  if (!p.editar && d.pagina > d.paginas) redirect("/notas?pagina=" + d.paginas);
   if (p.editar) {
     const n = d.filas.find((n) => n.id === p.editar);
     if (!n) notFound();
@@ -79,6 +81,7 @@ export default async function Notas({
             >
               <FilePenLine size={16} aria-hidden="true" /> Abrir y editar
             </Link>
+            <EliminarNota id={n.id} titulo={n.titulo} />
           </article>
         ))}
       </div>

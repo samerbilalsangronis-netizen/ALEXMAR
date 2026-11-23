@@ -5,18 +5,21 @@ export function Plegable({
   titulo,
   preferencia,
   children,
+  cerradoInicial = false,
 }: {
   titulo: string;
   preferencia: string;
   children: React.ReactNode;
+  cerradoInicial?: boolean;
 }) {
-  const [abierto, setAbierto] = useState(true);
+  const [abierto, setAbierto] = useState(!cerradoInicial);
   const id = useId();
   useEffect(() => {
     try {
-      setAbierto(localStorage.getItem(preferencia) !== "cerrado");
+      if (!cerradoInicial)
+        setAbierto(localStorage.getItem(preferencia) !== "cerrado");
     } catch {}
-  }, [preferencia]);
+  }, [preferencia, cerradoInicial]);
   function alternar() {
     setAbierto((v) => {
       try {

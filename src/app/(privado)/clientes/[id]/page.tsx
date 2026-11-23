@@ -1,13 +1,14 @@
 import Link from "next/link";
-import { ActivarFacturacion } from "@/components/activar-facturacion";
+import { randomUUID } from "node:crypto";
 import { notFound } from "next/navigation";
-import DecimalBase from "decimal.js";
 import { sesion } from "@/lib/supabase";
 import { type Pagina, monto, fecha, pagina } from "@/lib/formatos";
-import { Cabecera, Paginacion } from "@/components/comunes";
+import { Cabecera, Paginacion, Avisos } from "@/components/comunes";
 import { TablaFacturas, type ListaFacturas } from "@/components/tabla-facturas";
+import { Plegable } from "@/components/plegable";
+import { AbonoCuenta } from "@/components/abono-cuenta";
+import { EditorVenta } from "@/components/editor-venta";
 import type { Cliente } from "../page";
-const Decimal = DecimalBase.clone({ precision: 128 });
 export type Estado = Pagina<{
   id: string;
   fecha: string;
@@ -25,7 +26,6 @@ export type Estado = Pagina<{
   abonos: string;
   moneda: string;
 };
-class FaltaActualizacion extends Error {}
 export default async function Cuenta({
   params,
   searchParams,
@@ -36,64 +36,53 @@ export default async function Cuenta({
   const { id } = await params;
   if (!/^[a-f0-9-]{36}$/i.test(id)) notFound();
   const { db, perfil } = await sesion();
-  if (!["administrador", "ventas"].includes(perfil.rol)) notFound();
+  if (perfil.rol !== "administrador") notFound();
   async function consultar<T>(
     nombre: string,
     parametros: Record<string, unknown>,
   ): Promise<T> {
     const { data, error } = await db.rpc(nombre, parametros);
-    if (error && ["PGRST202", "42883"].includes(error.code))
-      throw new FaltaActualizacion();
     if (error) throw new Error(error.message);
     return data as T;
   }
   const p = await searchParams;
-  const vista = ["historia", "cuenta"].includes(p.vista) ? p.vista : "facturas";
   const moneda = ["USD", "VES", "COP"].includes(p.moneda) ? p.moneda : "USD";
   const args = { p_id: id, p_moneda: moneda };
-  const datos = await Promise.all([
-    consultar<Estado>("estado_cliente", args),
-    consultar<Estado>("historial_cliente_anterior", args),
-    consultar<ListaFacturas>("buscar_ventas", {
-      p: {
-        cliente_id: id,
-        pagina: vista === "facturas" ? pagina(p.pagina) : 1,
-        cobro: p.cobro || "",
-        desde: p.desde || "",
-        hasta: p.hasta || "",
-      },
-    }),
-  ]).catch((e) => {
-    if (e instanceof FaltaActualizacion) return null;
-    throw e;
-  });
-  if (!datos) return <ActivarFacturacion />;
-  const [global, historico, facturas] = datos;
+  const global = await consultar<Estado>("estado_cliente", args);
   if (!global.cliente) notFound();
-  const deudaNueva = new Decimal(global.final).minus(historico.final).toFixed();
-  const rpc =
-    vista === "historia" ? "historial_cliente_anterior" : "estado_cliente";
+  const ruta = "/clientes/" + id;
   const d =
-    vista === "facturas"
-      ? null
-      : !p.desde && !p.hasta && pagina(p.pagina) === 1
-        ? vista === "historia"
-          ? historico
-          : global
-        : await consultar<Estado>(rpc, {
-            ...args,
-            p_desde: p.desde || null,
-            p_hasta: p.hasta || null,
-            p_pagina: pagina(p.pagina),
-          });
+    !p.desde && !p.hasta && pagina(p.pagina) === 1
+      ? global
+      : await consultar<Estado>("estado_cliente", {
+          ...args,
+          p_desde: p.desde || null,
+          p_hasta: p.hasta || null,
+          p_pagina: pagina(p.pagina),
+        });
   const exportar = new URLSearchParams({
     id,
     desde: p.desde || "",
     hasta: p.hasta || "",
     moneda,
-    ...(vista === "historia" ? { origen: "anterior" } : {}),
   });
-  const ruta = "/clientes/" + id;
+  let productos;
+  let config;
+  if (p.accion === "cargo") {
+    [productos, config] = await Promise.all([
+      consultar<{ filas: Record<string, unknown>[]; paginas: number }>(
+        "buscar_productos",
+        { p: { pagina: 1, estado: "activos" } },
+      ),
+      consultar<{ descontar_stock?: boolean }>("configuracion_facturacion", {}),
+    ]);
+  }
+  const facturas =
+    p.vista === "facturas"
+      ? await consultar<ListaFacturas>("buscar_ventas", {
+          p: { cliente_id: id, pagina: pagina(p.documentos_pagina) },
+        })
+      : null;
   return (
     <>
       <Link href="/clientes">← Clientes</Link>
@@ -105,51 +94,99 @@ export default async function Cuenta({
           (global.cliente.telefono || "Sin teléfono")
         }
       >
-        <Link className="boton" href="/facturacion/nueva">
-          Nueva factura
-        </Link>
+        <div className="acciones">
+          <Link
+            className="boton"
+            href={ruta + "?accion=cargo#operacion-cuenta"}
+          >
+            Cargar productos
+          </Link>
+          <Link
+            className="boton secundario"
+            href={ruta + "?accion=abono#operacion-cuenta"}
+          >
+            Registrar abono
+          </Link>
+        </div>
       </Cabecera>
+      <Avisos p={p} />
       <section className="indicadores factura-indicadores">
         <article>
           <small>CUENTA TOTAL · {moneda}</small>
           <strong>{monto(global.final, moneda)}</strong>
-          <span>Todos los movimientos del cliente</span>
+          <span>Saldo pendiente del cliente</span>
         </article>
         <article>
-          <small>SISTEMA ANTERIOR · {moneda}</small>
-          <strong>{monto(historico.final, moneda)}</strong>
-          <Link href={ruta + "?vista=historia&moneda=" + moneda}>
-            Ver productos e historial →
-          </Link>
+          <small>TOTAL CARGADO · {moneda}</small>
+          <strong>{monto(global.cargos, moneda)}</strong>
+          <span>Productos y cargos acumulados</span>
         </article>
         <article>
-          <small>OPERACIONES NUEVAS · {moneda}</small>
-          <strong>{monto(deudaNueva, moneda)}</strong>
-          <span>Facturas y otros movimientos fuera del origen</span>
+          <small>TOTAL ABONADO · {moneda}</small>
+          <strong>{monto(global.abonos, moneda)}</strong>
+          <span>Abonos y pagos acumulados</span>
         </article>
       </section>
-      <nav
-        className="factura-pestanas panel"
-        aria-label="Historial del cliente"
-      >
-        {[
-          ["facturas", "Facturas nuevas"],
-          ["historia", "Historial del sistema anterior"],
-          ["cuenta", "Cuenta completa"],
-        ].map(([v, t]) => (
-          <Link
-            key={v}
-            aria-current={vista === v ? "page" : undefined}
-            href={ruta + "?vista=" + v + "&moneda=" + moneda}
-          >
-            {t}
-          </Link>
-        ))}
-      </nav>
+      {p.accion && (
+        <section id="operacion-cuenta">
+          <div className="acciones">
+            <h2>
+              {p.accion === "cargo"
+                ? "Cargar productos a la cuenta"
+                : "Abonar a la cuenta"}
+            </h2>
+            <Link className="boton secundario" href={ruta}>
+              Cerrar y ver historial
+            </Link>
+          </div>
+          {p.accion === "cargo" && productos && (
+            <EditorVenta
+              key={id}
+              clave={randomUUID()}
+              administrador
+              inicial={null}
+              cuentaCliente={{
+                id,
+                nombre: global.cliente.nombre,
+                documento: global.cliente.documento || undefined,
+              }}
+              descontarStock={config?.descontar_stock ?? true}
+              productos={{
+                filas: productos.filas.map((r) => ({
+                  id: String(r.id),
+                  variante_id: String(r.variante_id),
+                  nombre: String(r.nombre),
+                  precio: r.precio === null ? null : String(r.precio),
+                  disponible: String(r.disponible),
+                })),
+                paginas: productos.paginas,
+              }}
+            />
+          )}
+          {p.accion === "abono" && (
+            <AbonoCuenta
+              id={id}
+              saldo={
+                moneda === "USD"
+                  ? global.final
+                  : (
+                      await consultar<Estado>("estado_cliente", {
+                        p_id: id,
+                        p_moneda: "USD",
+                      })
+                    ).final
+              }
+            />
+          )}
+        </section>
+      )}
       <section className="panel factura-filtros">
-        <form>
-          <input type="hidden" name="vista" value={vista} />
-          <div className="factura-filtro-fila">
+        <Plegable
+          titulo="Filtros del historial"
+          preferencia="alexmar-cuenta-filtros"
+          cerradoInicial
+        >
+          <form className="factura-filtro-fila">
             <label>
               Desde
               <input type="date" name="desde" defaultValue={p.desde} />
@@ -158,148 +195,108 @@ export default async function Cuenta({
               Hasta
               <input type="date" name="hasta" defaultValue={p.hasta} />
             </label>
-            {vista === "facturas" ? (
-              <label>
-                Estado de cobro
-                <select name="cobro" defaultValue={p.cobro || ""}>
-                  <option value="">Todos</option>
-                  <option value="pendiente">Por cobrar</option>
-                  <option value="pagada">Pagadas</option>
-                </select>
-              </label>
-            ) : (
-              <label>
-                Moneda
-                <select name="moneda" defaultValue={moneda}>
-                  <option>USD</option>
-                  <option>VES</option>
-                  <option>COP</option>
-                </select>
-              </label>
-            )}
+            <label>
+              Moneda
+              <select name="moneda" defaultValue={moneda}>
+                <option>USD</option>
+                <option>VES</option>
+                <option>COP</option>
+              </select>
+            </label>
             <button className="secundario">Consultar</button>
-          </div>
-        </form>
+            <Link href={ruta}>Quitar filtros</Link>
+          </form>
+        </Plegable>
       </section>
-      {vista === "facturas" ? (
-        <section className="panel">
-          <h2>Facturas nuevas · USD</h2>
-          <p className="muted">
-            La deuda importada se conserva en el historial anterior. Aquí solo
-            aparecen documentos creados en ALEXMAR.
+      <section className="panel">
+        <h2>Historial completo</h2>
+        <p className="muted">
+          Todos los productos, cargos y abonos del cliente en una misma cuenta.
+        </p>
+        {(p.desde || p.hasta) && (
+          <p>
+            Saldo al inicio: {monto(d.anterior, moneda)} · Cargos del periodo:{" "}
+            {monto(d.cargos, moneda)} · Abonos del periodo:{" "}
+            {monto(d.abonos, moneda)} · Saldo al cierre:{" "}
+            {monto(d.final, moneda)}
           </p>
-          <TablaFacturas d={facturas} />
-          <Paginacion
-            {...facturas}
-            ruta={ruta}
-            parametros={{
-              vista,
-              cobro: p.cobro || "",
-              desde: p.desde || "",
-              hasta: p.hasta || "",
-              moneda,
-            }}
-          />
-        </section>
-      ) : (
-        d && (
-          <section className="panel">
-            <h2>
-              {vista === "historia"
-                ? "Historial del sistema anterior"
-                : "Cuenta completa"}
-            </h2>
-            <p>
-              {vista === "historia"
-                ? "Descripciones originales de productos, cargos, abonos y correcciones de la importación. Estos movimientos no se convierten en facturas nuevas."
-                : "Todos los movimientos activos, incluidos importación, facturas y sus pagos."}
-            </p>
-            <p>
-              Saldo anterior: <strong>{monto(d.anterior, moneda)}</strong> ·
-              Cargos: {monto(d.cargos, moneda)} · Abonos:{" "}
-              {monto(d.abonos, moneda)} · Saldo final:{" "}
-              <strong>{monto(d.final, moneda)}</strong>
-            </p>
-            <div className="acciones">
-              <a
-                className="boton secundario"
-                href={"/api/exportar?" + exportar}
-              >
-                CSV completo
-              </a>
-              <a
-                className="boton secundario"
-                href={"/api/exportar?" + exportar + "&formato=html"}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Imprimir / PDF completo
-              </a>
-            </div>
-            <div className="tabla-contenedor">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Fecha</th>
-                    <th>Producto / descripción original</th>
-                    {vista === "historia" && (
-                      <>
-                        <th>Cantidad original</th>
-                        <th>Precio unitario original</th>
-                      </>
-                    )}
-                    <th>Cargo</th>
-                    <th>Abono</th>
-                    <th>Saldo</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {d.filas.map((m) => (
-                    <tr key={m.id}>
-                      <td>{fecha(m.fecha)}</td>
-                      <td>{m.descripcion}</td>
-                      {vista === "historia" && (
-                        <>
-                          <td>
-                            {m.cantidad && m.cantidad !== "null"
-                              ? m.cantidad
-                              : "—"}
-                          </td>
-                          <td>
-                            {m.precio_unitario && m.precio_unitario !== "null"
-                              ? m.precio_unitario
-                              : "—"}
-                          </td>
-                        </>
-                      )}
-                      <td>
-                        {m.tipo === "CARGO" ? monto(m.importe, moneda) : "—"}
-                      </td>
-                      <td>
-                        {m.tipo === "ABONO" ? monto(m.importe, moneda) : "—"}
-                      </td>
-                      <td>{monto(m.saldo, moneda)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {!d.total && (
-                <p className="vacio">No hay movimientos en este periodo.</p>
-              )}
-            </div>
+        )}
+        <div className="acciones">
+          <a className="boton secundario" href={"/api/exportar?" + exportar}>
+            CSV completo
+          </a>
+          <a
+            className="boton secundario"
+            href={"/api/exportar?" + exportar + "&formato=html"}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Imprimir / PDF completo
+          </a>
+        </div>
+        <div className="tabla-contenedor">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Producto / descripción</th>
+                <th>Cantidad</th>
+                <th>Precio unitario</th>
+                <th>Cargo</th>
+                <th>Abono</th>
+                <th>Saldo</th>
+              </tr>
+            </thead>
+            <tbody>
+              {d.filas.map((m) => (
+                <tr key={m.id}>
+                  <td>{fecha(m.fecha)}</td>
+                  <td>{m.descripcion}</td>
+                  <td>
+                    {m.cantidad && m.cantidad !== "null" ? m.cantidad : "—"}
+                  </td>
+                  <td>
+                    {m.precio_unitario && m.precio_unitario !== "null"
+                      ? monto(m.precio_unitario, moneda)
+                      : "—"}
+                  </td>
+                  <td>{m.tipo === "CARGO" ? monto(m.importe, moneda) : "—"}</td>
+                  <td>{m.tipo === "ABONO" ? monto(m.importe, moneda) : "—"}</td>
+                  <td>{monto(m.saldo, moneda)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {!d.total && (
+            <p className="vacio">No hay movimientos en este periodo.</p>
+          )}
+        </div>
+        <Paginacion
+          {...d}
+          ruta={ruta}
+          parametros={{ moneda, desde: p.desde || "", hasta: p.hasta || "" }}
+        />
+      </section>
+      <details className="panel" open={Boolean(facturas)}>
+        <summary>Comprobantes del cliente</summary>
+        {facturas ? (
+          <>
+            <TablaFacturas d={facturas} />
             <Paginacion
-              {...d}
+              {...facturas}
               ruta={ruta}
-              parametros={{
-                vista,
-                moneda,
-                desde: p.desde || "",
-                hasta: p.hasta || "",
-              }}
+              parametroPagina="documentos_pagina"
+              parametros={{ vista: "facturas", moneda }}
             />
-          </section>
-        )
-      )}
+          </>
+        ) : (
+          <p>
+            <Link className="boton secundario" href={ruta + "?vista=facturas"}>
+              Consultar comprobantes
+            </Link>
+          </p>
+        )}
+      </details>
     </>
   );
 }
