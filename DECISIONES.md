@@ -133,3 +133,8 @@
 - El propietario confirma Nueva factura para contado sin cuenta permanente; todas las facturas permanecen registradas y consultables. Agregar cliente a crédito crea cuenta, y las cuentas existentes siguen con sus cargos/abonos. No crear un cliente ficticio para contado.
 - Cargar 15 filas ampliables, cantidad/nombre/precio/total, con navegación por flechas y Enter. Productos sin elegir catálogo se completan después en Inventario → Productos sin cargar; servicios separados, sin alta de producto obligatoria por cada línea antes de emitir.
 - Quitar Observaciones/descuento/autorizaciones de la interfaz, sin borrar datos antiguos. Conservar validaciones, dinero exacto, permisos, auditoría e idempotencia. Stock se descuenta solo según modo de la factura, una vez identificado y con unidades disponibles; anulación revierte solo movimientos reales. SQL 018 manual, sin limpiar ni reimportar.
+
+## PDF del cliente para WhatsApp · 2026-11-23
+
+- Añadir Generar factura a la ficha, con cuenta completa como Estado de cuenta o una factura emitida del cliente. Exportar no crea deuda ni otra factura. PDF real, logo, fecha, totales y documento completo.
+- Enlace de archivo temporal 7 días, token de alta entropía/hash y revocación; destinatario no necesita acceso a la app. Administradores generan/revocan, público solo lee ese archivo con token. Envío WhatsApp lo confirma el usuario; Web Share cuando puede adjuntar, enlace/descarga siempre disponibles. SQL 019 nuevo, sin importar datos.

@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 const config: NextConfig = {
   outputFileTracingIncludes: {
+    "/api/clientes/*/documento": [
+      "./assets/fonts/*.ttf",
+      "./public/logo-alexmar-sin-telefono.png",
+    ],
     "/icons/*": ["./public/logo-alexmar-sin-telefono.png"],
   },
   turbopack: { root: process.cwd() },

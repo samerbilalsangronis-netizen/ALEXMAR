@@ -24,6 +24,7 @@ await writeFile(
       resolveJsonModule: true,
       paths: {
         "@/lib/supabase": ["./datos.ts"],
+        "@/lib/pdf-publico": ["./datos.ts"],
         "@/app/actions": ["./acciones.ts"],
         "@/app/clientes-actions": ["./clientes-actions.ts"],
         "@/*": ["../../src/*"],
@@ -51,6 +52,8 @@ for (const path of [
   "api/facturacion/rapida/route.ts",
   "api/facturacion/producto/route.ts",
   "api/clientes/abonar/route.ts",
+  "api/clientes/[id]/documento/route.ts",
+  "compartir/pdf/[token]/route.ts",
   "api/inventario/pendientes/route.ts",
   "api/facturacion/[id]/imprimir/route.ts",
 ]) {
@@ -72,6 +75,12 @@ await writeFile(
   join(dir, "acciones.ts"),
   '"use server";export async function salir(){};export async function anularVenta(){};export async function emitirVenta(){};',
 );
+await mkdir(join(dir, "assets/fonts"), { recursive: true });
+for (const f of ["OpenSans-Regular.ttf", "OpenSans-Bold.ttf"])
+  await writeFile(
+    join(dir, "assets/fonts", f),
+    await readFile(join(repo, "assets/fonts", f)),
+  );
 const stateFile = join(dir, "estado.json"),
   rolFile = join(dir, "rol.json");
 const clienteId = "11111111-1111-4111-8111-111111111111",
@@ -119,6 +128,10 @@ if(n==='mi_perfil')return {data:await perfil()};
 if(n==='configuracion_facturacion')return {data:{version:11,version_rapida:18,descontar_stock:false}};
 if(n==='buscar_clientes')return {data:pag(e.clientes)};
 if(n==='buscar_productos')return {data:pag(e.productos.filter(a=>!args.p.q||a.nombre.toLowerCase().includes(args.p.q.toLowerCase())))};
+if(n==='documento_cuenta_pdf'){const r=await rpc('estado_cliente',{p_id:args.p_cliente});return {data:{...r.data,generado:new Date().toISOString()}};}
+if(n==='guardar_pdf_compartido'){e.pdfs??=[];const p={id:randomUUID(),token:args.p_token,nombre:args.p_nombre,base64:args.p_base64,vence:new Date(Date.now()+7*86400000).toISOString()};e.pdfs.push(p);await guardar();return {data:{id:p.id,vence:p.vence}};}
+if(n==='leer_pdf_compartido'){const p=e.pdfs?.find(p=>p.token===args.p_token&&!p.revocado&&new Date(p.vence).getTime()>Date.now());return {data:p?{nombre:p.nombre,base64:p.base64}:null};}
+if(n==='revocar_pdf_compartido'){e.pdfs.find(p=>p.id===args.p_id).revocado=true;await guardar();return {data:null};}
 if(n==='ficha_venta')return {data:e.ventas.find(v=>v.id===args.p_id)};
 if(n==='emitir_factura_rapida'){
  const p=args.p,previo=e.ventas.find(v=>v.id===p.id);if(previo)return {data:p.id};
@@ -135,7 +148,7 @@ if(n==='crear_producto_venta'){const a={id:args.p.id,variante_id:args.p.id,nombr
 if(n==='abonar_cuenta_cliente'){if(e.abonos.includes(args.p.id))return {data:args.p.id};const v=e.ventas.find(v=>v.cliente_id===args.p.cliente_id);v.pagado=new Decimal(v.pagado).plus(args.p.monto).toFixed();v.saldo=new Decimal(v.total).minus(v.pagado).toFixed();v.pagos.push({tipo:'cobro',monto:args.p.monto,metodo:args.p.metodo,creado:'2026-11-23T16:00:00Z'});e.abonos.push(args.p.id);await guardar();return {data:args.p.id};}
 throw new Error('RPC no simulada '+n);}
 const db={rpc,auth:{getUser:async()=>({data:{user:{id:'44444444-4444-4444-8444-444444444444'}}})}};
-export async function conexion(){return db;}export async function sesion(){return {db,perfil:await perfil()};}export async function consultar(n,p={}){const r=await rpc(n,p);if(r.error)throw new Error(r.error.message);return r.data;}
+export function conexionPublicaPdf(){return db;}export async function conexion(){return db;}export async function sesion(){return {db,perfil:await perfil()};}export async function consultar(n,p={}){const r=await rpc(n,p);if(r.error)throw new Error(r.error.message);return r.data;}
 `,
 );
 const sock = createServer();
@@ -348,6 +361,68 @@ try {
       async () => JSON.parse(await readFile(stateFile, "utf8")).ventas[1].saldo,
     )
     .toBe("160");
+  const cuentaActual = e.ventas[1].cliente_id;
+  await page
+    .getByRole("button", { name: "Generar factura", exact: true })
+    .click();
+  const pdfDialogo = page.getByRole("dialog", {
+    name: "Generar PDF del cliente",
+    exact: true,
+  });
+  await page.evaluate(() => {
+    Object.defineProperty(navigator, "canShare", {
+      configurable: true,
+      value: (d) => Boolean(d.files?.[0]),
+    });
+    Object.defineProperty(navigator, "share", {
+      configurable: true,
+      value: async (d) => {
+        window.archivoCompartido = {
+          tipo: d.files[0].type,
+          nombre: d.files[0].name,
+          tamano: d.files[0].size,
+        };
+      },
+    });
+  });
+  await pdfDialogo
+    .getByRole("button", { name: "Generar PDF", exact: true })
+    .click();
+  const ver = pdfDialogo.getByRole("link", { name: "Ver PDF", exact: true });
+  await expect(ver).toBeVisible();
+  const pdfRuta = await ver.getAttribute("href");
+  expect(pdfRuta).toMatch(/^\/compartir\/pdf\/[a-f0-9]{64}$/);
+  const pdfReal = await page.request.get(base + pdfRuta);
+  expect(pdfReal.headers()["content-type"]).toBe("application/pdf");
+  expect((await pdfReal.body()).subarray(0, 5).toString()).toBe("%PDF-");
+  expect(pdfReal.headers()["cache-control"]).toContain("no-store");
+  await expect(
+    pdfDialogo.getByRole("link", { name: "Enviar por WhatsApp", exact: true }),
+  ).toHaveAttribute("href", /^https:\/\/wa.me\/\?text=/);
+  expect(
+    decodeURIComponent(
+      await pdfDialogo
+        .getByRole("link", { name: "Enviar por WhatsApp", exact: true })
+        .getAttribute("href"),
+    ),
+  ).toContain(pdfRuta);
+  await pdfDialogo
+    .getByRole("button", { name: "Compartir archivo PDF", exact: true })
+    .click();
+  expect(await page.evaluate(() => window.archivoCompartido.tipo)).toBe(
+    "application/pdf",
+  );
+  await pdfDialogo
+    .getByRole("button", { name: "Desactivar enlace", exact: true })
+    .click();
+  await expect(ver).toHaveCount(0);
+  expect((await page.request.get(base + pdfRuta)).status()).toBe(404);
+  const ajena = await page.request.post(
+    base + "/api/clientes/" + cuentaActual + "/documento",
+    { headers: { origin: base }, data: { factura: cash } },
+  );
+  expect(ajena.status()).toBe(404);
+  await pdfDialogo.getByRole("button", { name: "Cerrar", exact: true }).click();
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 1000 });
     await page.goto(base + "/facturacion/nueva");
@@ -385,7 +460,7 @@ try {
   ).toHaveCount(0);
   expect(errores).toEqual([]);
   console.log(
-    "Facturación rápida: 15/20 filas, teclado, catálogo/precio editable, productos pendientes, servicio, contado sin cuenta, crédito con alta, abono, PDF, permisos y 1440/390. Backend simulado.",
+    "Facturación rápida: 15/20 filas, teclado, catálogo/precio editable, productos pendientes, servicio, contado sin cuenta, crédito con alta, abono, PDF real compartido/WhatsApp, revocación, factura ajena denegada, permisos y 1440/390. Backend simulado.",
   );
 } catch (e) {
   console.error(logs.slice(-3500));

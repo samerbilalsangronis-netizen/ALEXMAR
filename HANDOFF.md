@@ -1,5 +1,15 @@
 # HANDOFF · ALEXMAR
 
+## PDF desde cliente para WhatsApp · 2026-11-23
+
+Solicitado botón Generar factura en cada cliente para enviar PDF. Implementado diálogo con elección de cuenta completa (se titula Estado de cuenta) o factura emitida de ese cliente, con lista paginada; no inventar facturas para cargos históricos ni emitir cargos al exportar. PDF binario real con logo, ubicación, contacto, movimientos/lineas, totales y exactitud; fuentes Open Sans licenciadas embebidas, pdf-lib/fontkit. Snapshot completo de la cuenta en una RPC estable, sin recorte por filtros o página visible. No comparte costos.
+
+SQL 019: tabla privada de PDFs con RLS, token aleatorio 256 bits solo hash SHA256, acceso 7 días/revocación y auditoría de metadatos sin binario/tokenhash en log general. Crear/revocar requiere admin actual; factura individual debe corresponder al cliente y estar emitida. Lector anónimo por token devuelve solo el PDF, sin acceso a cuentas vivas. Ruta /compartir/pdf/ pasa por proxy sin sesión intencionalmente para destinatarios; no abre otras rutas/API. No cache/no referrer/no index. Límite 4 MB sin truncar, sin service role ni bucket público.
+
+Botón WhatsApp prepara mensaje con enlace; el usuario elige chat/envía. Web Share adjunta archivo cuando el dispositivo lo soporta; resto conserva descarga y enlace. No prometer que wa.me puede adjuntar binarios: WhatsApp desktop tiene esa limitación. Desactivar afecta acceso al enlace, no archivos ya recibidos. Copia refleja fecha de generación; preparar otro PDF para saldo actualizado. No se enviaron mensajes reales ni se generaron archivos con datos comerciales reales.
+
+Verificación local: 42 pruebas, tipos/build correctos, PDF multipágina con última fila/saldo comprobados por pdftotext y vista revisada; navegador con API/generador reales y DB simulada verifica enlace, archivo compartido simulado, revocación y factura ajena. Trazado de Vercel incluye logo/fuentes. Activación remota pendiente: SQL 019 una vez y despliegue Listo. No limpiar/importar ni modificar claves Vercel. Ver docs/PDF_WHATSAPP.md. La conciliación del corte anterior continúa pendiente e independiente.
+
 ## Carga rápida de 15 filas y contado sin cuenta · 2026-11-23
 
 El propietario confirmó: Nueva factura es contado, sin crear cuenta de cliente, pero todas las facturas permanecen registradas. Agregar cliente a crédito crea cuenta permanente; clientes existentes cargan productos/abonos en su ficha. Tabla de 15 filas, ampliable de cinco en cinco hasta 200, cantidad/nombre/precio editable/importe y total exacto, flechas/Enter; selección de sugerencias con Alt+flechas/Enter. Filas vacías ignoradas e incompletas bloqueadas con número real. Se elimina bloque de Observaciones/descuento/autorizaciones; no borrar datos previos. Borradores existentes conservan editor/valores originales sin ese bloque.

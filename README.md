@@ -4,6 +4,8 @@ Aplicación privada en español para Autoperiquitos y Rotulados Alexmar. **Entre
 
 ## Qué funciona
 
+- [PDF del cliente para WhatsApp](docs/PDF_WHATSAPP.md): cuenta completa o factura registrada, archivo PDF real y enlace temporal para compartir desde la ficha (SQL 019).
+
 - [Facturación rápida y productos sin cargar](docs/FACTURACION_RAPIDA.md): 15 filas ampliables, teclado, contado registrado sin crear cuenta y crédito desde el cliente; completar catálogo después de emitir (SQL 018).
 
 - [Métodos de pago](docs/METODOS_PAGO.md): Zelle y Binance, junto con los métodos existentes, en ventas, cobros, abonos de cuenta y proveedores (SQL 017).

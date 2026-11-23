@@ -6,6 +6,7 @@ import { type Pagina, monto, fecha, pagina } from "@/lib/formatos";
 import { Cabecera, Paginacion, Avisos } from "@/components/comunes";
 import { TablaFacturas, type ListaFacturas } from "@/components/tabla-facturas";
 import { Plegable } from "@/components/plegable";
+import { PdfCliente } from "@/components/pdf-cliente";
 import { AbonoCuenta } from "@/components/abono-cuenta";
 import { ActivarRapida } from "@/components/activar-rapida";
 import { EditorVentaRapida } from "@/components/editor-venta-rapida";
@@ -99,6 +100,7 @@ export default async function Cuenta({
         }
       >
         <div className="acciones">
+          <PdfCliente id={id} nombre={global.cliente.nombre} />
           <Link
             className="boton"
             href={ruta + "?accion=cargo#operacion-cuenta"}

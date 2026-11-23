@@ -9,6 +9,7 @@ export async function proxy(request: NextRequest) {
   if (!url || !key) return response;
   const recurso = request.nextUrl.pathname;
   if (
+    recurso.startsWith("/compartir/pdf/") ||
     recurso === "/manifest.webmanifest" ||
     recurso.startsWith("/icons/") ||
     recurso === "/logo-alexmar-sin-telefono.png" ||

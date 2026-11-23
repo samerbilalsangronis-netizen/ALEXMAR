@@ -1,3 +1,13 @@
+# PDF real del cliente y WhatsApp · 2026-11-23
+
+- `npm test`: 42 pruebas correctas. Nueva prueba instala todo el esquema y comprueba cuenta completa de 75 filas, PDF multipágina real y factura individual, lectura anónima de la misma copia binaria solo con token, revocación/caducidad, RLS/General y factura de otro cliente rechazada.
+- `npm run typecheck` y `npm run build`: correctos. Trazado de paquete de la ruta de generación incluye ambas fuentes y logo.
+- `node tests/facturacion.browser.mjs`: recorrido real de ficha/diálogo/API/generador PDF con backend simulado. Archivo application/pdf y cabecera %PDF-, no-store, mensaje WhatsApp con enlace al PDF, Web Share de archivo simulado, revocación con 404 tras confirmación y factura ajena denegada. Mantiene la regresión de contado/crédito/tabla/abonos/teclado y 1440/390.
+- Verificación independiente con pdftotext recuperó último movimiento 074 y saldo 75; PDF renderizado revisado, sin recortar movimientos a la primera página. Datos exclusivamente sintéticos, archivos de prueba en /tmp.
+- Sin envío real por WhatsApp, creación de archivos con datos reales ni SQL remoto. SQL 019 manual, sin claves de servicio, limpieza o reimportación.
+
+---
+
 # Tabla rápida, contado registrado y pendientes · 2026-11-23
 
 - `npm test`: 41 pruebas correctas. Nuevas pruebas instalan SQL 018 sobre todas las migraciones: 15 líneas, contado sin crear clientes/ledger, factura y pago registrados, búsqueda por nombre/documento, crédito que exige cuenta, clasificación servicio/producto, cola idempotente, vinculación sin cambiar precio/deuda, stock solo según la factura y reversión agregada de salidas reales, insuficiencia/rollback, permisos, filas vacías/incompletas y decimales exactos.
