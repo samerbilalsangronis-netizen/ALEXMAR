@@ -1,5 +1,13 @@
 # HANDOFF · ALEXMAR
 
+## Precio editable y crear producto desde cuenta/venta · 2026-11-23
+
+El propietario solicita precio unitario editable para productos del inventario y añadir al catálogo los que falten. Administrativo puede editar el precio en la línea: cantidad × precio editado, sin modificar precio/costo del catálogo. Al repetir selección, aumenta cantidad conservando el precio autorizado. SQL 016 nuevo permite emitir con precio_personalizado explícito solo para administrador; sin esa marca sigue comprobando precio actual del inventario. Marca persistida en líneas y ficha/borrador; firma e idempotencia de emisión se conservan. Stock opcional y autorizaciones de gratuidad no cambian.
+
+Crear producto en inventario dentro del editor conserva cliente/líneas/precios. Alta RPC administrativa, idempotente y auditada, devuelve solo campos de selección. Sin stock ni costo inventados; el alta queda guardada aunque luego no se confirme la venta, como indica el botón. Formulario asociado fuera del formulario de venta mediante portal, para evitar formularios anidados o una emisión accidental. General no crea ni autoriza precios. Ver docs/PRECIOS_PRODUCTOS_VENTA.md.
+
+Verificación local: 36 pruebas, tipos/build correctos y navegador de facturación/cuenta con backend simulado confirma precio editable, cantidad, repetición sin perder precio, alta sin perder líneas ni emitir, cargo con importe editado y 1440/390. Activación: SQL 016 una vez y Vercel Listo; no repetir SQL anteriores ni limpiar/reimportar. No se escribieron productos/precios/ventas en Supabase remoto. El corte pendiente del sistema anterior no se modifica.
+
 ## Cuenta continua y eliminar notas · 2026-11-23
 
 El propietario solicita una única cuenta por cliente, filtros minimizados y productos/abonos desde el cliente sin buscarlo ni escoger contado/crédito. La ficha abre estado_cliente completo, indicadores globales de saldo/cargos/abonos, filtros cerrados por defecto y comprobantes secundarios plegados. Se mantienen procedencias y libros contables, sin fabricar facturas históricas. SQL 015 amplía estado_cliente con cantidad/precio original y descripciones de líneas de cargos de factura. Exportación completa y paginación real conservadas.

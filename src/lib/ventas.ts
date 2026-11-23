@@ -4,6 +4,7 @@ export type LineaVenta = {
   descripcion: string;
   cantidad: string;
   precio: string;
+  precio_personalizado?: boolean;
   importe?: string;
 };
 export type Venta = {

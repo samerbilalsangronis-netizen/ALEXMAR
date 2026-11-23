@@ -1,3 +1,12 @@
+# Precio unitario y productos desde venta · 2026-11-23
+
+- `npm test`: 36 pruebas correctas. Dos nuevas verifican precio de inventario 60, cargo autorizado 70 × 3 = 210, catálogo/stock conservados, alta y emisión idempotentes, borrador con autorización conservada, decimales, permisos y bloqueo por stock insuficiente con control activo.
+- `npm run typecheck` y `npm run build`: correctos.
+- `node tests/facturacion.browser.mjs`: recorrido real de componentes/API con backend simulado. Además de la regresión completa, cambia precio/cantidad, selecciona de nuevo sin restablecer precio y crea un producto dentro del editor sin perder líneas ni emitir accidentalmente. Se confirma un cargo de 3 × 70 + 1 × 5 = 215 y precio_personalizado en la línea; 1440/390 y temas.
+- No se ejecutó SQL 016 ni se crearon productos o ventas en Supabase remoto. Activación manual con SQL 016 una sola vez, sin repetir migraciones previas ni reimportar.
+
+---
+
 # Cuenta continua y eliminar notas · 2026-11-23
 
 - `npm test`: 34 pruebas correctas. Dos nuevas instalan todo el esquema y verifican cuenta acumulada/comprobantes, asignación de abonos, hasta 84 decimales, idempotencia, saldo obsoleto, sobreabonos, cancelación sin doble reversión, rollback sin aplicaciones parciales ante incoherencia, paginación/filtros, eliminación de notas y permisos.

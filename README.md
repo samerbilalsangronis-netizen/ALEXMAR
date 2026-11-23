@@ -4,6 +4,8 @@ Aplicación privada en español para Autoperiquitos y Rotulados Alexmar. **Entre
 
 ## Qué funciona
 
+- [Precio unitario editable y alta desde venta](docs/PRECIOS_PRODUCTOS_VENTA.md): precio por operación, multiplicación exacta, catálogo conservado y producto nuevo sin perder líneas (SQL 016).
+
 - [Cuenta continua y eliminación de notas](docs/CUENTA_CONTINUA.md): historial conjunto, filtros cerrados, productos a crédito y abonos desde el cliente, con actualización de los comprobantes (SQL 015).
 
 - [Edición de órdenes y abonos de proveedores](docs/EDITAR_ORDENES_PROVEEDORES.md): correcciones de importes/cantidades, anulación con abonos y stock por diferencia, con historial y versiones (SQL 014).

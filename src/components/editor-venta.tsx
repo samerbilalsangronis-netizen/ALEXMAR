@@ -3,6 +3,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, Plus, Trash2, Check, ArrowLeft } from "lucide-react";
 import DecimalBase from "decimal.js";
+import { NuevoProductoVenta } from "./nuevo-producto-venta";
 import { monto, cantidad } from "@/lib/formatos";
 import type { LineaVenta, Venta } from "@/lib/ventas";
 const Decimal = DecimalBase.clone({ precision: 128 });
@@ -19,10 +20,12 @@ function Busqueda({
   tipo,
   elegir,
   inicial,
+  permitirSinPrecio = false,
 }: {
   tipo: "clientes" | "productos";
   elegir: (r: ResultadoVenta) => void;
   inicial?: Resultados;
+  permitirSinPrecio?: boolean;
 }) {
   const id = useId(),
     [q, setQ] = useState(""),
@@ -80,7 +83,7 @@ function Busqueda({
     };
   }, [q, pagina, tipo]);
   const seleccionar = (r: ResultadoVenta) => {
-    if (tipo === "productos" && r.precio == null) return;
+    if (tipo === "productos" && r.precio == null && !permitirSinPrecio) return;
     elegir(r);
     setAbierto(false);
     setQ("");
@@ -171,7 +174,10 @@ function Busqueda({
                 aria-selected={i === indice}
                 type="button"
                 disabled={
-                  cargando || (tipo === "productos" && r.precio == null)
+                  cargando ||
+                  (tipo === "productos" &&
+                    r.precio == null &&
+                    !permitirSinPrecio)
                 }
                 className={i === indice ? "seleccionado" : ""}
                 onMouseDown={(e) => e.preventDefault()}
@@ -185,7 +191,13 @@ function Busqueda({
                       : cantidad(r.disponible) + " disponibles"}
                   </small>
                 </span>
-                <b>{tipo === "productos" ? monto(r.precio) : "Seleccionar"}</b>
+                <b>
+                  {tipo === "productos"
+                    ? r.precio == null && permitirSinPrecio
+                      ? "Definir precio"
+                      : monto(r.precio)
+                    : "Seleccionar"}
+                </b>
               </button>
             ))}
           </div>
@@ -417,11 +429,23 @@ export function EditorVenta({
     k: "cantidad" | "precio" | "descripcion",
     v: string,
   ) {
-    setLineas((ls) => ls.map((l, n) => (n === i ? { ...l, [k]: v } : l)));
+    setLineas((ls) =>
+      ls.map((l, n) =>
+        n === i
+          ? {
+              ...l,
+              [k]: v,
+              ...(k === "precio" && l.variante_id
+                ? { precio_personalizado: true }
+                : {}),
+            }
+          : l,
+      ),
+    );
     setError("");
   }
   function agregar(r: ResultadoVenta) {
-    if (r.precio == null) return;
+    if (r.precio == null && !administrador) return;
     if (
       lineas.length >= 200 &&
       !lineas.some((l) => l.variante_id === r.variante_id)
@@ -438,7 +462,8 @@ export function EditorVenta({
             variante_id: r.variante_id!,
             descripcion: r.nombre,
             cantidad: "1",
-            precio: r.precio!,
+            precio: r.precio ?? "",
+            ...(r.precio == null ? { precio_personalizado: true } : {}),
           },
         ];
       return ls.map((l, n) =>
@@ -446,10 +471,10 @@ export function EditorVenta({
           ? {
               ...l,
               cantidad:
-                l.precio === r.precio
+                l.precio_personalizado || l.precio === r.precio
                   ? new Decimal(numero(l.cantidad) || 0).plus(1).toFixed()
                   : l.cantidad,
-              precio: r.precio!,
+              precio: l.precio_personalizado ? l.precio : (r.precio ?? ""),
             }
           : l,
       );
@@ -714,12 +739,27 @@ export function EditorVenta({
             )}
           </section>
           <section className="panel factura-productos">
+            {administrador && (
+              <p className="muted">
+                El precio se toma del inventario. Puedes editar el precio
+                unitario para esta operación; el total es cantidad × precio y el
+                catálogo conserva su precio.
+              </p>
+            )}
             <Busqueda
               tipo="productos"
               elegir={agregar}
               key={"productos-" + busquedaVersion}
               inicial={busquedaVersion === 0 ? productos : undefined}
             />
+            {administrador && (
+              <NuevoProductoVenta
+                elegir={(r) => {
+                  agregar(r);
+                  setBusquedaVersion((v) => v + 1);
+                }}
+              />
+            )}
             {lineas.length === 0 ? (
               <div className="factura-vacia">
                 <Search size={28} />
@@ -741,7 +781,7 @@ export function EditorVenta({
                     <tr>
                       <th>Producto / servicio</th>
                       <th>Cantidad</th>
-                      <th>Precio USD</th>
+                      <th>Precio unitario USD</th>
                       <th>Total USD</th>
                       <th>
                         <span className="sr-only">Quitar</span>
@@ -763,7 +803,9 @@ export function EditorVenta({
                               <>
                                 <strong>{l.descripcion}</strong>
                                 <small className="factura-catalogo">
-                                  Precio de catálogo
+                                  {l.precio_personalizado
+                                    ? "Precio para esta operación"
+                                    : "Precio de inventario"}
                                 </small>
                               </>
                             ) : (
@@ -790,12 +832,16 @@ export function EditorVenta({
                             />
                           </td>
                           <td>
-                            {l.variante_id ? (
+                            {l.variante_id && !administrador ? (
                               <strong>{monto(l.precio)}</strong>
                             ) : (
                               <input
                                 className="factura-numero"
-                                aria-label={"Precio servicio " + (i + 1)}
+                                aria-label={
+                                  l.variante_id
+                                    ? "Precio unitario " + l.descripcion
+                                    : "Precio servicio " + (i + 1)
+                                }
                                 inputMode="decimal"
                                 value={l.precio}
                                 required

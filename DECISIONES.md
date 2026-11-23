@@ -118,3 +118,8 @@
 - El propietario pide cuenta unificada, sin separación visual entre sistemas, filtros cerrados y productos/abonos cargados en el cliente. Se conserva la procedencia técnica y los comprobantes sin duplicar deuda. Los productos desde cuenta se registran a crédito con cliente fijo; facturación general conserva contado/crédito.
 - Abonos de cuenta: primero saldo sin factura, después comprobantes por antigüedad, todos reflejados en la misma cuenta. Saldo esperado, exactitud, idempotencia y aplicación transaccional. No anticipos/sobreabonos. SQL 015 manual, sin limpiar ni reimportar.
 - Eliminar notas las retira del listado, con confirmación y auditoría, sin afectar datos financieros.
+
+## Precio unitario por operación · 2026-11-23
+
+- El propietario pide elegir inventario y editar precio unitario (subida/bajada o precio acordado) con multiplicación por cantidad. Precio autorizado solo para la operación; no cambia el catálogo. Administrativo autoriza, línea y auditoría conservan el precio efectivamente cobrado.
+- Añadir producto faltante desde cuenta/factura lo crea en inventario y selecciona sin perder líneas, con stock cero y costo pendiente. Alta explícita independiente del cargo, idempotente y sin emitir ventas accidentalmente. SQL 016 nuevo, sin limpiar ni reimportar.

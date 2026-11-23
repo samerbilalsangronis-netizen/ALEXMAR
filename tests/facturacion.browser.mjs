@@ -14,6 +14,7 @@ for (const sub of [
   "app/configuracion",
   "app/api/facturacion/cobrar",
   "app/api/clientes/abonar",
+  "app/api/facturacion/producto",
   "app/api/facturacion/cliente",
   "app/facturacion/[id]",
   "app/api/facturacion/buscar",
@@ -98,6 +99,10 @@ await copiar("app/anular-factura.tsx", "src/components/anular-factura.tsx", [
   ["@/app/actions", "./actions"],
 ]);
 await copiar("app/editor-venta.tsx", "src/components/editor-venta.tsx");
+await copiar(
+  "app/nuevo-producto-venta.tsx",
+  "src/components/nuevo-producto-venta.tsx",
+);
 await copiar("app/navegacion.tsx", "src/components/navegacion.tsx");
 await copiar("app/comunes.tsx", "src/components/comunes.tsx");
 await copiar("app/actions.ts", "src/app/actions.ts", [
@@ -170,6 +175,11 @@ await copiar(
   "src/app/api/clientes/abonar/route.ts",
   [["@/lib/supabase", "../../../datos"]],
 );
+await copiar(
+  "app/api/facturacion/producto/route.ts",
+  "src/app/api/facturacion/producto/route.ts",
+  [["@/lib/supabase", "../../../datos"]],
+);
 const stateFile = join(dir, "estado.json");
 await writeFile(stateFile, JSON.stringify({ doc: null, emisiones: 0 }));
 await writeFile(
@@ -183,7 +193,8 @@ if(nombre==='configurar_descuento_stock'){estado.stock=args.p_activo;estado.vers
 if(nombre==='estado_control_acceso'||nombre==='historial_accesos')return {data:null,error:{code:'PGRST202',message:'Módulo de accesos no simulado en este recorrido'}};if(nombre==='listar_perfiles')return {data:[{id:'44444444-4444-4444-8444-444444444444',nombre:'Prueba',rol:'administrador',activo:true}],error:null};
 if(nombre==='anular_factura_revisada'){estado.doc.estado='anulada';estado.doc.motivo_anulacion=args.p_motivo;estado.doc.pagado='0';estado.doc.saldo='0';estado.anulaciones=(estado.anulaciones||0)+1;await writeFile(archivo,JSON.stringify(estado));return {data:null,error:null};}
 if(nombre==='buscar_clientes')return {data:{filas:[cliente],total:1,pagina:1,paginas:1},error:null};
-if(nombre==='buscar_productos')return {data:{filas:[{id:'22222222-2222-4222-8222-222222222222',variante_id:'33333333-3333-4333-8333-333333333333',nombre:'Filtro Toyota de muestra',precio:'10.25',disponible:'8'}],total:1,pagina:1,paginas:1},error:null};
+if(nombre==='buscar_productos')return {data:{filas:[{id:'22222222-2222-4222-8222-222222222222',variante_id:'33333333-3333-4333-8333-333333333333',nombre:'Filtro Toyota de muestra',precio:'10.25',disponible:'8'},...(estado.productosNuevos||[])],total:1+(estado.productosNuevos||[]).length,pagina:1,paginas:1},error:null};
+if(nombre==='crear_producto_venta'){estado.productosNuevos??=[];let a=estado.productosNuevos.find(a=>a.id===args.p.id);if(!a){a={id:args.p.id,variante_id:args.p.id,nombre:args.p.nombre,precio:args.p.precio,disponible:'0'};estado.productosNuevos.push(a);await writeFile(archivo,JSON.stringify(estado));}return {data:a,error:null};}
 if(nombre==='guardar_cliente')return {data:args.p.id,error:null};
 if(nombre==='guardar_venta'||nombre==='guardar_borrador_factura'||nombre==='emitir_factura'){const p=args.p;const lineas=p.lineas.map((l,i)=>({...l,id:String(i),importe:new Decimal(l.cantidad).times(l.precio).toFixed()}));const subtotal=lineas.reduce((s,l)=>s.plus(l.importe),new Decimal(0)).toFixed();const emite=nombre==='emitir_factura';estado.doc={...p,descontar_stock:estado.stock??false,numero:emite?1:null,estado:emite?'confirmada':'borrador',version:emite?2:1,subtotal,total:new Decimal(subtotal).minus(p.descuento).toFixed(),pagado:emite?p.abono:'0',saldo:emite?new Decimal(subtotal).minus(p.descuento).minus(p.abono).toFixed():'0',creado:'2026-11-22T12:00:00Z',emitido:emite?'2026-11-22T12:00:00Z':null,cliente,lineas,pagos:emite&&new Decimal(p.abono).gt(0)?[{tipo:'cobro',monto:p.abono,metodo:p.metodo_pago,creado:'2026-11-22T12:00:00Z'}]:[]};if(emite)estado.emisiones++;await writeFile(archivo,JSON.stringify(estado));return {data:p.id,error:null};}
 if(nombre==='ficha_venta')return {data:estado.doc,error:null};
@@ -498,6 +509,62 @@ try {
     .focus();
   await page.getByRole("option", { name: /Filtro Toyota/ }).click();
   await page
+    .getByLabel("Precio unitario Filtro Toyota de muestra", { exact: true })
+    .fill("70");
+  await page
+    .getByLabel("Cantidad Filtro Toyota de muestra", { exact: true })
+    .fill("3");
+  await page
+    .getByRole("combobox", { name: "Añadir producto", exact: true })
+    .focus();
+  await page.getByRole("option", { name: /Filtro Toyota/ }).click();
+  await expect(
+    page.getByLabel("Precio unitario Filtro Toyota de muestra", {
+      exact: true,
+    }),
+  ).toHaveValue("70");
+  await expect(
+    page.getByLabel("Cantidad Filtro Toyota de muestra", { exact: true }),
+  ).toHaveValue("4");
+  await page
+    .getByLabel("Cantidad Filtro Toyota de muestra", { exact: true })
+    .fill("3");
+  const antesAlta = JSON.parse(await readFile(stateFile, "utf8")).emisiones;
+  await page
+    .getByRole("button", {
+      name: "¿No está? Crear producto en inventario",
+      exact: true,
+    })
+    .click();
+  const alta = page.getByRole("region", {
+    name: "Crear producto en inventario",
+    exact: true,
+  });
+  await alta
+    .getByLabel("Nombre del producto", { exact: true })
+    .fill("Producto nuevo de prueba");
+  await alta.getByLabel("Precio de venta USD", { exact: true }).fill("5");
+  await alta
+    .getByRole("button", {
+      name: "Guardar en inventario y añadir",
+      exact: true,
+    })
+    .click();
+  await expect(alta).toHaveCount(0);
+  const conAlta = JSON.parse(await readFile(stateFile, "utf8"));
+  expect(conAlta.emisiones).toBe(antesAlta);
+  expect(conAlta.productosNuevos).toHaveLength(1);
+  await expect(
+    page.getByLabel("Precio unitario Filtro Toyota de muestra", {
+      exact: true,
+    }),
+  ).toHaveValue("70");
+  await expect(
+    page.getByLabel("Precio unitario Producto nuevo de prueba", {
+      exact: true,
+    }),
+  ).toHaveValue("5");
+  await page
     .getByRole("button", { name: "Revisar cargo", exact: true })
     .click();
   await page
@@ -510,6 +577,10 @@ try {
   );
   expect(cuentaEstado.doc.condicion).toBe("credito");
   expect(cuentaEstado.doc.abono).toBe("0");
+  expect(cuentaEstado.doc.total).toBe("215");
+  expect(cuentaEstado.doc.lineas[0].precio_personalizado).toBe(true);
+  expect(cuentaEstado.doc.lineas[0].precio).toBe("70");
+  expect(cuentaEstado.doc.lineas[0].cantidad).toBe("3");
   await expect(
     page.getByRole("heading", { name: "Historial completo", exact: true }),
   ).toBeVisible();
