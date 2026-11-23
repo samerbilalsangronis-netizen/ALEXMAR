@@ -1,5 +1,7 @@
 # Cuenta continua del cliente · SQL 015
 
+La carga actual usa la [tabla rápida de 15 filas, contado y productos pendientes](FACTURACION_RAPIDA.md) con SQL 018. Las reglas y comprobantes de las entregas anteriores se conservan.
+
 ## Activar
 
 En el **Supabase nuevo**, abre **SQL Editor → New query**, copia completo [SQL 015](../supabase/migrations/20261123001500_cuenta_clientes_notas.sql) y ejecuta **Run una sola vez**. No repitas SQL 014 ni los SQL anteriores. Requiere la base, facturación/cobros y los accesos administrativos ya instalados; esta entrega no depende de cambios de proveedores. No se ejecuta en Vercel, no limpia datos ni exige importar otra vez.

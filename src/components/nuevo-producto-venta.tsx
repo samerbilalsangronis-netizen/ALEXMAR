@@ -1,13 +1,18 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useId } from "react";
 import { createPortal } from "react-dom";
 import { PackagePlus } from "lucide-react";
 import type { ResultadoVenta } from "./editor-venta";
 export function NuevoProductoVenta({
   elegir,
+  nombreInicial = "",
+  precioInicial = "",
 }: {
   elegir: (r: ResultadoVenta) => void;
+  nombreInicial?: string;
+  precioInicial?: string;
 }) {
+  const formularioId = "alta-producto-" + useId();
   const [abierto, setAbierto] = useState(false),
     [ocupado, setOcupado] = useState(false),
     [error, setError] = useState("");
@@ -75,7 +80,8 @@ export function NuevoProductoVenta({
               Nombre del producto
               <input
                 name="nombre"
-                form="alta-producto-venta"
+                defaultValue={nombreInicial}
+                form={formularioId}
                 required
                 minLength={2}
                 maxLength={200}
@@ -86,7 +92,8 @@ export function NuevoProductoVenta({
               Precio de venta USD
               <input
                 name="precio"
-                form="alta-producto-venta"
+                defaultValue={precioInicial}
+                form={formularioId}
                 inputMode="decimal"
                 required
                 disabled={ocupado}
@@ -96,7 +103,7 @@ export function NuevoProductoVenta({
               Referencia
               <input
                 name="referencia"
-                form="alta-producto-venta"
+                form={formularioId}
                 maxLength={100}
                 disabled={ocupado}
               />
@@ -105,7 +112,7 @@ export function NuevoProductoVenta({
               Categoría
               <input
                 name="categoria"
-                form="alta-producto-venta"
+                form={formularioId}
                 maxLength={100}
                 disabled={ocupado}
               />
@@ -119,11 +126,7 @@ export function NuevoProductoVenta({
               >
                 Cancelar alta de producto
               </button>
-              <button
-                type="submit"
-                form="alta-producto-venta"
-                disabled={ocupado}
-              >
+              <button type="submit" form={formularioId} disabled={ocupado}>
                 {ocupado ? "Creando…" : "Guardar en inventario y añadir"}
               </button>
             </div>
@@ -136,22 +139,24 @@ export function NuevoProductoVenta({
         </section>
       )}
       {/* Formulario asociado: se monta fuera del formulario de venta mediante portal. */}
-      <FormularioProducto crear={crear} />
+      <FormularioProducto crear={crear} id={formularioId} />
     </div>
   );
 }
 
 function FormularioProducto({
   crear,
+  id,
 }: {
   crear: (e: React.FormEvent<HTMLFormElement>) => void;
+  id: string;
 }) {
   const [montado, setMontado] = useState(false);
   useEffect(() => setMontado(true), []);
   return montado
     ? createPortal(
         <form
-          id="alta-producto-venta"
+          id={id}
           onSubmit={(e) => {
             e.stopPropagation();
             void crear(e);

@@ -17,7 +17,7 @@ export type ResultadoVenta = {
   disponible?: string;
 };
 type Resultados = { filas: ResultadoVenta[]; paginas: number };
-function Busqueda({
+export function Busqueda({
   tipo,
   elegir,
   inicial,
@@ -375,7 +375,7 @@ export function EditorVenta({
 }) {
   const router = useRouter(),
     [cliente, setCliente] = useState<ResultadoVenta | null>(
-      inicial
+      inicial?.cliente_id
         ? {
             id: inicial.cliente_id,
             nombre: inicial.cliente.nombre,
@@ -939,40 +939,6 @@ export function EditorVenta({
                   </select>
                 </label>
               </section>
-              <details className="panel factura-opciones">
-                <summary>
-                  Observaciones
-                  {administrador ? ", descuento y autorización" : ""}
-                </summary>
-                <label>
-                  Observaciones
-                  <textarea
-                    maxLength={4000}
-                    value={notas}
-                    onChange={(e) => setNotas(e.target.value)}
-                  />
-                </label>
-                {administrador && (
-                  <>
-                    <label>
-                      Descuento USD
-                      <input
-                        inputMode="decimal"
-                        value={descuento}
-                        onChange={(e) => setDescuento(e.target.value)}
-                      />
-                    </label>
-                    <label className="checkbox">
-                      <input
-                        type="checkbox"
-                        checked={gratis}
-                        onChange={(e) => setGratis(e.target.checked)}
-                      />
-                      Autorizar líneas gratuitas
-                    </label>
-                  </>
-                )}
-              </details>
             </div>
             <aside className="panel factura-resumen">
               <div>

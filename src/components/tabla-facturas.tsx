@@ -8,7 +8,7 @@ export type FilaFactura = {
   tipo: string;
   estado: string;
   cliente: string;
-  cliente_id: string;
+  cliente_id: string | null;
   fecha: string;
   total: string;
   pagado: string;
@@ -55,7 +55,11 @@ export function TablaFacturas({
               </td>
               <td>{fecha(v.fecha)}</td>
               <td>
-                <Link href={"/clientes/" + v.cliente_id}>{v.cliente}</Link>
+                {v.cliente_id ? (
+                  <Link href={"/clientes/" + v.cliente_id}>{v.cliente}</Link>
+                ) : (
+                  <span>{v.cliente}</span>
+                )}
               </td>
               <td>{v.condicion === "contado" ? "Contado" : "Crédito"}</td>
               <td>{monto(v.total)}</td>

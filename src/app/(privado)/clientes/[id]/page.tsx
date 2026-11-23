@@ -7,7 +7,8 @@ import { Cabecera, Paginacion, Avisos } from "@/components/comunes";
 import { TablaFacturas, type ListaFacturas } from "@/components/tabla-facturas";
 import { Plegable } from "@/components/plegable";
 import { AbonoCuenta } from "@/components/abono-cuenta";
-import { EditorVenta } from "@/components/editor-venta";
+import { ActivarRapida } from "@/components/activar-rapida";
+import { EditorVentaRapida } from "@/components/editor-venta-rapida";
 import type { Cliente } from "../page";
 export type Estado = Pagina<{
   id: string;
@@ -74,7 +75,10 @@ export default async function Cuenta({
         "buscar_productos",
         { p: { pagina: 1, estado: "activos" } },
       ),
-      consultar<{ descontar_stock?: boolean }>("configuracion_facturacion", {}),
+      consultar<{ descontar_stock?: boolean; version_rapida?: number }>(
+        "configuracion_facturacion",
+        {},
+      ),
     ]);
   }
   const facturas =
@@ -139,30 +143,28 @@ export default async function Cuenta({
               Cerrar y ver historial
             </Link>
           </div>
-          {p.accion === "cargo" && productos && (
-            <EditorVenta
-              key={id}
-              clave={randomUUID()}
-              administrador
-              inicial={null}
-              cuentaCliente={{
-                id,
-                nombre: global.cliente.nombre,
-                documento: global.cliente.documento || undefined,
-              }}
-              descontarStock={config?.descontar_stock ?? true}
-              productos={{
-                filas: productos.filas.map((r) => ({
+          {p.accion === "cargo" &&
+            productos &&
+            (config?.version_rapida ? (
+              <EditorVentaRapida
+                key={id}
+                clave={randomUUID()}
+                cliente={{
+                  id,
+                  nombre: global.cliente.nombre,
+                  documento: global.cliente.documento || undefined,
+                }}
+                productos={productos.filas.map((r) => ({
                   id: String(r.id),
                   variante_id: String(r.variante_id),
                   nombre: String(r.nombre),
                   precio: r.precio === null ? null : String(r.precio),
                   disponible: String(r.disponible),
-                })),
-                paginas: productos.paginas,
-              }}
-            />
-          )}
+                }))}
+              />
+            ) : (
+              <ActivarRapida />
+            ))}
           {p.accion === "abono" && (
             <AbonoCuenta
               id={id}

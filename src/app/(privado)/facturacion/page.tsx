@@ -35,9 +35,14 @@ export default async function Facturacion({
         subtitulo="Tus ventas, cobros y saldos en un solo lugar."
       >
         {d?.resumen && (
-          <Link className="boton" href="/facturacion/nueva">
-            <Plus size={17} /> Nueva factura
-          </Link>
+          <div className="acciones">
+            <Link className="boton" href="/facturacion/nueva">
+              <Plus size={17} /> Nueva factura
+            </Link>
+            <Link className="boton secundario" href="/clientes/nuevo">
+              Agregar cliente a crédito
+            </Link>
+          </div>
         )}
       </Cabecera>
       {!d?.resumen ? (

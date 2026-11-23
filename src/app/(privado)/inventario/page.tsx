@@ -124,6 +124,9 @@ export default async function Inventario({
             </a>
           )}
         </div>
+        <Link className="boton secundario" href="/inventario/pendientes">
+          Productos sin cargar
+        </Link>
       </Cabecera>
       <Avisos p={p} />
       <div className="aviso-imagenes">

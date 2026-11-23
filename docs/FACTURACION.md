@@ -1,5 +1,7 @@
 # Facturación y cuentas de clientes · 22 de noviembre de 2026
 
+La carga actual usa la [tabla rápida de 15 filas, contado y productos pendientes](FACTURACION_RAPIDA.md) con SQL 018. Las reglas y comprobantes de las entregas anteriores se conservan.
+
 **Actualización vigente:** el propietario confirma la importación reciente terminada. [SQL 012](STOCK_Y_RENDIMIENTO.md) permite vender sin existencias durante el conteo y deja apagado el descuento de inventario, con opción de activarlo después en Configuración. Cada factura guarda el modo usado y la anulación solo devuelve salidas realmente registradas. Anular es visible en listado y ficha. No repetir limpieza/importación para instalar estas mejoras; las referencias inferiores al corte pendiente describen la entrega anterior.
 
 El propietario confirma que sigue operando **solo en la aplicación anterior**. La importación actual fue una prueba y está desactualizada. Esta entrega no actualiza esos datos ni realiza el corte definitivo.

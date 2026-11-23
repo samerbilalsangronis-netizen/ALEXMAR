@@ -1,5 +1,7 @@
 # Precio unitario editable y alta de productos · SQL 016
 
+La carga actual usa la [tabla rápida de 15 filas, contado y productos pendientes](FACTURACION_RAPIDA.md) con SQL 018. Las reglas y comprobantes de las entregas anteriores se conservan.
+
 ## Activar
 
 En el **Supabase nuevo → SQL Editor → New query**, copia completo [SQL 016](../supabase/migrations/20261123001600_precios_productos_venta.sql) y pulsa **Run una sola vez**, después de las actualizaciones anteriores. No repitas los SQL ya aplicados. Cuando Vercel esté Listo, recarga la web. No requiere limpiar ni reimportar datos.

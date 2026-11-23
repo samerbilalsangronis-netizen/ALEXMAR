@@ -5,12 +5,13 @@ export type LineaVenta = {
   cantidad: string;
   precio: string;
   precio_personalizado?: boolean;
+  clase_linea?: "producto" | "servicio" | "producto_pendiente";
   importe?: string;
 };
 export type Venta = {
   id: string;
   numero: number | null;
-  cliente_id: string;
+  cliente_id: string | null;
   tipo: "factura" | "presupuesto";
   estado: "borrador" | "confirmada" | "anulada";
   moneda: "USD";

@@ -4,6 +4,8 @@ import { randomUUID } from "node:crypto";
 import { notFound } from "next/navigation";
 import { sesion } from "@/lib/supabase";
 import { Cabecera } from "@/components/comunes";
+import { EditorVentaRapida } from "@/components/editor-venta-rapida";
+import { ActivarRapida } from "@/components/activar-rapida";
 import { EditorVenta } from "@/components/editor-venta";
 import type { Venta } from "@/lib/ventas";
 export default async function Nueva({
@@ -20,6 +22,7 @@ export default async function Nueva({
     throw new Error(pendiente.message);
   if (!config || config.version !== 11) return <ActivarFacturacion />;
   const p = await searchParams;
+  if (!config.version_rapida && !p.editar) return <ActivarRapida />;
   let inicial: Venta | null = null;
   if (p.editar) {
     if (!/^[a-f0-9-]{36}$/i.test(p.editar)) notFound();
@@ -57,25 +60,37 @@ export default async function Nueva({
       <Link href="/facturacion">← Facturación</Link>
       <Cabecera
         titulo={inicial ? "Editar borrador" : "Nueva factura"}
-        subtitulo="Venta en USD · El número se asigna al emitir."
-      />
-      <EditorVenta
-        clave={inicial?.id || randomUUID()}
-        administrador={perfil.rol === "administrador"}
-        inicial={inicial}
-        descontarStock={config.descontar_stock ?? true}
-        clientes={{
-          filas: clientes.data.filas.map(
-            (r: { id: string; nombre: string; documento?: string }) => ({
-              id: r.id,
-              nombre: r.nombre,
-              documento: r.documento,
-            }),
-          ),
-          paginas: clientes.data.paginas,
-        }}
-        productos={seleccion}
-      />
+        subtitulo={
+          inicial
+            ? "Borrador existente · USD"
+            : "Contado · 15 filas rápidas · USD"
+        }
+      >
+        <Link className="boton secundario" href="/clientes/nuevo">
+          Agregar cliente a crédito
+        </Link>
+      </Cabecera>
+      {!inicial ? (
+        <EditorVentaRapida clave={randomUUID()} productos={seleccion.filas} />
+      ) : (
+        <EditorVenta
+          clave={inicial?.id || randomUUID()}
+          administrador={perfil.rol === "administrador"}
+          inicial={inicial}
+          descontarStock={config.descontar_stock ?? true}
+          clientes={{
+            filas: clientes.data.filas.map(
+              (r: { id: string; nombre: string; documento?: string }) => ({
+                id: r.id,
+                nombre: r.nombre,
+                documento: r.documento,
+              }),
+            ),
+            paginas: clientes.data.paginas,
+          }}
+          productos={seleccion}
+        />
+      )}
     </>
   );
 }

@@ -1,5 +1,15 @@
 # HANDOFF · ALEXMAR
 
+## Carga rápida de 15 filas y contado sin cuenta · 2026-11-23
+
+El propietario confirmó: Nueva factura es contado, sin crear cuenta de cliente, pero todas las facturas permanecen registradas. Agregar cliente a crédito crea cuenta permanente; clientes existentes cargan productos/abonos en su ficha. Tabla de 15 filas, ampliable de cinco en cinco hasta 200, cantidad/nombre/precio editable/importe y total exacto, flechas/Enter; selección de sugerencias con Alt+flechas/Enter. Filas vacías ignoradas e incompletas bloqueadas con número real. Se elimina bloque de Observaciones/descuento/autorizaciones; no borrar datos previos. Borradores existentes conservan editor/valores originales sin ese bloque.
+
+SQL 018 nuevo: ventas.cliente_id nullable solo contado, snapshot de comprador en factura sin crear clientes ni ledger de cuenta para contado. Pago y factura permanecen; buscar_ventas usa LEFT JOIN/snapshot para incluirlas/buscarlas. Métricas de ventas las incluyen, ranking de cuentas no inventa clientes. Emisión usa las reglas previas de precios, métodos, idempotencia y stock; nueva RPC rápida deniega descuentos/gratuidad/observaciones. Cuenta a crédito continúa con ID de cliente y ledger completos.
+
+Productos escritos sin seleccionar catálogo se encolan al emitir; servicios no. Inventario → Productos sin cargar permite completar/vincular SKU existente o crear y luego vincular sin volver a cargar deuda ni cambiar precios/descripciones cobrados. Alta de catálogo independiente explícita. Si venta descontaba stock, vincular requiere y descuenta unidades libres una vez; si no, no descuenta retroactivamente. Anular agrupa y revierte salidas realmente registradas (incluidas vinculaciones) y retira pendientes no resueltos. Tablas privadas/RLS, RPC administrativas y auditoría. IDs de formularios de alta de catálogo ahora son únicos para tarjetas múltiples.
+
+Verificación local: 41 pruebas, tipos/build correctos y navegador actualizado con backend simulado prueban 15/20 filas, flechas, registro/PDF contado sin cuenta, crédito/abono, pendientes y vínculo, permisos y 1440/390. Activación: SQL 018 una vez después de 017 y Vercel Listo; no limpiar ni reimportar. No se escribieron facturas, clientes ni stock reales desde desarrollo. El corte del sistema anterior continúa pendiente de su conciliación, sin cambios. Ver docs/FACTURACION_RAPIDA.md.
+
 ## Zelle y Binance · 2026-11-23
 
 El propietario pide agregar ambos métodos. Lista compartida en src/lib/pagos.ts para pago inicial, cobro de factura, abono de cuenta, pago de proveedor y corrección de abono de proveedor. SQL 017 nuevo amplía exclusivamente las listas de métodos de las cinco RPC y el CHECK de pagos_compra. Usa pg_get_functiondef y reemplazo de literal exacto, con guardas de predecesor 016/formato esperado, para conservar intactas las versiones instaladas de lógica financiera, permisos, precio personalizado y stock. Repetir 017 no reejecuta pagos ni cambios de saldo.

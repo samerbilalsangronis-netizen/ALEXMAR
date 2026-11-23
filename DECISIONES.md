@@ -127,3 +127,9 @@
 ## Métodos de pago · 2026-11-23
 
 - Agregar Zelle y Binance a todos los selectores/validaciones de pago, conservando Efectivo, Transferencia, Pago móvil, Tarjeta y Otro. No se cambian saldos ni reglas de cobro; son métodos de registro, sin integraciones ni transferencias automáticas. SQL 017 después de 016.
+
+## Carga por filas y contado sin cuenta · 2026-11-23
+
+- El propietario confirma Nueva factura para contado sin cuenta permanente; todas las facturas permanecen registradas y consultables. Agregar cliente a crédito crea cuenta, y las cuentas existentes siguen con sus cargos/abonos. No crear un cliente ficticio para contado.
+- Cargar 15 filas ampliables, cantidad/nombre/precio/total, con navegación por flechas y Enter. Productos sin elegir catálogo se completan después en Inventario → Productos sin cargar; servicios separados, sin alta de producto obligatoria por cada línea antes de emitir.
+- Quitar Observaciones/descuento/autorizaciones de la interfaz, sin borrar datos antiguos. Conservar validaciones, dinero exacto, permisos, auditoría e idempotencia. Stock se descuenta solo según modo de la factura, una vez identificado y con unidades disponibles; anulación revierte solo movimientos reales. SQL 018 manual, sin limpiar ni reimportar.

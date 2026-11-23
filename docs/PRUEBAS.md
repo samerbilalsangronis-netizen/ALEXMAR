@@ -1,3 +1,13 @@
+# Tabla rápida, contado registrado y pendientes · 2026-11-23
+
+- `npm test`: 41 pruebas correctas. Nuevas pruebas instalan SQL 018 sobre todas las migraciones: 15 líneas, contado sin crear clientes/ledger, factura y pago registrados, búsqueda por nombre/documento, crédito que exige cuenta, clasificación servicio/producto, cola idempotente, vinculación sin cambiar precio/deuda, stock solo según la factura y reversión agregada de salidas reales, insuficiencia/rollback, permisos, filas vacías/incompletas y decimales exactos.
+- `npm run typecheck` y `npm run build`: correctos.
+- `node tests/facturacion.browser.mjs`: recorrido actualizado con páginas, formularios, acciones y API reales y backend simulado. 15 filas ampliadas a 20, catálogo y precio editable, flechas arriba/abajo/izquierda/derecha, revisión sin escribir, contado pagado/registrado/PDF sin cuenta, productos pendientes y servicio fuera de cola, vínculo sin recobrar, alta de cliente de crédito/cargo/abono, filtros cerrados, permisos y 1440/390 en ambos temas.
+- Capturas de hoja de contado revisadas; tabla con scroll interno y controles compactos. Se conservan pruebas SQL históricas de facturación/borradores, descuentos previos, precios, cobros, stock e idempotencia. El recorrido de navegador representa la nueva interfaz; no se mantuvieron pasos de alta individual/descuento o selección contado/crédito que fueron retirados.
+- No se crearon facturas, clientes ni movimientos en Supabase remoto. SQL 018 manual después de 017, sin limpieza ni reimportación. Contado conserva todos sus comprobantes; no se borran documentos históricos.
+
+---
+
 # Zelle y Binance · 2026-11-23
 
 - `npm test`: 37 pruebas correctas. Nueva prueba verifica ambos métodos en pago inicial, cobro de factura, abono de cuenta, pago/corrección de compra; métodos inválidos rechazados, reintentos sin duplicados, saldo/permisos conservados y reaplicación de 017 sin modificar pagos.

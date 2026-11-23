@@ -71,9 +71,11 @@ export default async function FichaVenta({
         <div dangerouslySetInnerHTML={{ __html: documentoFactura(v) }} />
       </div>
       <p className="muted">
-        <Link href={"/clientes/" + v.cliente_id}>
-          Ver cuenta e historial de {v.cliente.nombre} →
-        </Link>
+        {v.cliente_id && (
+          <Link href={"/clientes/" + v.cliente_id}>
+            Ver cuenta e historial de {v.cliente.nombre} →
+          </Link>
+        )}
       </p>
       {v.estado === "confirmada" && new Decimal(v.saldo).gt(0) && (
         <CobroFactura id={id} saldo={v.saldo} />
