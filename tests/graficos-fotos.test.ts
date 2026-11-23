@@ -13,7 +13,10 @@ test("SQL 009 repara gráficos sin 007 y protege fotos privadas por rol", async 
     await db.exec(`create role anon;create role authenticated;create schema auth;create schema extensions;create table auth.users(id uuid primary key,email text);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('app.usuario',true),'')::uuid$$;
  create schema storage;create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);create table storage.objects(id uuid default gen_random_uuid() primary key,bucket_id text,name text);alter table storage.objects enable row level security;grant usage on schema storage to authenticated;grant select,insert,delete on storage.objects to authenticated;`);
     for (const f of (await readdir("supabase/migrations"))
-      .filter((f) => f.endsWith(".sql") && !f.includes("00700"))
+      .filter(
+        (f) =>
+          f.endsWith(".sql") && f < "20261123001300" && !f.includes("00700"),
+      )
       .sort())
       await db.exec(await readFile("supabase/migrations/" + f, "utf8"));
     await db.exec(

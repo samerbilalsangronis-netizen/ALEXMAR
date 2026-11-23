@@ -4,6 +4,8 @@ Aplicación privada en español para Autoperiquitos y Rotulados Alexmar. **Entre
 
 ## Qué funciona
 
+- [Accesos de personal y logo de escritorio](docs/ACCESOS_PERSONAL.md): Administrativo completo y General de consulta de precios, registro de entradas y bloqueo general con control en servidor/DB (SQL 013). Nuevas identidades desde panel con clave administrativa solo de servidor, o desde Authentication con asignación posterior.
+
 - [Inventario opcional, anulación visible y rendimiento](docs/STOCK_Y_RENDIMIENTO.md): permite vender sin existencias mientras el descuento esté apagado, ajuste para activarlo, ventas diarias/semanales y logo en pestaña (SQL 012). El propietario confirma terminada la nueva importación; no repetir limpieza ni carga.
 
 - [Facturación y clientes actualizados](docs/FACTURACION.md): búsqueda rápida por palabras, precio automático, contado/crédito, saldos/pagos por factura, impresión con logo y ubicación e historial anterior separado (SQL 011).
@@ -16,7 +18,7 @@ Aplicación privada en español para Autoperiquitos y Rotulados Alexmar. **Entre
 
 - Interfaz adaptable con tema claro/oscuro, búsqueda global, facturación reorganizada e inventario visual por marca/modelo. Gráficos de margen potencial, ventas y clientes con permisos y SQL 008. Ver [diseño y analítica](docs/REDISENIO_ANALITICA.md).
 
-- Inicio de sesión Supabase, cuatro roles, usuarios activos/inactivos. No existe registro público de usuarios desde la aplicación.
+- Inicio de sesión Supabase con usuario o correo, dos accesos Administrativo/General con SQL 013 y usuarios activos/inactivos. No existe registro público de usuarios. Los cuatro roles de entregas anteriores se reducen a dos sin elevar permisos.
 - Catálogo consultado en servidor, búsqueda sin tildes, palabras en cualquier orden y aproximaciones identificadas; referencia exacta priorizada.
 - Grupos de inventario por tipo de pieza y vehículo mencionado, con conteos globales, clasificación manual y filtros personales guardados. Ver [inventario organizado y SQL 005](docs/INVENTARIO_ORGANIZADO.md).
 - Filtros de categoría, marca, vehículo, año verificado, precio, ubicación, existencia y estado; orden y paginación de 30 registros. Estado en URL y consultas guardadas por usuario.
@@ -60,7 +62,7 @@ El repositorio permanece en `samerbilalsangronis-netizen/ALEXMAR`. **Un correo d
 5. Agrega en Environment Variables, desde el Supabase NUEVO:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (también se admite `NEXT_PUBLIC_SUPABASE_ANON_KEY` por compatibilidad).
-6. Pulsa Deploy. No hace falta clave de servicio para esta entrega.
+6. Pulsa Deploy. La clave de servicio no se necesita para el ingreso ni la gestión existente; habilita opcionalmente creación de identidades desde Configuración (ver Accesos de personal).
 7. Configura la URL definitiva en **Supabase → Authentication → URL Configuration → Site URL**.
 8. Inicia sesión y comprueba los permisos con un usuario de cada rol antes de ingresar información real.
 

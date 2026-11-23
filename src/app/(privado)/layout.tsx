@@ -1,4 +1,5 @@
 export const dynamic = "force-dynamic";
+import { VigilarAcceso } from "@/components/vigilar-acceso";
 import { Tema } from "@/components/tema";
 import { Search, Plus } from "lucide-react";
 import Link from "next/link";
@@ -15,11 +16,19 @@ export default async function Privado({
   const { perfil } = await sesion();
   return (
     <div className="estructura">
+      {perfil.version_accesos === 13 && (
+        <VigilarAcceso
+          acceso={perfil.rol === "administrador" ? "administrativo" : "general"}
+        />
+      )}
       <a className="saltar" href="#principal">
         Saltar al contenido
       </a>
       <aside className="barra no-imprimir">
-        <Link href="/panel" className="logotipo">
+        <Link
+          href={perfil.rol === "administrador" ? "/panel" : "/consulta"}
+          className="logotipo"
+        >
           <Marca />
           <small>GESTIÓN COMERCIAL</small>
         </Link>
@@ -30,7 +39,9 @@ export default async function Privado({
           <div className="avatar">{perfil.nombre.slice(0, 1)}</div>
           <div>
             <strong>{perfil.nombre}</strong>
-            <small>{perfil.rol}</small>
+            <small>
+              {perfil.rol === "administrador" ? "Administrativo" : "General"}
+            </small>
           </div>
           <form action={salir}>
             <button
@@ -45,7 +56,12 @@ export default async function Privado({
       </aside>
       <div className="contenido">
         <div className="franja no-imprimir">
-          <form action="/inventario" className="busqueda-global">
+          <form
+            action={
+              perfil.rol === "administrador" ? "/inventario" : "/consulta"
+            }
+            className="busqueda-global"
+          >
             <Search size={18} aria-hidden="true" />
             <input
               name="q"

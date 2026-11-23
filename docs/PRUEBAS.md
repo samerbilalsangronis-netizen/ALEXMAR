@@ -1,3 +1,14 @@
+# Accesos de personal · 2026-11-23
+
+- `npm test`: **27 pruebas aprobadas**. El recorrido nuevo sobre esquema completo verifica conversión de roles, perfil nuevo, sesión/portal real, catálogo con campos permitidos y precisión exacta, denegación de RPC de gestión/costos/cuentas/métricas, bloqueo con JWT existente, desactivación, protección del administrador, permisos de Storage, sesión deduplicada y paginación de 30 entradas. Incluye emisión/anulación administrativa sobre todas las migraciones actuales.
+- `npm run typecheck` y `npm run build`: correctos.
+- `node tests/accesos.browser.mjs`: proxy, acciones, layout y páginas reales con Auth/DB simulados. Login por usuario/correo, portales comprobados, general sin menú privado, URL de administración denegada, bloqueo de ventana abierta, administrador sigue trabajando, creación/rollback solo de identidad nueva, desactivación individual, registro y manifest/PNG 192/512 públicos. Capturas revisadas a 1440/390. Sin cuentas remotas ni credenciales reales en fixtures.
+- `node tests/facturacion.browser.mjs` y `node tests/redisenio.browser.mjs`: regresión aprobada con backend simulado, incluido favicon nuevo, precios/facturas, cobros/anulación, temas, inventario, fotos y gráficos.
+- Las pruebas históricas de dominios hasta SQL 012 conservan su versión para verificar sus cuatro roles originales. SQL 013 los reemplaza intencionadamente por dos; el nuevo recorrido de seguridad comprueba el esquema completo y que los perfiles anteriores no conservan gestión. No se cambia la lógica monetaria de las migraciones aplicadas.
+- No se aplicó SQL remoto ni se crearon usuarios en el Supabase del negocio. No existe configuración administrativa en este entorno. La activación y el registro de la persona solicitada requieren SQL 013 y panel conectado, o creación manual en Authentication con asignación posterior.
+
+---
+
 # Stock opcional y rendimiento · 2026-11-22
 
 - `npm test`: **25 pruebas aprobadas**. Dos recorridos nuevos verifican SQL 012 con existencia cero, control apagado/activado, reservas, cambio de modo entre emisión/anulación, facturas anteriores, reintentos, permisos y versión. Se comprueban precisión decimal, días Caracas, comparación al mismo día/hora, cero sin porcentaje inventado y exclusión de borradores/anuladas/presupuestos/historia anterior.

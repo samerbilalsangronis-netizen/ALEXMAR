@@ -18,7 +18,7 @@ test("analítica: márgenes completos sin falsear faltantes, ventas por fecha Ca
       `create role anon;create role authenticated;create schema auth;create schema extensions;create table auth.users(id uuid primary key,email text);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('app.usuario',true),'')::uuid$$;`,
     );
     for (const f of (await readdir("supabase/migrations"))
-      .filter((f) => f.endsWith(".sql"))
+      .filter((f) => f.endsWith(".sql") && f < "20261123001300")
       .sort())
       await db.exec(await readFile("supabase/migrations/" + f, "utf8"));
     for (const [n, rol] of [

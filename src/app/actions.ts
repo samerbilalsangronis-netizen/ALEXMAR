@@ -2,19 +2,44 @@
 import { conexion, sesion } from "@/lib/supabase";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { identificadorAuth } from "@/lib/accesos";
 import { decimal } from "@/lib/formatos";
 export async function entrar(form: FormData) {
   const db = await conexion();
+  let email: string;
+  const portal =
+    form.get("acceso") === "general" ? "general" : "administrativo";
+  try {
+    email = identificadorAuth(
+      String(form.get("identificador") || form.get("correo") || ""),
+    );
+  } catch {
+    redirect("/?error=credenciales&acceso=" + portal);
+  }
   const { error } = await db.auth.signInWithPassword({
-    email: String(form.get("correo")),
-    password: String(form.get("clave")),
+    email,
+    password: String(form.get("clave") || ""),
   });
-  if (error) redirect("/?error=credenciales");
-  redirect("/inventario");
+  if (error) redirect("/?error=credenciales&acceso=" + portal);
+  const { data: entrada, error: fallo } = await db.rpc("registrar_ingreso", {
+    p_portal: portal,
+  });
+  if (fallo || !entrada?.permitido) {
+    await db.auth.signOut({ scope: "local" });
+    const motivo = fallo
+      ? "activar-accesos"
+      : entrada?.motivo === "bloqueado"
+        ? "bloqueado"
+        : entrada?.motivo === "portal_incorrecto"
+          ? "portal"
+          : "sin-perfil";
+    redirect("/?error=" + motivo + "&acceso=" + portal);
+  }
+  redirect(portal === "general" ? "/consulta" : "/panel");
 }
 export async function salir() {
   const db = await conexion();
-  await db.auth.signOut();
+  await db.auth.signOut({ scope: "local" });
   redirect("/");
 }
 async function ejecutar(
@@ -116,6 +141,20 @@ export async function guardarNota(f: FormData) {
   );
 }
 export async function guardarUsuario(f: FormData) {
+  const { perfil } = await sesion();
+  if (perfil.rol !== "administrador" || perfil.version_accesos !== 13)
+    redirect(
+      "/configuracion?error=" +
+        encodeURIComponent(
+          "Activa SQL 013 y usa una cuenta administrativa para gestionar accesos.",
+        ),
+    );
+  if (!["administrador", "lectura"].includes(String(f.get("rol"))))
+    redirect(
+      "/configuracion?error=" +
+        encodeURIComponent("Selecciona Administrativo o General."),
+    );
+
   await ejecutar(
     "asignar_perfil",
     {
@@ -357,4 +396,28 @@ export async function configurarInventario(f: FormData) {
     );
   }
   redirect(ruta + "?guardado=1#inventario");
+}
+
+export async function bloquearGenerales(f: FormData) {
+  const ruta = "/configuracion";
+  try {
+    const { db, perfil } = await sesion();
+    if (perfil.rol !== "administrador")
+      throw new Error("Solo administración puede cambiar el bloqueo.");
+    const { error } = await db.rpc("bloquear_acceso_general", {
+      p_bloquear: f.get("bloquear") === "true",
+      p_version: Number(f.get("version")),
+    });
+    if (error) throw new Error(error.message);
+    revalidatePath("/", "layout");
+  } catch (e) {
+    redirect(
+      ruta +
+        "?error=" +
+        encodeURIComponent(
+          e instanceof Error ? e.message : "No se pudo cambiar el bloqueo.",
+        ),
+    );
+  }
+  redirect(ruta + "?guardado=1#personal");
 }

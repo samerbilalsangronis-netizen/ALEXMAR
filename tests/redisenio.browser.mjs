@@ -377,7 +377,7 @@ try {
   ).toBeVisible();
   await expect(page.locator('link[rel="icon"]')).toHaveAttribute(
     "href",
-    /logo-alexmar-sin-telefono/,
+    /icons\/192/,
   );
   const grafico = page.getByLabel("Ventas por día", { exact: true });
   await grafico.getByRole("button").first().focus();

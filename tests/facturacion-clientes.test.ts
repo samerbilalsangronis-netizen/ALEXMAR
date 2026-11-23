@@ -17,6 +17,7 @@ test("facturación rápida sin SQL 007: emisión, saldo, cobros, historia separa
       .filter(
         (f) =>
           f.endsWith(".sql") &&
+          f < "20261123001300" &&
           !f.includes("000700") &&
           !f.includes("001100") &&
           !f.includes("001200"),

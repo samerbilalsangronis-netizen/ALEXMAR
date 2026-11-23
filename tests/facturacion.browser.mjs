@@ -42,7 +42,13 @@ await writeFile(
 const copiar = async (dest, src, reemplazos = []) => {
   let s = await readFile(join(repo, src), "utf8");
   for (const [a, b] of reemplazos) s = s.replaceAll(a, b);
-  for (const modulo of ["formatos", "ventas", "origen", "documento-factura"]) {
+  for (const modulo of [
+    "formatos",
+    "ventas",
+    "origen",
+    "documento-factura",
+    "accesos",
+  ]) {
     let destino = relative(dirname(join(dir, dest)), join(dir, "app", modulo));
     if (!destino.startsWith(".")) destino = "./" + destino;
     s = s.replaceAll("@/lib/" + modulo, destino);
@@ -59,6 +65,14 @@ const copiar = async (dest, src, reemplazos = []) => {
   );
   if (!anular.startsWith(".")) anular = "./" + anular;
   s = s.replaceAll("@/components/anular-factura", anular);
+  for (const [mod, pref] of [
+    ["crear-personal", "components"],
+    ["crear-identidad", "lib"],
+  ]) {
+    let r = relative(dirname(join(dir, dest)), join(dir, "app", mod));
+    if (!r.startsWith(".")) r = "./" + r;
+    s = s.replaceAll("@/" + pref + "/" + mod, r);
+  }
   await writeFile(
     join(dir, dest),
     "// @ts-nocheck -- fixture con sesión y backend simulados\n" + s,
@@ -68,6 +82,9 @@ await copiar(
   "app/activar-facturacion.tsx",
   "src/components/activar-facturacion.tsx",
 );
+await copiar("app/accesos.ts", "src/lib/accesos.ts");
+await copiar("app/crear-personal.tsx", "src/components/crear-personal.tsx");
+await copiar("app/crear-identidad.ts", "src/lib/crear-identidad.ts");
 await copiar("app/origen.ts", "src/lib/origen.ts");
 await copiar("app/formatos.ts", "src/lib/formatos.ts");
 await copiar("app/ventas.ts", "src/lib/ventas.ts");
@@ -152,7 +169,7 @@ const archivo=${JSON.stringify(stateFile)};
 async function rpc(nombre,args={}){const estado=JSON.parse(await readFile(archivo,'utf8'));if(nombre==='configuracion_facturacion')return {data:{version:11,moneda:'USD',descontar_stock:estado.stock??false,version_stock:estado.version_stock??1},error:null};if(nombre==='mi_perfil')return {data:{rol:'administrador',nombre:'Prueba'},error:null};
 const cliente={id:'11111111-1111-4111-8111-111111111111',nombre:'Cliente de muestra',documento:'PRUEBA',telefono:'',direccion:''};
 if(nombre==='configurar_descuento_stock'){estado.stock=args.p_activo;estado.version_stock=(estado.version_stock||1)+1;await writeFile(archivo,JSON.stringify(estado));return {data:null,error:null};}
-if(nombre==='listar_perfiles')return {data:[{id:'44444444-4444-4444-8444-444444444444',nombre:'Prueba',rol:'administrador',activo:true}],error:null};
+if(nombre==='estado_control_acceso'||nombre==='historial_accesos')return {data:null,error:{code:'PGRST202',message:'Módulo de accesos no simulado en este recorrido'}};if(nombre==='listar_perfiles')return {data:[{id:'44444444-4444-4444-8444-444444444444',nombre:'Prueba',rol:'administrador',activo:true}],error:null};
 if(nombre==='anular_factura_revisada'){estado.doc.estado='anulada';estado.doc.motivo_anulacion=args.p_motivo;estado.doc.pagado='0';estado.doc.saldo='0';estado.anulaciones=(estado.anulaciones||0)+1;await writeFile(archivo,JSON.stringify(estado));return {data:null,error:null};}
 if(nombre==='buscar_clientes')return {data:{filas:[cliente],total:1,pagina:1,paginas:1},error:null};
 if(nombre==='buscar_productos')return {data:{filas:[{id:'22222222-2222-4222-8222-222222222222',variante_id:'33333333-3333-4333-8333-333333333333',nombre:'Filtro Toyota de muestra',precio:'10.25',disponible:'8'}],total:1,pagina:1,paginas:1},error:null};

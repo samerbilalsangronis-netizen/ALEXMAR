@@ -1,5 +1,19 @@
 # HANDOFF · ALEXMAR
 
+## Separación de accesos y escritorio · 2026-11-23
+
+El propietario reclamó que la separación confirmada como idea no estaba implementada. Ahora se implementa con SQL 013 nuevo: administrador completo y lectura como General, exclusivamente catálogo de precios. Los perfiles previos ventas/inventario pasan a lectura; no elevarlos a administrador ni mantener puertas de gestión heredadas para generales. SQL privado/RLS, roles consultados en DB en cada operación y proxy/servidor para rutas/API. General usa /consulta; no devuelve costos, stock, cuentas, métricas ni usuarios. Dos entradas visibles con contraseña Supabase Auth; elegir el portal no cambia el rol.
+
+Configuración gestiona clasificación/activación de personas, bloqueo general con versión y entradas paginadas por persona. Bloqueo deniega las consultas aun con JWT anterior; vistas comprueban cada diez segundos y al recuperar foco, redirigen si cambia permiso/inactivo o cubren la pantalla si falta conexión. Administrativos siguen operando. Registro por session_id real del JWT y resultado, sin contraseña/token. La cuenta propia de administrador no se degrada ni desactiva desde la interfaz.
+
+El propietario solicitó una cuenta general específica y aportó una contraseña en el chat. **No copiar esos datos a código, SQL, fixtures, documentación pública ni commits. No afirmar que la cuenta esté creada:** aquí no existen URL/credenciales administrativas de Supabase. El entorno de trabajo volvió a estar disponible; el estado anterior no indicó causa y no demuestra caída de la web.
+
+Crear usuario desde Configuración usa la API administrativa de Auth solo si SUPABASE*SERVICE_ROLE_KEY está en Vercel (nunca NEXT_PUBLIC* ni compartida en chat). La ruta exige administrador/SQL 013 y asigna perfil con JWT del administrador; revierte únicamente la identidad recién creada si no puede asignarla. Sin clave de servicio, crear identidad manual en Authentication y asignar UUID/perfil en el panel. Login por usuario normalizado usa un correo interno @accesos.alexmar.invalid; correo administrativo existente sigue válido. Detalles en docs/ACCESOS_PERSONAL.md.
+
+Manifiesto de instalación e iconos PNG 192/512/180 renderizan el logo existente, accesibles sin sesión. No hay caché de datos ni modo offline. Los accesos de escritorio antiguos pueden requerir quitarse y crearse de nuevo para renovar el icono.
+
+Pendiente remoto: aplicar SQL 013 una vez después de 012, comprobar Vercel Ready, configurar creación de identidades o usar Authentication y registrar la cuenta solicitada. No se aplicó SQL ni se crearon usuarios reales desde desarrollo. No limpiar ni reimportar para esta entrega. La conciliación del corte del 23 sigue pendiente de aclarar los abonos esperados: la revisión privada de archivos nuevos detectó cargos/títulos y no abonos adicionales; no confirmar esa actualización sin verificar el caso indicado por el propietario.
+
 ## Importación terminada; stock opcional y rendimiento · 2026-11-22
 
 **Estado actual confirmado por el propietario:** limpieza ejecutada con resultado de ceros y administrador conservado; SQL 007 faltaba entonces. Después adjuntó exportaciones recientes, se validaron de forma privada/local y ahora confirma **ya está importado**. No repetir la limpieza ni la importación. La anterior referencia a datos de prueba desactualizados es histórica. No se consultó ni escribió Supabase remoto desde desarrollo.

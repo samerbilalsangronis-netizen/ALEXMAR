@@ -28,27 +28,39 @@ export function Navegacion({ rol }: { rol: string }) {
   const ruta = usePathname();
   return (
     <nav aria-label="Navegación principal">
-      {enlaces
-        .filter(
-          (e) =>
-            e[3] === "todos" ||
-            rol === "administrador" ||
-            (e[3] === "ventas" && rol === "ventas") ||
-            (e[3] === "inventario" && rol === "inventario"),
-        )
-        .map(([href, texto, Icono]) => (
-          <Link
-            key={href}
-            href={href}
-            aria-current={
-              ruta === href || ruta.startsWith(href + "/") ? "page" : undefined
-            }
-          >
-            <Icono size={19} />
-            <span>{texto}</span>
-            <ChevronRight size={14} />
-          </Link>
-        ))}
+      {rol !== "administrador" ? (
+        <Link
+          href="/consulta"
+          aria-current={ruta === "/consulta" ? "page" : undefined}
+        >
+          <Package size={19} />
+          <span>Consultar precios</span>
+        </Link>
+      ) : (
+        enlaces
+          .filter(
+            (e) =>
+              e[3] === "todos" ||
+              rol === "administrador" ||
+              (e[3] === "ventas" && rol === "ventas") ||
+              (e[3] === "inventario" && rol === "inventario"),
+          )
+          .map(([href, texto, Icono]) => (
+            <Link
+              key={href}
+              href={href}
+              aria-current={
+                ruta === href || ruta.startsWith(href + "/")
+                  ? "page"
+                  : undefined
+              }
+            >
+              <Icono size={19} />
+              <span>{texto}</span>
+              <ChevronRight size={14} />
+            </Link>
+          ))
+      )}
     </nav>
   );
 }

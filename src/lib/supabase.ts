@@ -1,6 +1,7 @@
 import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { tipoAcceso } from "@/lib/accesos";
 import { redirect } from "next/navigation";
 export function configurado() {
   return Boolean(
@@ -48,9 +49,28 @@ export async function sesion() {
       "No se pudo verificar el acceso. Aplica la migración del proyecto nuevo.",
     );
   if (!perfil) redirect("/?error=sin-perfil");
+  if (perfil.bloqueado) redirect("/bloqueado");
+  if (perfil.version_accesos === 13) {
+    const { data: entrada, error: falloEntrada } = await db.rpc(
+      "registrar_ingreso",
+      { p_portal: tipoAcceso(perfil.rol) },
+    );
+    if (falloEntrada)
+      throw new Error("No se pudo registrar el ingreso. Intenta nuevamente.");
+    if (!entrada?.permitido)
+      redirect(
+        entrada?.motivo === "bloqueado" ? "/bloqueado" : "/?error=sin-perfil",
+      );
+  }
   return {
     db,
-    perfil: perfil as { id: string; nombre: string; rol: string },
+    perfil: perfil as {
+      id: string;
+      nombre: string;
+      rol: string;
+      bloqueado?: boolean;
+      version_accesos?: number;
+    },
     user,
   };
 }

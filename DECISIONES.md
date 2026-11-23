@@ -93,3 +93,11 @@
 - La anulación conserva cargo/cobros/historial y devuelve solo las existencias realmente descontadas por esa factura. Acceso visible en lista/ficha; administrador, motivo y reembolso reconocido cuando corresponda.
 - Logo existente sin teléfono como icono de pestaña. Sustituir hero promocional por Rendimiento: ventas de hoy, semana, comparación al mismo día/hora previos, 14 días y 8 semanas. USD, horario Caracas; solo facturas confirmadas nuevas, excluyendo historia importada, borradores y anuladas. No confundir importe facturado con cobros o ganancia.
 - SQL 012 nuevo y manual, sin limpieza/reimportación. Se preservan las decisiones y datos importados anteriores.
+
+## Personal y acceso de escritorio · 2026-11-23
+
+- El propietario pide implementar la separación ya confirmada: Administrativo con todos los datos, General exclusivamente productos/precios, panel por persona y registro de entradas, bloqueo general manteniendo administradores. Los accesos anteriores ventas/inventario se reducen a General, sin elevar a nadie.
+- Verificar el rol activo y bloqueo en la DB y servidor, también con JWT previo y peticiones directas. Consulta general en ruta/RPC propia con lista explícita de campos sin costos, stock, cuentas ni métricas. Sesiones abiertas comprueban permiso y se retiran al bloquear/desactivar/cambiar acceso.
+- Identidades por Supabase Auth, con usuario normalizado o correo. Creación administrativa opcional usando clave de servicio solo en servidor, o manual en Authentication y asignación de perfil. No habilitar registro público, guardar claves en tablas propias ni publicar la contraseña aportada. La cuenta solicitada queda pendiente de registro remoto, no creada desde desarrollo.
+- Manifiesto e iconos de instalación con logo real. Puede requerir renovar el acceso directo anterior. No se promete modo sin conexión ni se cachean datos privados.
+- SQL 013 nuevo, sin limpieza ni reimportación. Mantener la cuenta administrativa existente y su protección contra quitarse el acceso propio.

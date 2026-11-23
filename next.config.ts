@@ -1,5 +1,8 @@
 import type { NextConfig } from "next";
 const config: NextConfig = {
+  outputFileTracingIncludes: {
+    "/icons/*": ["./public/logo-alexmar-sin-telefono.png"],
+  },
   turbopack: { root: process.cwd() },
   experimental: { serverActions: { bodySizeLimit: "2mb" } },
   async headers() {

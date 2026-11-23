@@ -4,12 +4,13 @@ export const metadata: Metadata = {
   title: "ALEXMAR · Gestión",
   description: "Gestión privada de Autoperiquitos y Rotulados Alexmar",
   robots: { index: false, follow: false },
+  applicationName: "ALEXMAR",
+  manifest: "/manifest.webmanifest?v=13",
+  appleWebApp: { capable: true, title: "ALEXMAR", statusBarStyle: "default" },
   icons: {
-    icon: [
-      { url: "/logo-alexmar-sin-telefono.png?v=20261122", type: "image/png" },
-    ],
-    shortcut: "/logo-alexmar-sin-telefono.png?v=20261122",
-    apple: "/logo-alexmar-sin-telefono.png?v=20261122",
+    icon: [{ url: "/icons/192?v=13", type: "image/png" }],
+    shortcut: "/icons/192?v=13",
+    apple: "/icons/180?v=13",
   },
 };
 export default function Layout({ children }: { children: React.ReactNode }) {
