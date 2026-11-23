@@ -1,4 +1,5 @@
 "use client";
+import { METODOS_PAGO } from "@/lib/pagos";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Decimal from "decimal.js";
@@ -95,15 +96,14 @@ export function CobroFactura({ id, saldo }: { id: string; saldo: string }) {
         <label>
           Método
           <select
+            aria-label="Método"
             disabled={confirmando}
             value={metodo}
             onChange={(e) => setMetodo(e.target.value)}
           >
-            {["Efectivo", "Transferencia", "Pago móvil", "Tarjeta", "Otro"].map(
-              (m) => (
-                <option key={m}>{m}</option>
-              ),
-            )}
+            {METODOS_PAGO.map((m) => (
+              <option key={m}>{m}</option>
+            ))}
           </select>
         </label>
         {!confirmando && <button>Revisar cobro</button>}

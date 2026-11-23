@@ -1,4 +1,5 @@
 "use client";
+import { METODOS_PAGO } from "@/lib/pagos";
 import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, Plus, Trash2, Check, ArrowLeft } from "lucide-react";
@@ -928,16 +929,11 @@ export function EditorVenta({
                 <label>
                   Método de cobro
                   <select
+                    aria-label="Método de cobro"
                     value={metodo}
                     onChange={(e) => setMetodo(e.target.value)}
                   >
-                    {[
-                      "Efectivo",
-                      "Transferencia",
-                      "Pago móvil",
-                      "Tarjeta",
-                      "Otro",
-                    ].map((m) => (
+                    {METODOS_PAGO.map((m) => (
                       <option key={m}>{m}</option>
                     ))}
                   </select>

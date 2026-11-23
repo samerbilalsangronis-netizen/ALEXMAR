@@ -1,4 +1,5 @@
 "use client";
+import { METODOS_PAGO } from "@/lib/pagos";
 import {
   startTransition,
   useActionState,
@@ -12,7 +13,7 @@ import { editarOrdenCompra, corregirAbonoCompra } from "@/app/compras-actions";
 import type { Compra } from "@/lib/compras";
 import { monto } from "@/lib/formatos";
 const Exacto = Decimal.clone({ precision: 128 });
-const metodos = ["Efectivo", "Transferencia", "Pago móvil", "Tarjeta", "Otro"];
+
 function Ocultos({ compra }: { compra: Compra }) {
   return (
     <>
@@ -232,7 +233,7 @@ export function CorregirAbonoCompra({
               <label>
                 Método de pago
                 <select name="metodo" defaultValue={pago.metodo}>
-                  {metodos.map((m) => (
+                  {METODOS_PAGO.map((m) => (
                     <option key={m}>{m}</option>
                   ))}
                 </select>

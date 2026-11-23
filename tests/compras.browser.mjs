@@ -222,7 +222,7 @@ try {
   await page.getByLabel("Importe pagado USD").fill("200");
   await page
     .getByLabel("Método del pago", { exact: true })
-    .selectOption("Transferencia");
+    .selectOption("Zelle");
   await page
     .getByRole("checkbox", {
       name: "Confirmo que este pago se realizó al proveedor.",
@@ -356,7 +356,7 @@ try {
   const abono = page.locator("td details").last();
   await abono.locator("summary").click();
   await abono.getByLabel("Importe correcto USD").fill("150");
-  await abono.getByLabel("Método de pago").selectOption("Transferencia");
+  await abono.getByLabel("Método de pago").selectOption("Binance");
   await abono
     .getByLabel("Motivo de la corrección")
     .fill("Ajustar abono sintético");

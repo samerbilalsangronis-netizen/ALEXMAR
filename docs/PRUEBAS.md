@@ -1,3 +1,12 @@
+# Zelle y Binance · 2026-11-23
+
+- `npm test`: 37 pruebas correctas. Nueva prueba verifica ambos métodos en pago inicial, cobro de factura, abono de cuenta, pago/corrección de compra; métodos inválidos rechazados, reintentos sin duplicados, saldo/permisos conservados y reaplicación de 017 sin modificar pagos.
+- `npm run typecheck` y `npm run build`: correctos.
+- `node tests/facturacion.browser.mjs`: selecciona Zelle en pago inicial y Binance en abono de cuenta, con regresión de precios/productos/cuentas y 1440/390. `node tests/compras.browser.mjs`: registra pago con Zelle y corrige con Binance, con regresión de recepción/anulación y 1440/390. Componentes/API reales, backend simulado.
+- SQL 017 amplía solo listas de métodos y CHECK de pagos de compra, conservando funciones instaladas y sus permisos. No se registró dinero ni se ejecutó SQL en producción.
+
+---
+
 # Precio unitario y productos desde venta · 2026-11-23
 
 - `npm test`: 36 pruebas correctas. Dos nuevas verifican precio de inventario 60, cargo autorizado 70 × 3 = 210, catálogo/stock conservados, alta y emisión idempotentes, borrador con autorización conservada, decimales, permisos y bloqueo por stock insuficiente con control activo.

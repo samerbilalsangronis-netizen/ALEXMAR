@@ -123,3 +123,7 @@
 
 - El propietario pide elegir inventario y editar precio unitario (subida/bajada o precio acordado) con multiplicación por cantidad. Precio autorizado solo para la operación; no cambia el catálogo. Administrativo autoriza, línea y auditoría conservan el precio efectivamente cobrado.
 - Añadir producto faltante desde cuenta/factura lo crea en inventario y selecciona sin perder líneas, con stock cero y costo pendiente. Alta explícita independiente del cargo, idempotente y sin emitir ventas accidentalmente. SQL 016 nuevo, sin limpiar ni reimportar.
+
+## Métodos de pago · 2026-11-23
+
+- Agregar Zelle y Binance a todos los selectores/validaciones de pago, conservando Efectivo, Transferencia, Pago móvil, Tarjeta y Otro. No se cambian saldos ni reglas de cobro; son métodos de registro, sin integraciones ni transferencias automáticas. SQL 017 después de 016.

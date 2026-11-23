@@ -46,6 +46,7 @@ const copiar = async (dest, src, reemplazos = []) => {
   for (const [a, b] of reemplazos) s = s.replaceAll(a, b);
   for (const modulo of [
     "formatos",
+    "pagos",
     "ventas",
     "origen",
     "documento-factura",
@@ -89,6 +90,7 @@ await copiar("app/crear-personal.tsx", "src/components/crear-personal.tsx");
 await copiar("app/crear-identidad.ts", "src/lib/crear-identidad.ts");
 await copiar("app/origen.ts", "src/lib/origen.ts");
 await copiar("app/formatos.ts", "src/lib/formatos.ts");
+await copiar("app/pagos.ts", "src/lib/pagos.ts");
 await copiar("app/ventas.ts", "src/lib/ventas.ts");
 await copiar("app/documento-factura.ts", "src/lib/documento-factura.ts");
 await copiar("app/tabla-facturas.tsx", "src/components/tabla-facturas.tsx");
@@ -261,6 +263,7 @@ try {
     page.getByRole("link", { name: "Importar archivos", exact: true }),
   ).toBeVisible();
   await page.getByRole("link", { name: "Nueva factura", exact: true }).click();
+  await page.getByLabel("Método de cobro").selectOption("Zelle");
   await page.waitForURL("**/facturacion/nueva");
   await page.getByRole("combobox", { name: "Buscar cliente" }).focus();
   await page
@@ -481,6 +484,7 @@ try {
     .getByRole("link", { name: "Registrar abono", exact: true })
     .click();
   await page.getByLabel("Monto USD", { exact: true }).fill("25");
+  await page.getByLabel("Método", { exact: true }).selectOption("Binance");
   await page
     .getByRole("button", { name: "Revisar abono", exact: true })
     .click();

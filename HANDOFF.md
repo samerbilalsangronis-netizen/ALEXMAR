@@ -1,5 +1,11 @@
 # HANDOFF · ALEXMAR
 
+## Zelle y Binance · 2026-11-23
+
+El propietario pide agregar ambos métodos. Lista compartida en src/lib/pagos.ts para pago inicial, cobro de factura, abono de cuenta, pago de proveedor y corrección de abono de proveedor. SQL 017 nuevo amplía exclusivamente las listas de métodos de las cinco RPC y el CHECK de pagos_compra. Usa pg_get_functiondef y reemplazo de literal exacto, con guardas de predecesor 016/formato esperado, para conservar intactas las versiones instaladas de lógica financiera, permisos, precio personalizado y stock. Repetir 017 no reejecuta pagos ni cambios de saldo.
+
+Verificación local: 37 pruebas, tipos y build correctos; recorridos de facturación/cuentas y compras con métodos nuevos aprobados a 1440/390, backend simulado. Activación manual tras 016; no limpiar ni reimportar. No se registró dinero ni se aplicó SQL en Supabase remoto. Se conserva la forma de registrar pagos ya realizados, sin conexión a cuentas bancarias, Zelle o Binance.
+
 ## Precio editable y crear producto desde cuenta/venta · 2026-11-23
 
 El propietario solicita precio unitario editable para productos del inventario y añadir al catálogo los que falten. Administrativo puede editar el precio en la línea: cantidad × precio editado, sin modificar precio/costo del catálogo. Al repetir selección, aumenta cantidad conservando el precio autorizado. SQL 016 nuevo permite emitir con precio_personalizado explícito solo para administrador; sin esa marca sigue comprobando precio actual del inventario. Marca persistida en líneas y ficha/borrador; firma e idempotencia de emisión se conservan. Stock opcional y autorizaciones de gratuidad no cambian.

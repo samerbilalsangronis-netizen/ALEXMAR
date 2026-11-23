@@ -1,4 +1,5 @@
 "use client";
+import { METODOS_PAGO } from "@/lib/pagos";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { monto } from "@/lib/formatos";
@@ -83,13 +84,7 @@ export function PagoCompra({
             Método del pago
             <select name="metodo" aria-label="Método del pago" required>
               <option value="">Selecciona</option>
-              {[
-                "Efectivo",
-                "Transferencia",
-                "Pago móvil",
-                "Tarjeta",
-                "Otro",
-              ].map((m) => (
+              {METODOS_PAGO.map((m) => (
                 <option key={m}>{m}</option>
               ))}
             </select>
