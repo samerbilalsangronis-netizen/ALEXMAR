@@ -55,6 +55,8 @@ for (const path of [
   "api/facturacion/rapida/route.ts",
   "api/facturacion/producto/route.ts",
   "api/clientes/abonar/route.ts",
+  "api/clientes/abonos/corregir/route.ts",
+  "api/clientes/abonos/historial/route.ts",
   "api/clientes/[id]/documento/route.ts",
   "compartir/pdf/[token]/route.ts",
   "api/inventario/pendientes/route.ts",
@@ -157,7 +159,17 @@ if(n==='guardar_cliente'){const i=e.clientes.findIndex(c=>c.id===args.p.id);if(i
 if(n==='listar_productos_sin_cargar')return {data:pag(e.pendientes)};
 if(n==='vincular_producto_pendiente'){const q=e.pendientes.find(q=>q.linea_id===args.p_linea);if(q){const v=e.ventas.find(v=>v.id===q.venta_id);v.lineas.find(l=>l.id===q.linea_id).variante_id=args.p_variante;e.pendientes=e.pendientes.filter(q=>q.linea_id!==args.p_linea);}await guardar();return {data:null};}
 if(n==='crear_producto_venta'){const a={id:args.p.id,variante_id:args.p.id,nombre:args.p.nombre,precio:args.p.precio,disponible:'0'};if(!e.productos.some(a=>a.id===args.p.id))e.productos.push(a);await guardar();return {data:a};}
-if(n==='abonar_cuenta_cliente'){if(e.abonos.includes(args.p.id))return {data:args.p.id};const v=e.ventas.find(v=>v.cliente_id===args.p.cliente_id);v.pagado=new Decimal(v.pagado).plus(args.p.monto).toFixed();v.saldo=new Decimal(v.total).minus(v.pagado).toFixed();v.pagos.push({tipo:'cobro',monto:args.p.monto,metodo:args.p.metodo,creado:'2026-11-23T16:00:00Z'});e.abonos.push(args.p.id);await guardar();return {data:args.p.id};}
+if(n==='abonar_cuenta_cliente'){if(e.abonos.some(a=>a.id===args.p.id))return {data:args.p.id};const v=e.ventas.find(v=>v.cliente_id===args.p.cliente_id);v.pagado=new Decimal(v.pagado).plus(args.p.monto).toFixed();v.saldo=new Decimal(v.total).minus(v.pagado).toFixed();v.pagos.push({tipo:'cobro',monto:args.p.monto,metodo:args.p.metodo,creado:'2026-11-23T16:00:00Z'});e.abonos.push({...args.p,original:args.p.monto,actual:args.p.monto,correcciones:0});await guardar();return {data:args.p.id};}
+if(n==='listar_abonos_cliente')return {data:pag(e.abonos.filter(a=>a.cliente_id===args.p_id).map(a=>({...a,tipo:'cuenta',moneda:'USD',editable:true,impedimento:'',creado:'2026-11-23T16:00:00Z',autor:'Admin de prueba',referencia:a.referencia||'',revision:'rev-'+a.correcciones+'-'+a.actual})))};
+if(n==='historial_correcciones_abono')return {data:pag((e.correccionesAbonos||[]).filter(c=>c.origen_id===args.p_id))};
+if(n==='corregir_abono_cliente'){
+ const p=args.p,a=e.abonos.find(a=>a.id===p.id);if(e.correccionesAbonos?.some(c=>c.id===p.clave))return {data:p.clave};
+ if(!a||a.cliente_id!==p.cliente_id)return {error:{message:'Abono no encontrado.'}};
+ const v=e.ventas.find(v=>v.cliente_id===a.cliente_id),nuevo=new Decimal(p.monto),total=new Decimal(v.total);
+ if(nuevo.gt(total))return {error:{message:'El abono corregido supera la deuda disponible.'}};
+ const anterior=a.actual;e.correccionesAbonos??=[];e.correccionesAbonos.push({id:p.clave,origen_id:a.id,anterior,nuevo:p.monto,metodo_anterior:a.metodo,metodo:p.metodo,referencia_anterior:a.referencia||'',referencia:p.referencia,motivo:p.motivo,autor:'Admin de prueba',creado:'2026-11-26T15:00:00Z'});
+ v.pagado=new Decimal(v.pagado).minus(anterior).plus(p.monto).toFixed();v.saldo=total.minus(v.pagado).toFixed();a.actual=p.monto;a.metodo=p.metodo;a.referencia=p.referencia;a.correcciones++;
+ v.pagos.push({tipo:'reversion',monto:new Decimal(anterior).negated().toFixed(),metodo:'Zelle',creado:'2026-11-26T15:00:00Z'},{tipo:'cobro',monto:p.monto,metodo:p.metodo,creado:'2026-11-26T15:00:00Z'});await guardar();return {data:p.clave};}
 throw new Error('RPC no simulada '+n);}
 const db={rpc,auth:{getUser:async()=>({data:{user:{id:'44444444-4444-4444-8444-444444444444'}}})}};
 export function conexionPublicaPdf(){return db;}export async function conexion(){return db;}export async function sesion(){return {db,perfil:await perfil()};}export async function consultar(n,p={}){const r=await rpc(n,p);if(r.error)throw new Error(r.error.message);return r.data;}
@@ -396,6 +408,81 @@ try {
     )
     .toBe("160");
   const cuentaActual = e.ventas[1].cliente_id;
+  await page.getByRole("link", { name: "Editar abonos", exact: true }).click();
+  const panelAbonos = page.locator("#abonos-del-cliente");
+  await panelAbonos
+    .getByRole("button", { name: "Editar abono", exact: true })
+    .click();
+  const editarAbono = page.getByRole("dialog", {
+    name: "Corregir abono",
+    exact: true,
+  });
+  await editarAbono
+    .getByLabel("Monto correcto USD", { exact: true })
+    .fill("999");
+  await editarAbono
+    .getByLabel("Método correcto", { exact: true })
+    .selectOption("Binance");
+  await editarAbono.getByLabel("Referencia", { exact: true }).fill("PRUEBA");
+  await editarAbono
+    .getByLabel("Motivo de corrección", { exact: true })
+    .fill("Se cargó un importe incorrecto de prueba");
+  await editarAbono
+    .getByRole("button", { name: "Revisar corrección", exact: true })
+    .click();
+  await editarAbono
+    .getByRole("button", { name: "Confirmar corrección", exact: true })
+    .click();
+  await expect(editarAbono.getByRole("alert")).toContainText("supera");
+  await expect(
+    editarAbono.getByLabel("Monto correcto USD", { exact: true }),
+  ).toHaveValue("999");
+  await editarAbono
+    .getByLabel("Monto correcto USD", { exact: true })
+    .fill("30");
+  await editarAbono
+    .getByRole("button", { name: "Revisar corrección", exact: true })
+    .click();
+  await editarAbono
+    .getByRole("button", { name: "Confirmar corrección", exact: true })
+    .click();
+  await expect(editarAbono).not.toBeVisible();
+  await expect
+    .poll(
+      async () => JSON.parse(await readFile(stateFile, "utf8")).ventas[1].saldo,
+    )
+    .toBe("180");
+  expect(JSON.parse(await readFile(stateFile, "utf8")).abonos[0].original).toBe(
+    "50",
+  );
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 950 });
+    await panelAbonos
+      .getByRole("button", { name: "Editar abono", exact: true })
+      .click();
+    if ((await editarAbono.locator("details").getAttribute("open")) === null)
+      await editarAbono.getByText(/Historial de correcciones/).click();
+    await expect(
+      editarAbono.getByText("Se cargó un importe incorrecto de prueba", {
+        exact: true,
+      }),
+    ).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth > innerWidth,
+      ),
+    ).toBe(false);
+    await page.screenshot({
+      path: "/tmp/alexmar-abonos-" + width + ".png",
+      fullPage: true,
+    });
+    await editarAbono
+      .getByRole("button", { name: "Cerrar", exact: true })
+      .click();
+  }
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(base + "/clientes/" + cuentaActual);
+
   await page
     .getByRole("button", { name: "Generar factura", exact: true })
     .click();
@@ -568,6 +655,21 @@ try {
   expect(denegado.status()).toBe(403);
   expect(
     (
+      await page.request.post(base + "/api/clientes/abonos/corregir", {
+        headers: { origin: base },
+        data: {},
+      })
+    ).status(),
+  ).toBe(403);
+  expect(
+    (
+      await page.request.get(
+        base + "/api/clientes/abonos/historial?tipo=cuenta&id=" + clienteId,
+      )
+    ).status(),
+  ).toBe(403);
+  expect(
+    (
       await page.request.post(base + "/api/gestion", {
         headers: { origin: base },
         data: { accion: "retirar_cliente", datos: { id: clienteId } },
@@ -580,7 +682,7 @@ try {
   ).toHaveCount(0);
   expect(errores).toEqual([]);
   console.log(
-    "Facturación rápida: 15/20 filas, teclado, catálogo/precio editable, productos pendientes con alta directa y stock real, servicio, búsqueda viva, editar/retirar cliente, entrada de existencias, venta desde inventario, contado sin cuenta, crédito con alta, abono, PDF real compartido/WhatsApp, revocación, factura ajena denegada, permisos y 1440/390. Backend simulado.",
+    "Facturación rápida: 15/20 filas, teclado, catálogo/precio editable, productos pendientes con alta directa y stock real, servicio, búsqueda viva, editar/retirar cliente, entrada de existencias, venta desde inventario, contado sin cuenta, crédito con alta, abono/corrección con original intacto, error sin perder campos, historial, PDF real compartido/WhatsApp, revocación, factura ajena denegada, permisos y 1440/390. Backend simulado.",
   );
 } catch (e) {
   console.error(logs.slice(-3500));

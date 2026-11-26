@@ -6,6 +6,8 @@ Aplicación privada en español para Autoperiquitos y Rotulados Alexmar. **Entre
 
 ## Qué funciona
 
+- [Corregir abonos de clientes](docs/CORREGIR_ABONOS.md): importe, método y referencia con motivo, registro original intacto e historial de correcciones (SQL 021).
+
 - [PDF del cliente para WhatsApp](docs/PDF_WHATSAPP.md): cuenta completa o factura registrada, archivo PDF real y enlace temporal para compartir desde la ficha (SQL 019).
 
 - [Facturación rápida y productos sin cargar](docs/FACTURACION_RAPIDA.md): 15 filas ampliables, teclado, contado registrado sin crear cuenta y crédito desde el cliente; completar catálogo después de emitir (SQL 018).

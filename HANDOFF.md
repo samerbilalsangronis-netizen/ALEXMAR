@@ -1,5 +1,15 @@
 # HANDOFF · ALEXMAR
 
+## Corrección de abonos de clientes · 2026-11-26
+
+Solicitado corregir un abono mal cargado conservando original. Desde cliente → Editar abonos, lista paginada de abonos de cuenta, cobros iniciales/posteriores y abonos históricos vigentes. Diálogo monto/método/referencia/motivo, revisar/confirmar, original exacto/actor/fecha y revisiones paginadas. Monto cero permite corregir un registro completamente equivocado; no reasignar titular. Campos permanecen al fallar. Administrativo en página/API/DB; General denegado.
+
+SQL 021 NUEVO: correcciones_abono privada/RLS/auditoría, originales monetarios sin sobrescribir. Compensa solo aplicaciones todavía vigentes, luego aplica importe correcto: cuenta/histórico a deuda sin factura y FIFO, cobro a su factura. Reversiones atribuidas al método previo. Versión/revisión de cuenta+facturas, locks compartidos con origen y operaciones, idempotencia, saldo verificado y rollback íntegro. No duplicar reversiones de facturas anuladas; contado conserva cobro completo. Estado cliente/metricas_generales muestran abonos netos, no cargos comerciales artificiales; ventas/stock sin cambios. Corregir histórico no altera procedencia: trigger bloquea una reversión posterior del origen de un abono corregido para exigir conciliación. Exportaciones/PDF nuevos leen saldo actual; PDFs previos siguen como copias históricas.
+
+Verificación: 51 pruebas de lógica/SQL, tipos/build y recorrido de navegador con componentes/endpoints reales y DB simulada (editar, error sin perder campos, original conservado, saldo, motivos, historial y 1440/390). Casos SQL: precisión, reparto, anulaciones posteriores, cobro dirigido/contado, cero/restauración, método, stale/idempotencia, permisos, paginación y bloqueo del origen. No se escribió ni corrigió dinero real. Ver docs/CORREGIR_ABONOS.md.
+
+El propietario mostró captura de SQL 020 terminado sin error visible con setval=919; resultado esperado, sin comprobación directa remota. Para esta entrega solo aplicar 021 una vez después de 020 y recargar despliegue Listo. No repetir 020 ni reimportar. Código se publica bajo autorización vigente; un push no prueba Vercel Ready. La conciliación pendiente del corte no se da por resuelta y el sistema anterior sigue sin modificaciones.
+
 ## Operación diaria simplificada · 2026-11-26
 
 El propietario autorizó implementar el bloque de pendientes recopilado. Ventas y Clientes separados; contado se registra aunque no se abra/imprima factura, conserva documento y cuenta una vez en métricas. Cuenta a crédito mantiene productos/abonos/PDF. Editar datos no reescribe snapshots. Comprobantes pasa a Historial de facturas del cliente; CSV e impresión secundaria en Más opciones y filtros cerrados. Tema icono y sin CTA global Nueva factura. Búsquedas GET con debounce/cursor conservado, fragmentos/tildes y rango aproximado en DB; inventario conserva agrupaciones/filtros plegables sin botones redundantes.

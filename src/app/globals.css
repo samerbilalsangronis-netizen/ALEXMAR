@@ -3791,3 +3791,5 @@ button.peligro {
 .foto-compra h2 { margin:0; }
 .tema { min-width:44px; min-height:44px; padding:10px; }
 @media(max-width:600px) { .estado-busqueda { width:100%; } .gestion-persona > .acciones { justify-content:flex-start; } }
+
+.correccion-abono { max-width:620px; max-height:calc(100dvh - 32px); overflow:auto; overflow-wrap:anywhere; }

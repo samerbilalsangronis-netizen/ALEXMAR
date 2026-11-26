@@ -1,3 +1,4 @@
+import { PanelAbonosCliente } from "@/components/panel-abonos-cliente";
 import { FormularioVivo } from "@/components/formulario-vivo";
 import Link from "next/link";
 import { randomUUID } from "node:crypto";
@@ -115,6 +116,12 @@ export default async function Cuenta({
           >
             Registrar abono
           </Link>
+          <Link
+            className="boton secundario"
+            href={ruta + "?vista=abonos#abonos-del-cliente"}
+          >
+            Editar abonos
+          </Link>
         </div>
       </Cabecera>
       <Avisos p={p} />
@@ -136,6 +143,9 @@ export default async function Cuenta({
           <span>Abonos y pagos acumulados</span>
         </article>
       </section>
+      {p.vista === "abonos" && (
+        <PanelAbonosCliente id={id} paginaActual={pagina(p.abonos_pagina)} />
+      )}
       {p.accion && (
         <section id="operacion-cuenta">
           <div className="acciones">

@@ -148,3 +148,11 @@
 - Foto de factura con OCR local en navegador, comparación con catálogo y revisión humana obligatoria. Diseños no reconocidos se completan manualmente; no inventar importes. Copia privada JPEG limitada y confirmación atómica con compra/stock/deuda. No requiere nuevas claves ni un servicio externo.
 - Alta de pendientes usa stock físico actual después de ventas; el modo original decide la salida registrada. Movimientos por entrada/retiro son cantidades, independientes del mínimo y del conteo absoluto. Registrar venta desde inventario usa el mismo motor de ventas y su interruptor de descuento.
 - SQL 020 nuevo; no se aplican de nuevo importaciones/limpiezas ni se modifica el sistema anterior. La conciliación pendiente del corte no queda aprobada por esta entrega.
+
+
+## Corrección de abonos · 2026-11-26
+
+- El propietario solicita corregir un abono mal cargado sin perder el dato original. Administrativos editan monto/método/referencia desde el cliente, con motivo y revisión antes de confirmar. Cero corrige un registro completo equivocado, sin borrarlo físicamente ni cambiar su titular/fecha.
+- Abonos de cuenta se corrigen como grupo de aplicaciones; cobro de factura permanece en su factura. Se compensan únicamente aplicaciones vigentes y se aplica el importe correcto en una transacción, sin sobrescribir importes originales. Cuenta/resumen presentan abonos netos; no es una venta ni un movimiento de stock.
+- Revisiones con versión de cuenta/facturas, clave idempotente, actor/fecha/motivo e historial paginado. Facturas anuladas no se revierten dos veces; contado conserva cobro completo. Importaciones posteriores no cambian silenciosamente un abono histórico corregido: requieren conciliación.
+- SQL 021 nuevo después de 020. El propietario mostró ejecución de 020 con resultado setval=919, esperado para el contador de stock. No se verificó directamente la DB ni se corrige ningún abono real desde desarrollo.
