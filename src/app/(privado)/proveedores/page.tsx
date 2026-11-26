@@ -1,3 +1,4 @@
+import { FormularioVivo } from "@/components/formulario-vivo";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { consultar, sesion } from "@/lib/supabase";
@@ -11,7 +12,7 @@ type Proveedor = {
   monedas: string[];
 } & Record<string, unknown>;
 const campos = [
-  ["nombre", "Nombre o razón social"],
+  ["nombre", "Nombre de empresa, marca o vendedor"],
   ["documento", "Documento"],
   ["contacto", "Persona de contacto"],
   ["telefono", "Teléfono"],
@@ -27,7 +28,7 @@ function Formulario({ dato }: { dato?: Proveedor }) {
   return (
     <form action={guardarProveedor} className="formulario">
       <input type="hidden" name="id" value={dato?.id || ""} />
-      {campos.map(([k, label]) => (
+      {campos.slice(0, 1).map(([k, label]) => (
         <label key={k}>
           {label}
           <input
@@ -39,28 +40,37 @@ function Formulario({ dato }: { dato?: Proveedor }) {
           />
         </label>
       ))}
-      <fieldset>
-        <legend>Monedas aceptadas</legend>
-        {["USD", "VES", "COP"].map((m) => (
-          <label className="checkbox" key={m}>
-            <input
-              type="checkbox"
-              name="monedas"
-              value={m}
-              defaultChecked={(dato?.monedas || ["USD"]).includes(m)}
-            />
-            {m}
-          </label>
-        ))}
-      </fieldset>
-      <label className="checkbox">
-        <input
-          type="checkbox"
-          name="activo"
-          defaultChecked={dato?.activo ?? true}
-        />
-        Proveedor activo
-      </label>
+      <details className="ancho-completo">
+        <summary>Contacto y otros datos (opcional)</summary>
+        <div className="formulario">
+          {campos.slice(1).map(([k, label]) => (
+            <label key={k}>
+              {label}
+              <input
+                name={k}
+                maxLength={2000}
+                type={k === "correo" ? "email" : "text"}
+                defaultValue={String(dato?.[k] || "")}
+              />
+            </label>
+          ))}
+          <fieldset>
+            <legend>Monedas aceptadas</legend>
+            {["USD", "VES", "COP"].map((m) => (
+              <label className="checkbox" key={m}>
+                <input
+                  type="checkbox"
+                  name="monedas"
+                  value={m}
+                  defaultChecked={(dato?.monedas || ["USD"]).includes(m)}
+                />
+                {m}
+              </label>
+            ))}
+          </fieldset>
+        </div>
+      </details>
+      <input type="hidden" name="activo" value="on" />
       <button>Guardar proveedor</button>
     </form>
   );
@@ -76,7 +86,7 @@ export default async function Proveedores({
   const d = await consultar<Pagina<Proveedor>>("buscar_proveedores", {
     p: {
       q: p.q || "",
-      estado: p.estado || "activos",
+      estado: "activos",
       moneda: p.moneda || "",
       pagina: pagina(p.pagina),
     },
@@ -89,7 +99,7 @@ export default async function Proveedores({
       />
       <Avisos p={p} />
       <section className="panel no-imprimir">
-        <form className="filtros">
+        <FormularioVivo className="filtros">
           <label>
             Buscar proveedor
             <input
@@ -98,25 +108,7 @@ export default async function Proveedores({
               defaultValue={p.q}
             />
           </label>
-          <label>
-            Estado
-            <select name="estado" defaultValue={p.estado || "activos"}>
-              <option value="activos">Activos</option>
-              <option value="inactivos">Inactivos</option>
-              <option value="todos">Todos</option>
-            </select>
-          </label>
-          <label>
-            Moneda
-            <select name="moneda" defaultValue={p.moneda || ""}>
-              <option value="">Todas</option>
-              {["USD", "VES", "COP"].map((m) => (
-                <option key={m}>{m}</option>
-              ))}
-            </select>
-          </label>
-          <button>Buscar</button>
-        </form>
+        </FormularioVivo>
       </section>
       <details className="panel no-imprimir">
         <summary>Registrar proveedor</summary>
@@ -134,10 +126,8 @@ export default async function Proveedores({
               <span className="etiqueta">
                 {String(c.ciudad || "PROVEEDOR")}
               </span>
-              <span className={"estado " + (c.activo ? "verde" : "ambar")}>
-                {c.activo ? "Activo" : "Inactivo"}
-              </span>
             </div>
+            {c.aproximado === true && <small>Coincidencia aproximada</small>}
             <h2>
               <Link href={"/proveedores/" + c.id}>{c.nombre}</Link>
             </h2>
@@ -151,7 +141,7 @@ export default async function Proveedores({
             </p>
             <p className="subtitulo">{c.monedas.join(" · ")}</p>
             <Link className="boton secundario" href={"/proveedores/" + c.id}>
-              Productos, recepciones y cuenta →
+              Abrir cuenta →
             </Link>
             <details>
               <summary>Ver y editar datos</summary>
@@ -171,7 +161,7 @@ export default async function Proveedores({
         ruta="/proveedores"
         parametros={{
           q: p.q || "",
-          estado: p.estado || "activos",
+          estado: "activos",
           moneda: p.moneda || "",
         }}
       />

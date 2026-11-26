@@ -138,3 +138,13 @@
 
 - Añadir Generar factura a la ficha, con cuenta completa como Estado de cuenta o una factura emitida del cliente. Exportar no crea deuda ni otra factura. PDF real, logo, fecha, totales y documento completo.
 - Enlace de archivo temporal 7 días, token de alta entropía/hash y revocación; destinatario no necesita acceso a la app. Administradores generan/revocan, público solo lee ese archivo con token. Envío WhatsApp lo confirma el usuario; Web Share cuando puede adjuntar, enlace/descarga siempre disponibles. SQL 019 nuevo, sin importar datos.
+
+
+## Operación simplificada · 2026-11-26
+
+- El propietario autorizó implementar el bloque de pendientes recopilado. Ventas registra contado aunque no se imprima factura; cada venta se conserva y cuenta una vez. Clientes es la cuenta a crédito, con acciones y PDF desde su ficha.
+- Eliminar personas significa retirarlas del directorio solo con saldo cero, conservando cuentas/documentos. Eliminar factura significa anulación y reversión auditadas, no borrado físico. Editar contacto no reescribe snapshots de facturas emitidas.
+- Búsquedas interactivas, acciones contextuales, tema con icono y opciones secundarias plegadas. Proveedores con nombre principal/datos opcionales, sin selector de actividad habitual.
+- Foto de factura con OCR local en navegador, comparación con catálogo y revisión humana obligatoria. Diseños no reconocidos se completan manualmente; no inventar importes. Copia privada JPEG limitada y confirmación atómica con compra/stock/deuda. No requiere nuevas claves ni un servicio externo.
+- Alta de pendientes usa stock físico actual después de ventas; el modo original decide la salida registrada. Movimientos por entrada/retiro son cantidades, independientes del mínimo y del conteo absoluto. Registrar venta desde inventario usa el mismo motor de ventas y su interruptor de descuento.
+- SQL 020 nuevo; no se aplican de nuevo importaciones/limpiezas ni se modifica el sistema anterior. La conciliación pendiente del corte no queda aprobada por esta entrega.

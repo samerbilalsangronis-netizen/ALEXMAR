@@ -55,6 +55,16 @@ export default async function ComprobanteCompra({
             Cuenta del proveedor
           </Link>
           <Imprimir />
+          {c.tiene_foto && (
+            <a
+              className="boton secundario"
+              href={"/api/compras/" + c.id + "/foto"}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Ver foto de factura
+            </a>
+          )}
         </div>
       </Cabecera>
       <Avisos p={p} />

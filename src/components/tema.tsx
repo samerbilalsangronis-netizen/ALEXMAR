@@ -26,7 +26,6 @@ export function Tema() {
       ) : (
         <Moon size={18} aria-hidden="true" />
       )}
-      <span>{oscuro ? "Claro" : "Oscuro"}</span>
     </button>
   );
 }

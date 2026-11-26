@@ -1,3 +1,4 @@
+import { FormularioVivo } from "@/components/formulario-vivo";
 import Link from "next/link";
 import { randomUUID } from "node:crypto";
 import { notFound } from "next/navigation";
@@ -6,6 +7,7 @@ import { type Pagina, monto, fecha, pagina } from "@/lib/formatos";
 import { Cabecera, Paginacion, Avisos } from "@/components/comunes";
 import { TablaFacturas, type ListaFacturas } from "@/components/tabla-facturas";
 import { Plegable } from "@/components/plegable";
+import { GestionPersona } from "@/components/gestion-persona";
 import { PdfCliente } from "@/components/pdf-cliente";
 import { AbonoCuenta } from "@/components/abono-cuenta";
 import { ActivarRapida } from "@/components/activar-rapida";
@@ -116,6 +118,7 @@ export default async function Cuenta({
         </div>
       </Cabecera>
       <Avisos p={p} />
+      <GestionPersona tipo="cliente" dato={global.cliente} />
       <section className="indicadores factura-indicadores">
         <article>
           <small>CUENTA TOTAL · {moneda}</small>
@@ -190,7 +193,7 @@ export default async function Cuenta({
           preferencia="alexmar-cuenta-filtros"
           cerradoInicial
         >
-          <form className="factura-filtro-fila">
+          <FormularioVivo className="factura-filtro-fila">
             <label>
               Desde
               <input type="date" name="desde" defaultValue={p.desde} />
@@ -207,9 +210,8 @@ export default async function Cuenta({
                 <option>COP</option>
               </select>
             </label>
-            <button className="secundario">Consultar</button>
             <Link href={ruta}>Quitar filtros</Link>
-          </form>
+          </FormularioVivo>
         </Plegable>
       </section>
       <section className="panel">
@@ -225,19 +227,22 @@ export default async function Cuenta({
             {monto(d.final, moneda)}
           </p>
         )}
-        <div className="acciones">
-          <a className="boton secundario" href={"/api/exportar?" + exportar}>
-            CSV completo
-          </a>
-          <a
-            className="boton secundario"
-            href={"/api/exportar?" + exportar + "&formato=html"}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Imprimir / PDF completo
-          </a>
-        </div>
+        <details className="mas-opciones">
+          <summary>Más opciones</summary>
+          <div className="acciones">
+            <a className="boton secundario" href={"/api/exportar?" + exportar}>
+              CSV completo
+            </a>
+            <a
+              className="boton secundario"
+              href={"/api/exportar?" + exportar + "&formato=html"}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Imprimir / PDF completo
+            </a>
+          </div>
+        </details>
         <div className="tabla-contenedor">
           <table>
             <thead>
@@ -282,7 +287,7 @@ export default async function Cuenta({
         />
       </section>
       <details className="panel" open={Boolean(facturas)}>
-        <summary>Comprobantes del cliente</summary>
+        <summary>Historial de facturas del cliente</summary>
         {facturas ? (
           <>
             <TablaFacturas d={facturas} />

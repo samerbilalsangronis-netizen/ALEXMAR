@@ -1,3 +1,4 @@
+import { FormularioVivo } from "@/components/formulario-vivo";
 import { FotoVehiculo, SubirFotoVehiculo } from "@/components/foto-vehiculo";
 import { FiltroVisual } from "@/components/filtro-visual";
 import { Plegable } from "@/components/plegable";
@@ -114,9 +115,6 @@ export default async function Inventario({
         subtitulo="Elige tu marca, encuentra el vehículo y descubre sus piezas."
       >
         <div className="acciones">
-          <a className="boton secundario" href="#filtros-inventario">
-            Buscar y filtrar
-          </a>
           {edita && (
             <a className="boton" href="#nuevo">
               <Plus size={18} />
@@ -159,10 +157,7 @@ export default async function Inventario({
           )}
         </section>
       )}
-      <section
-        className="panel buscador busqueda-principal"
-        key={"busqueda-" + filtrosGuardados}
-      >
+      <section className="panel buscador busqueda-principal">
         <div className="busqueda">
           <Search size={21} />
           <input
@@ -172,7 +167,6 @@ export default async function Inventario({
             placeholder="Nombre, referencia, marca o vehículo…"
             defaultValue={p.q}
           />
-          <button form="filtros-inventario-form">Buscar</button>
         </div>
       </section>
       {grupos && (
@@ -309,7 +303,7 @@ export default async function Inventario({
       )}
 
       <section className="panel buscador" id="filtros-inventario">
-        <form id="filtros-inventario-form" key={filtrosGuardados}>
+        <FormularioVivo id="filtros-inventario-form">
           <input type="hidden" name="agrupar" value={agrupacion} />
           {p.marca_vehiculo && (
             <input
@@ -467,10 +461,9 @@ export default async function Inventario({
             </details>
           </Plegable>
           <div className="acciones">
-            <button className="secundario">Aplicar filtros</button>
             <Link href="/inventario">Limpiar todos</Link>
           </div>
-        </form>
+        </FormularioVivo>
         {activos.length > 0 && (
           <div className="chips">
             {activos

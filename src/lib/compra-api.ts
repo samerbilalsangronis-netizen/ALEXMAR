@@ -29,18 +29,24 @@ export async function escribirCompra(
         { error: "No tienes permiso para esta operación." },
         { status: 403 },
       );
-    if (Number(req.headers.get("content-length") || 0) > 200000)
+    if (
+      Number(req.headers.get("content-length") || 0) >
+      (accion === "recibir" ? 3200000 : 200000)
+    )
       return NextResponse.json(
         { error: "La solicitud supera el tamaño permitido." },
         { status: 413 },
       );
     const texto = await req.text();
-    if (new TextEncoder().encode(texto).length > 200000)
+    if (
+      new TextEncoder().encode(texto).length >
+      (accion === "recibir" ? 3200000 : 200000)
+    )
       throw new Error("La solicitud supera el tamaño permitido.");
     const p = JSON.parse(texto);
     const { data, error } = await db.rpc(
       {
-        recibir: "recibir_compra",
+        recibir: p.foto ? "recibir_compra_con_foto" : "recibir_compra",
         pagar: "pagar_compra",
         precio: "asignar_precio_venta",
       }[accion],
@@ -56,7 +62,9 @@ export async function escribirCompra(
     if (error)
       throw new Error(
         ["PGRST202", "42883", "42P01"].includes(error.code)
-          ? "Falta activar compras y recepciones con SQL 010."
+          ? p.foto
+            ? "Aplica el SQL 020 para guardar fotos de facturas."
+            : "Falta activar compras y recepciones con SQL 010."
           : error.message,
       );
     return NextResponse.json({ id: data });

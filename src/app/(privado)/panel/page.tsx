@@ -21,7 +21,7 @@ export default async function Panel({
       >
         {["administrador", "ventas"].includes(perfil.rol) && (
           <Link className="boton" href="/facturacion/nueva">
-            <Plus size={18} /> Crear factura
+            <Plus size={18} /> Registrar venta
           </Link>
         )}
       </Cabecera>
@@ -70,8 +70,8 @@ export default async function Panel({
         )}
         {["administrador", "ventas"].includes(perfil.rol) && (
           <Link href="/facturacion">
-            <strong>Facturación</strong>
-            <span>Crear factura o consultar ventas →</span>
+            <strong>Ventas</strong>
+            <span>Registrar venta o consultar ventas →</span>
           </Link>
         )}
         <Link href="/inventario">

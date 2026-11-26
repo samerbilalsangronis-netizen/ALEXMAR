@@ -1,5 +1,7 @@
 # ALEXMAR · Gestión comercial
 
+Entrega actual: [operación diaria simplificada y activación SQL 020](docs/OPERACION_DIARIA.md): Ventas y Clientes separados, búsquedas mientras escribes, edición/retirada segura, existencias y foto de factura de proveedor con revisión.
+
 Aplicación privada en español para Autoperiquitos y Rotulados Alexmar. **Entrega por fases: base, catálogo, proveedores, facturación inicial, reportes actuales y migración histórica.** No es aún el sistema completo ni debe sustituir al actual hasta completar las siguientes fases y conciliar los datos.
 
 ## Qué funciona

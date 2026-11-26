@@ -27,6 +27,10 @@ let page = await readFile(
 page = page
   .replace("@/lib/supabase", "./datos")
   .replace(
+    "@/components/formulario-vivo",
+    "../../../../src/components/formulario-vivo",
+  )
+  .replace(
     "@/components/foto-vehiculo",
     "../../../../src/components/foto-vehiculo",
   )
@@ -56,7 +60,7 @@ await writeFile(
   `// @ts-nocheck -- API simulada solo para el navegador
 
 const filas=[{id:'11111111-1111-4111-8111-111111111111',nombre:'Faro de muestra Fiesta',categoria:'Iluminación',categoria_origen:'FORD',vehiculos:['Fiesta'],precio:'20',fisico:'3',reservado:'0',disponible:'3',minimo:'1',marca:'',referencia:'MUESTRA-01',ubicacion:'Prueba',activo:true},{id:'22222222-2222-4222-8222-222222222222',nombre:'Espejo de muestra Hilux',categoria:'Espejos y retrovisores',categoria_origen:'TOYOTA',vehiculos:['Hilux'],precio:null,fisico:'0',reservado:'0',disponible:'0',minimo:'1',marca:'',referencia:'',ubicacion:'',activo:true}];
-function filtrar(p){return filas.filter(a=>(!p.modelo||a.vehiculos.includes(p.modelo))&&(!p.categoria||a.categoria===p.categoria));}
+function filtrar(p){return filas.filter(a=>(!p.q||a.nombre.toLowerCase().includes(p.q.toLowerCase()))&&(!p.modelo||a.vehiculos.includes(p.modelo))&&(!p.categoria||a.categoria===p.categoria));}
 export async function sesion(){return {perfil:{rol:'ventas'},db:{rpc:async(n,{p})=>n==='fotos_vehiculos'?{data:[],error:null}:p.pendiente ? {data:null,error:{code:'PGRST202',message:'Función pendiente'}}:{data:{total:filtrar(p).length,categorias:[...new Set(filtrar(p).map(a=>a.categoria))].map(nombre=>({nombre,total:filtrar(p).filter(a=>a.categoria===nombre).length})),vehiculos:[...new Set(filtrar(p).flatMap(a=>a.vehiculos))].map(nombre=>({nombre,total:filtrar(p).filter(a=>a.vehiculos.includes(nombre)).length}))},error:null}}};}
 export async function consultar(n,{p}={p:{}}){if(n==='opciones_catalogo')return {categorias:['Iluminación','Espejos y retrovisores'],categorias_origen:['FORD','TOYOTA'],vehiculos:['Fiesta','Hilux'],marcas:[],consultas:[{nombre:'Mi Fiesta',filtros:'modelo=Fiesta'}]};const f=filtrar(p);return {total:f.length,pagina:1,paginas:1,filas:f};}
 `,
@@ -106,6 +110,16 @@ try {
     ["movil", 390, 844],
   ]) {
     await p.setViewportSize({ width, height });
+    await p.goto(base + "/inventario");
+    const busqueda = p.getByRole("textbox", {
+      name: "Buscar productos",
+      exact: true,
+    });
+    await busqueda.pressSequentially("fiesta", { delay: 40 });
+    await expect(p).toHaveURL(/q=fiesta/);
+    await expect(p.locator(".producto")).toHaveCount(1);
+    await expect(busqueda).toBeFocused();
+    await expect(busqueda).toHaveValue("fiesta");
     await p.goto(base + "/inventario");
     await expect(
       p.getByRole("heading", { name: "Encuentra lo que necesitas" }),

@@ -15,10 +15,10 @@ import {
 } from "lucide-react";
 const enlaces = [
   ["/panel", "Rendimiento", LayoutDashboard, "todos"],
-  ["/facturacion", "Facturación", FileText, "ventas"],
+  ["/facturacion", "Ventas", FileText, "ventas"],
   ["/inventario", "Inventario", Package, "todos"],
   ["/proveedores", "Proveedores", Truck, "inventario"],
-  ["/clientes", "Clientes y cuentas", Users, "ventas"],
+  ["/clientes", "Clientes", Users, "ventas"],
   ["/reportes", "Reportes", ChartNoAxesCombined, "todos"],
   ["/notas", "Notas", StickyNote, "admin"],
   ["/migracion", "Importar archivos", Upload, "admin"],

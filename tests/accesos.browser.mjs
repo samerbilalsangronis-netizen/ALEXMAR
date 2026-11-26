@@ -195,9 +195,9 @@ try {
   ).toBeVisible();
   await expect(empleado.locator(".precio-consulta")).toContainText("25,50");
   for (const nombre of [
-    "Facturación",
+    "Ventas",
     "Configuración",
-    "Clientes y cuentas",
+    "Clientes",
     "Rendimiento",
     "Reportes",
     "Proveedores",

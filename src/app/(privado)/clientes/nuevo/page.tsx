@@ -14,7 +14,7 @@ export default async function NuevoClienteCredito({
   const p = await searchParams;
   return (
     <>
-      <Link href="/clientes">← Clientes y cuentas</Link>
+      <Link href="/clientes">← Clientes</Link>
       <Cabecera
         titulo="Agregar cliente a crédito"
         subtitulo="Crea su cuenta para cargar productos y registrar abonos."

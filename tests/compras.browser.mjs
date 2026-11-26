@@ -1,6 +1,6 @@
 // Interfaz y endpoints reales, sesión/DB simuladas. No escribe en Supabase.
 import { chromium, expect } from "@playwright/test";
-import { mkdir, mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, writeFile, rm, cp } from "node:fs/promises";
 import { spawn } from "node:child_process";
 import { createServer } from "node:net";
 import { join, resolve } from "node:path";
@@ -51,6 +51,7 @@ for (const path of [
   "api/compras/recibir/route.ts",
   "api/compras/pagar/route.ts",
   "api/compras/precio/route.ts",
+  "api/compras/[id]/foto/route.ts",
 ]) {
   const destino = join(dir, "app", path);
   await mkdir(destino.slice(0, destino.lastIndexOf("/")), { recursive: true });
@@ -62,6 +63,9 @@ for (const path of [
   );
 }
 await mkdir(join(dir, "public"), { recursive: true });
+await cp(join(repo, "public/ocr"), join(dir, "public/ocr"), {
+  recursive: true,
+});
 await writeFile(
   join(dir, "public/logo-alexmar-sin-telefono.png"),
   await readFile(join(repo, "public/logo-alexmar-sin-telefono.png")),
@@ -120,8 +124,9 @@ if(n==='ficha_compra')return {data:doc(e,args.p_id),error:null};
 if(n==='ficha_proveedor_compras'){
 const compras=Object.keys(e.compras).map(id=>doc(e,id));const comprado=compras.filter(c=>c.estado==='confirmada').reduce((s,c)=>s.plus(c.total),new Decimal(0));const pagado=e.pagos.filter(p=>!p.anulado).reduce((s,p)=>s.plus(p.monto),new Decimal(0));const productos=e.productos.filter(a=>compras.some(c=>c.lineas.some(l=>l.variante_id===a.variante_id))).map(a=>({id:a.variante_id,producto_id:a.id,nombre:a.nombre,cantidad_recibida:compras.flatMap(c=>c.lineas).filter(l=>l.variante_id===a.variante_id).reduce((s,l)=>s.plus(l.cantidad),new Decimal(0)).toFixed(),ultimo_costo:a.costo,precio_venta:a.precio,ultima_recepcion:'2026-11-17T15:00:00Z'}));return {data:{proveedor:datosProveedor,resumen:{comprado:comprado.toFixed(),pagado:pagado.toFixed(),saldo:comprado.minus(pagado).toFixed()},compras:{filas:compras,total:compras.length,pagina:1,paginas:1},productos:{filas:productos,total:productos.length,pagina:1,paginas:1}},error:null};}
 if(n==='asignar_precio_venta'){const a=e.productos.find(a=>a.id===args.p.producto_id);a.precio=args.p.precio;await writeFile(archivo,JSON.stringify(e));return {data:a.id,error:null};}
-if(n==='recibir_compra'){
-const p=args.p;if(e.compras[p.id])return {data:p.id,error:null};let total=new Decimal(0);const lineas=p.lineas.map((l,i)=>{let a=e.productos.find(a=>a.variante_id===l.variante_id);if(!a){a={id:l.nuevo.id,variante_id:l.nuevo.id,nombre:l.nuevo.nombre,precio:null,costo:null,fisico:'0',disponible:'0',referencia:''};e.productos.push(a);}a.costo=l.costo_unitario;a.fisico=new Decimal(a.fisico).plus(l.cantidad).toFixed();a.disponible=a.fisico;const importe=new Decimal(l.cantidad).times(l.costo_unitario).toFixed();total=total.plus(importe);return {id:String(i),orden:i+1,variante_id:a.variante_id,producto_id:a.id,descripcion:a.nombre,cantidad:l.cantidad,costo_unitario:l.costo_unitario,importe,precio_venta:a.precio};});e.compras[p.id]={id:p.id,version:1,numero:Object.keys(e.compras).length+1,proveedor_id:proveedor,proveedor_snapshot:datosProveedor,referencia:p.referencia,total:total.toFixed(),moneda:'USD',estado:'confirmada',creado:'2026-11-17T15:00:00Z',observaciones:p.observaciones,lineas};await writeFile(archivo,JSON.stringify(e));return {data:p.id,error:null};}
+if(n==='leer_foto_compra')return {data:e.compras[args.p_id]?.foto||null};
+if(n==='recibir_compra'||n==='recibir_compra_con_foto'){
+const p=args.p;if(e.compras[p.id])return {data:p.id,error:null};let total=new Decimal(0);const lineas=p.lineas.map((l,i)=>{let a=e.productos.find(a=>a.variante_id===l.variante_id);if(!a){a={id:l.nuevo.id,variante_id:l.nuevo.id,nombre:l.nuevo.nombre,precio:null,costo:null,fisico:'0',disponible:'0',referencia:''};e.productos.push(a);}a.costo=l.costo_unitario;a.fisico=new Decimal(a.fisico).plus(l.cantidad).toFixed();a.disponible=a.fisico;const importe=new Decimal(l.cantidad).times(l.costo_unitario).toFixed();total=total.plus(importe);return {id:String(i),orden:i+1,variante_id:a.variante_id,producto_id:a.id,descripcion:a.nombre,cantidad:l.cantidad,costo_unitario:l.costo_unitario,importe,precio_venta:a.precio};});e.compras[p.id]={id:p.id,version:1,numero:Object.keys(e.compras).length+1,proveedor_id:proveedor,proveedor_snapshot:datosProveedor,referencia:p.referencia,total:total.toFixed(),moneda:'USD',estado:'confirmada',creado:'2026-11-17T15:00:00Z',observaciones:p.observaciones,lineas,...(p.foto?{foto:p.foto,tiene_foto:true}:{})};await writeFile(archivo,JSON.stringify(e));return {data:p.id,error:null};}
 if(n==='pagar_compra'){const p=args.p;if(!e.pagos.some(x=>x.id===p.id)){if(new Decimal(p.monto).gt(doc(e,p.compra_id).saldo))return {data:null,error:{message:'El pago supera el saldo pendiente.'}};e.compras[p.compra_id].version++;e.pagos.push({...p,creado:'2026-11-17T15:00:00Z'});await writeFile(archivo,JSON.stringify(e));}return {data:p.id,error:null};}
 if(n==='editar_compra'){
 const p=args.p,c=e.compras[p.id];if(c.version!==p.version)return {error:{message:'La orden cambió. Recarga y revisa los datos antes de guardar.'}};
@@ -188,8 +193,11 @@ try {
   });
   await page.goto(base + ruta);
   await page
-    .getByRole("link", { name: "Recibir mercancía", exact: true })
+    .getByRole("link", { name: "Cargar factura de compra", exact: true })
     .click();
+  await page
+    .getByLabel("Buscar en tu inventario", { exact: true })
+    .fill("Starlink");
   await page.getByRole("button", { name: /Starlink de muestra/ }).click();
   await page.getByLabel("Cantidad recibida 1", { exact: true }).fill("5");
   await page.getByLabel("Costo unitario 1", { exact: true }).fill("100");
@@ -248,7 +256,7 @@ try {
     page.getByRole("link", { name: "Starlink de muestra", exact: true }),
   ).toBeVisible();
   await page
-    .getByRole("link", { name: "Recibir mercancía", exact: true })
+    .getByRole("link", { name: "Cargar factura de compra", exact: true })
     .click();
   await page
     .getByText("¿No existe todavía? Crear producto nuevo", { exact: true })
@@ -428,6 +436,66 @@ try {
   e = JSON.parse(await readFile(estadoFile, "utf8"));
   expect(e.compras[actualId].estado).toBe("anulada");
   expect(e.productos.at(-1).fisico).toBe("0");
+  // Imagen sintética: OCR real (worker, WASM y modelo local), sin servicios externos.
+  await page.goto(base + ruta + "/recepciones/nueva");
+  const png = await page.evaluate(() => {
+    const c = document.createElement("canvas");
+    c.width = 1500;
+    c.height = 650;
+    const x = c.getContext("2d");
+    x.fillStyle = "white";
+    x.fillRect(0, 0, c.width, c.height);
+    x.fillStyle = "black";
+    x.font = "42px Arial";
+    x.fillText("FACTURA DEMO", 60, 90);
+    x.fillText("CANTIDAD DESCRIPCION UNITARIO TOTAL", 60, 180);
+    x.fillText("2 FILTRO DEMO 25.00 50.00", 60, 280);
+    x.fillText("TOTAL 50.00", 60, 390);
+    return c.toDataURL("image/png").split(",")[1];
+  });
+  await page.getByLabel("Foto de factura", { exact: true }).setInputFiles({
+    name: "factura-demo.png",
+    mimeType: "image/png",
+    buffer: Buffer.from(png, "base64"),
+  });
+  const cargarFoto = page.getByRole("button", {
+    name: "Cargar filas y foto para revisar",
+    exact: true,
+  });
+  await expect(cargarFoto).toBeEnabled({ timeout: 90000 });
+  await cargarFoto.click();
+  await expect(
+    page.getByLabel("Cantidad recibida 1", { exact: true }),
+  ).toHaveValue("2");
+  await expect(
+    page.getByLabel("Costo unitario 1", { exact: true }),
+  ).toHaveValue("25");
+  await expect(page.getByText(/Coinciden/)).toBeVisible();
+  await page.screenshot({
+    path: "/tmp/alexmar-ocr-revision.png",
+    fullPage: true,
+  });
+  await page
+    .getByRole("button", { name: "Revisar recepción", exact: true })
+    .click();
+  await page.getByRole("checkbox", { name: /cantidades/ }).check();
+  await page
+    .getByRole("button", { name: "Confirmar recepción y deuda", exact: true })
+    .click();
+  await expect(page).toHaveURL(/recepciones\/[a-f0-9-]{36}$/);
+  const enlaceFoto = page.getByRole("link", {
+    name: "Ver foto de factura",
+    exact: true,
+  });
+  await expect(enlaceFoto).toBeVisible();
+  const archivoFoto = await page.request.get(
+    base + (await enlaceFoto.getAttribute("href")),
+  );
+  expect(archivoFoto.ok()).toBeTruthy();
+  expect(archivoFoto.headers()["content-type"]).toBe("image/jpeg");
+  expect((await archivoFoto.body()).subarray(0, 3).toString("hex")).toBe(
+    "ffd8ff",
+  );
   const antes = await readFile(estadoFile, "utf8");
   const origenAjeno = await page.request.post(base + "/api/compras/recibir", {
     headers: { origin: "https://otro.example" },
@@ -458,7 +526,7 @@ try {
   expect(await readFile(estadoFile, "utf8")).toBe(antes);
   if (errores.length) throw new Error(errores.join("\n"));
   console.log(
-    "Compras navegador: proveedor → producto existente/nuevo → 5 × 100 → revisión sin escritura → stock y deuda 500; último costo, precio de venta pendiente, pago parcial, edición de orden/abono, error sin perder campos, anulación de abono/orden, permisos y 1440/390 sin desbordamiento. DB simulada.",
+    "Compras navegador: proveedor → producto existente/nuevo → 5 × 100 → revisión sin escritura → stock y deuda 500; último costo, precio de venta pendiente, pago parcial, edición de orden/abono, error sin perder campos, anulación de abono/orden, OCR real con recursos locales y foto privada, permisos y 1440/390 sin desbordamiento. DB simulada.",
   );
 } finally {
   await browser?.close();

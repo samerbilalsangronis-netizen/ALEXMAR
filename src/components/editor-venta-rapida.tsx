@@ -192,18 +192,23 @@ export function EditorVentaRapida({
   clave,
   cliente,
   productos,
+  productoInicial,
 }: {
   clave: string;
   cliente?: ResultadoVenta;
   productos: ResultadoVenta[];
+  productoInicial?: ResultadoVenta;
 }) {
   const [filas, setFilas] = useState<FilaRapida[]>(() =>
       Array.from({ length: 15 }, (_, i) => ({
         clave: "fila-" + i,
         cantidad: "1",
-        descripcion: "",
-        precio: "",
-        variante_id: null,
+        descripcion: i === 0 && productoInicial ? productoInicial.nombre : "",
+        precio: i === 0 && productoInicial ? productoInicial.precio || "" : "",
+        variante_id:
+          i === 0 && productoInicial
+            ? productoInicial.variante_id || null
+            : null,
         tipo: "producto",
       })),
     ),
@@ -211,7 +216,8 @@ export function EditorVentaRapida({
     [abono, setAbono] = useState("0"),
     [error, setError] = useState(""),
     [ocupado, setOcupado] = useState(false),
-    [revision, setRevision] = useState(false);
+    [revision, setRevision] = useState(false),
+    [conFactura, setConFactura] = useState(false);
   const tabla = useRef<HTMLDivElement>(null),
     enviando = useRef(false),
     router = useRouter(),
@@ -329,7 +335,9 @@ export function EditorVentaRapida({
       router.push(
         cliente
           ? "/clientes/" + cliente.id + "?guardado=1"
-          : "/facturacion/" + d.id,
+          : conFactura
+            ? "/facturacion/" + d.id
+            : "/facturacion?guardado=1",
       );
       router.refresh();
     } catch (e) {
@@ -542,6 +550,20 @@ export function EditorVentaRapida({
             </button>
           </section>
         )}
+        {!cliente && (
+          <label className="checkbox">
+            <input
+              type="checkbox"
+              checked={conFactura}
+              onChange={(e) => setConFactura(e.target.checked)}
+            />
+            Generar factura al registrar la venta
+          </label>
+        )}
+        <p className="muted">
+          La venta quedará registrada una sola vez. Su factura seguirá
+          disponible desde Ventas.
+        </p>
         <div className="acciones">
           <button disabled={ocupado}>
             {ocupado
@@ -549,10 +571,12 @@ export function EditorVentaRapida({
               : revision
                 ? cliente
                   ? "Confirmar cargo a la cuenta"
-                  : "Confirmar y emitir factura"
+                  : conFactura
+                    ? "Registrar venta y ver factura"
+                    : "Confirmar venta"
                 : cliente
                   ? "Revisar cargo"
-                  : "Revisar factura"}
+                  : "Revisar venta"}
           </button>
         </div>
       </fieldset>

@@ -55,23 +55,38 @@ export default async function Nueva({
     ),
     paginas: productos.data.paginas,
   };
+  let productoInicial;
+  if (p.producto && /^[a-f0-9-]{36}$/i.test(p.producto)) {
+    const { data, error } = await db.rpc("ficha_producto", {
+      p_id: p.producto,
+    });
+    if (error) throw new Error(error.message);
+    if (data?.activo)
+      productoInicial = {
+        id: data.id,
+        variante_id: data.variante_id,
+        nombre: data.nombre,
+        precio: data.precio,
+        disponible: data.disponible,
+      };
+  }
   return (
     <>
-      <Link href="/facturacion">← Facturación</Link>
+      <Link href="/facturacion">← Ventas</Link>
       <Cabecera
-        titulo={inicial ? "Editar borrador" : "Nueva factura"}
+        titulo={inicial ? "Editar borrador" : "Registrar venta"}
         subtitulo={
           inicial
             ? "Borrador existente · USD"
             : "Contado · 15 filas rápidas · USD"
         }
-      >
-        <Link className="boton secundario" href="/clientes/nuevo">
-          Agregar cliente a crédito
-        </Link>
-      </Cabecera>
+      />
       {!inicial ? (
-        <EditorVentaRapida clave={randomUUID()} productos={seleccion.filas} />
+        <EditorVentaRapida
+          clave={randomUUID()}
+          productos={seleccion.filas}
+          productoInicial={productoInicial}
+        />
       ) : (
         <EditorVenta
           clave={inicial?.id || randomUUID()}

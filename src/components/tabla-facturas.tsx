@@ -35,7 +35,7 @@ export function TablaFacturas({
       <table className="tabla-facturacion">
         <thead>
           <tr>
-            <th>Factura</th>
+            <th>Venta / factura</th>
             <th>Fecha</th>
             <th>Cliente</th>
             <th>Condición</th>
@@ -95,7 +95,7 @@ export function TablaFacturas({
                       className="factura-anular-link"
                       href={"/facturacion/" + v.id + "?anular=1"}
                     >
-                      Anular
+                      Eliminar
                     </Link>
                   )}
                 </td>

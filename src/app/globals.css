@@ -3776,3 +3776,18 @@ button.peligro {
   display: block;
   font-size: 30px;
 }
+
+/* Operación diaria: acciones contextuales y opciones secundarias discretas. */
+.estado-busqueda { display:block; color:var(--gris); font-size:.75rem; align-self:center; min-width:9rem; }
+.gestion-persona { margin:-.5rem 0 1.25rem; }
+.gestion-persona > .acciones { justify-content:flex-end; }
+.mas-opciones { margin:1rem 0; }
+.mas-opciones > summary { color:var(--gris); cursor:pointer; padding:.5rem 0; }
+.mas-opciones .acciones { padding:.7rem 0; }
+.ancho-completo { grid-column:1/-1; }
+.ancho-completo > summary { cursor:pointer; margin-bottom:1rem; }
+.foto-factura-previa { display:block; max-height:320px; max-width:100%; width:auto; object-fit:contain; border-radius:12px; margin:1rem 0; }
+.texto-ocr { white-space:pre-wrap; overflow-wrap:anywhere; font-size:.85rem; max-height:240px; overflow:auto; }
+.foto-compra h2 { margin:0; }
+.tema { min-width:44px; min-height:44px; padding:10px; }
+@media(max-width:600px) { .estado-busqueda { width:100%; } .gestion-persona > .acciones { justify-content:flex-start; } }

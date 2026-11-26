@@ -1,3 +1,5 @@
+import { GestionPersona } from "@/components/gestion-persona";
+import { FormularioVivo } from "@/components/formulario-vivo";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Plus, ArrowLeft, PackagePlus } from "lucide-react";
@@ -46,11 +48,12 @@ export default async function ProveedorDetalle({
               className="boton"
               href={"/proveedores/" + id + "/recepciones/nueva"}
             >
-              <Plus size={17} /> Recibir mercancía
+              <Plus size={17} /> Cargar factura de compra
             </Link>
           )}
         </div>
       </Cabecera>
+      <GestionPersona tipo="proveedor" dato={d.proveedor} />
       <section className="indicadores indicadores-ventas">
         <article>
           <small>COMPRAS RECIBIDAS · USD</small>
@@ -62,7 +65,7 @@ export default async function ProveedorDetalle({
           <strong>{monto(d.resumen.pagado)}</strong>
         </article>
         <article className="metrica-acento">
-          <small>PENDIENTE CON EL PROVEEDOR</small>
+          <small>SALDO PENDIENTE</small>
           <strong>{monto(d.resumen.saldo)}</strong>
         </article>
       </section>
@@ -74,15 +77,14 @@ export default async function ProveedorDetalle({
       <section className="panel">
         <span className="etiqueta">PRODUCTOS QUE TE SUMINISTRA</span>
         <h2>Mercancía de este proveedor</h2>
-        <form className="busqueda">
+        <FormularioVivo className="busqueda">
           <input
             name="q"
             aria-label="Buscar productos del proveedor"
             defaultValue={p.q}
             placeholder="Starlink, faro, referencia…"
           />
-          <button>Buscar</button>
-        </form>
+        </FormularioVivo>
         <div className="tabla-contenedor tabla-compras">
           <table>
             <thead>
@@ -177,8 +179,8 @@ export default async function ProveedorDetalle({
         </div>
         {!d.compras.total && (
           <p className="vacio">
-            Aún no hay recepciones. Selecciona Recibir mercancía para registrar
-            la primera.
+            Aún no hay recepciones. Selecciona Cargar factura de compra para
+            registrar la primera.
           </p>
         )}
         <Paginacion {...d.compras} ruta={"/proveedores/" + id} parametros={p} />

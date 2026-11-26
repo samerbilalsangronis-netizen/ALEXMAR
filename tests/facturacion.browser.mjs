@@ -46,6 +46,9 @@ for (const path of [
   "(privado)/facturacion/nueva/page.tsx",
   "(privado)/facturacion/[id]/page.tsx",
   "(privado)/clientes/[id]/page.tsx",
+  "(privado)/clientes/page.tsx",
+  "(privado)/inventario/[id]/page.tsx",
+  "api/gestion/route.ts",
   "(privado)/clientes/nuevo/page.tsx",
   "(privado)/inventario/pendientes/page.tsx",
   "api/facturacion/buscar/route.ts",
@@ -73,7 +76,7 @@ await writeFile(
 );
 await writeFile(
   join(dir, "acciones.ts"),
-  '"use server";export async function salir(){};export async function anularVenta(){};export async function emitirVenta(){};',
+  '"use server";export async function salir(){};export async function anularVenta(){};export async function emitirVenta(){};export async function guardarProducto(){};export async function ajustarStock(){};export async function guardarClasificacion(){};export async function guardarCompatibilidad(){};export async function eliminarCompatibilidad(){};',
 );
 await mkdir(join(dir, "assets/fonts"), { recursive: true });
 for (const f of ["OpenSans-Regular.ttf", "OpenSans-Bold.ttf"])
@@ -126,7 +129,16 @@ const perfil=async()=>({rol:JSON.parse(await readFile(roles,'utf8')),nombre:'Adm
 async function rpc(n,args={}){const e=JSON.parse(await readFile(archivo,'utf8'));const guardar=()=>writeFile(archivo,JSON.stringify(e));const pag=(filas)=>({filas,total:filas.length,pagina:1,paginas:1});
 if(n==='mi_perfil')return {data:await perfil()};
 if(n==='configuracion_facturacion')return {data:{version:11,version_rapida:18,descontar_stock:false}};
-if(n==='buscar_clientes')return {data:pag(e.clientes)};
+if(n==='buscar_clientes')return {data:pag(e.clientes.filter(c=>c.activo!==false&&(!args.p.q||c.nombre.toLowerCase().includes(args.p.q.toLowerCase()))).map(c=>({...c,saldo:'0'})))};
+if(n==='editar_cliente'){Object.assign(e.clientes.find(c=>c.id===args.p.id),args.p);await guardar();return {data:args.p.id};}
+if(n==='retirar_cliente'){e.clientes.find(c=>c.id===args.p.id).activo=false;await guardar();return {data:null};}
+if(n==='ficha_producto'){const a=e.productos.find(a=>a.id===args.p_id);return {data:a?{...a,activo:true,fisico:a.disponible,reservado:'0',costo:null,minimo:'0'}:null};}
+if(n==='listar_compatibilidades')return {data:pag([])};
+if(n==='clasificacion_producto')return {data:null};
+if(n==='kardex')return {data:pag((e.movimientos||[]).filter(m=>m.producto===args.p_id).slice().reverse())};
+if(n==='mover_existencia'){const a=e.productos.find(a=>a.id===args.p.id),antes=a.disponible,delta=new Decimal(args.p.cantidad).times(args.p.tipo==='entrada'?1:-1);a.disponible=new Decimal(antes).plus(delta).toFixed();e.movimientos??=[];e.movimientos.push({id:args.p.clave,producto:a.id,antes,saldo:a.disponible,cantidad:delta.toFixed(),usuario:'Admin de prueba',creado:new Date().toISOString(),motivo:args.p.motivo});await guardar();return {data:null};}
+if(n==='registrar_producto_pendiente'){const p=args.p,q=e.pendientes.find(q=>q.linea_id===p.linea);e.productos.push({id:p.linea,variante_id:p.linea,nombre:p.nombre,precio:p.precio,disponible:p.stock});e.pendientes=e.pendientes.filter(q=>q.linea_id!==p.linea);await guardar();return {data:p.linea};}
+
 if(n==='buscar_productos')return {data:pag(e.productos.filter(a=>!args.p.q||a.nombre.toLowerCase().includes(args.p.q.toLowerCase())))};
 if(n==='documento_cuenta_pdf'){const r=await rpc('estado_cliente',{p_id:args.p_cliente});return {data:{...r.data,generado:new Date().toISOString()}};}
 if(n==='guardar_pdf_compartido'){e.pdfs??=[];const p={id:randomUUID(),token:args.p_token,nombre:args.p_nombre,base64:args.p_base64,vence:new Date(Date.now()+7*86400000).toISOString()};e.pdfs.push(p);await guardar();return {data:{id:p.id,vence:p.vence}};}
@@ -139,7 +151,7 @@ if(n==='emitir_factura_rapida'){
  const c=e.clientes.find(c=>c.id===p.cliente_id)||{nombre:p.cliente_contado?.nombre||'Consumidor final',documento:p.cliente_contado?.documento||'',telefono:p.cliente_contado?.telefono||'',direccion:''};
  const v={...p,cliente:c,numero:e.ventas.length+1,estado:'confirmada',version:2,total,subtotal:total,descontar_stock:false,pagado:p.abono,saldo:new Decimal(total).minus(p.abono).toFixed(),creado:'2026-11-23T15:00:00Z',emitido:'2026-11-23T15:00:00Z',lineas,pagos:new Decimal(p.abono).gt(0)?[{tipo:'cobro',monto:p.abono,metodo:p.metodo_pago,creado:'2026-11-23T15:00:00Z'}]:[]};e.ventas.push(v);
  for(const l of lineas)if(l.clase_linea==='producto_pendiente')e.pendientes.push({linea_id:l.id,venta_id:v.id,numero:v.numero,cliente:c.nombre,descripcion:l.descripcion,cantidad:l.cantidad,precio:l.precio,importe:l.importe});await guardar();return {data:p.id};}
-if(n==='buscar_ventas'){const filas=e.ventas.map(v=>({...v,cliente:v.cliente.nombre,fecha:v.emitido}));return {data:{...pag(filas),resumen:{facturado:filas.reduce((s,v)=>s.plus(v.total),new Decimal(0)).toFixed(),cobrado:filas.reduce((s,v)=>s.plus(v.pagado),new Decimal(0)).toFixed(),pendiente:filas.reduce((s,v)=>s.plus(v.saldo),new Decimal(0)).toFixed(),emitidas:filas.length}}};}
+if(n==='buscar_ventas'){const filas=e.ventas.map(v=>({...v,cliente:v.cliente.nombre,fecha:v.emitido}));return {data:{version_operacion:20,...pag(filas),resumen:{facturado:filas.reduce((s,v)=>s.plus(v.total),new Decimal(0)).toFixed(),cobrado:filas.reduce((s,v)=>s.plus(v.pagado),new Decimal(0)).toFixed(),pendiente:filas.reduce((s,v)=>s.plus(v.saldo),new Decimal(0)).toFixed(),emitidas:filas.length}}};}
 if(n==='estado_cliente'){const cliente=e.clientes.find(c=>c.id===args.p_id);const vs=e.ventas.filter(v=>v.cliente_id===args.p_id),cargos=vs.reduce((s,v)=>s.plus(v.total),new Decimal(0)),abonos=vs.reduce((s,v)=>s.plus(v.pagado),new Decimal(0));const filas=vs.flatMap(v=>[{id:v.id,fecha:v.emitido,descripcion:'Factura V-'+v.numero+' · '+v.lineas.map(l=>l.descripcion).join(', '),tipo:'CARGO',importe:v.total,saldo:v.saldo},...v.pagos.map((p,i)=>({id:v.id+'-pago-'+i,fecha:p.creado,descripcion:'Abono '+p.metodo,tipo:'ABONO',importe:p.monto,saldo:v.saldo}))]);return {data:{...pag(filas),cliente,anterior:'0',final:cargos.minus(abonos).toFixed(),cargos:cargos.toFixed(),abonos:abonos.toFixed(),moneda:'USD'}};}
 if(n==='guardar_cliente'){const i=e.clientes.findIndex(c=>c.id===args.p.id);if(i<0)e.clientes.push(args.p);else e.clientes[i]=args.p;await guardar();return {data:args.p.id};}
 if(n==='listar_productos_sin_cargar')return {data:pag(e.pendientes)};
@@ -194,7 +206,7 @@ try {
   await page.goto(base + "/facturacion");
   await page
     .locator("main")
-    .getByRole("link", { name: "Nueva factura", exact: true })
+    .getByRole("link", { name: "Registrar venta", exact: true })
     .click();
   await expect(page.getByRole("radio")).toHaveCount(0);
   await expect(
@@ -259,12 +271,13 @@ try {
     .getByLabel("Método de pago", { exact: true })
     .selectOption("Binance");
   await expect(page.locator(".rapida-total")).toContainText("453");
+  await page.getByLabel("Generar factura al registrar la venta").check();
   await page
-    .getByRole("button", { name: "Revisar factura", exact: true })
+    .getByRole("button", { name: "Revisar venta", exact: true })
     .click();
   expect(JSON.parse(await readFile(stateFile, "utf8")).ventas).toHaveLength(0);
   await page
-    .getByRole("button", { name: "Confirmar y emitir factura", exact: true })
+    .getByRole("button", { name: "Registrar venta y ver factura", exact: true })
     .click();
   await page.waitForURL(/facturacion\/[a-f0-9-]{36}$/);
   let e = JSON.parse(await readFile(stateFile, "utf8"));
@@ -293,6 +306,9 @@ try {
     .getByText("Completar producto en inventario", { exact: true })
     .click();
   await tarjeta
+    .getByText("Vincular producto existente", { exact: true })
+    .click();
+  await tarjeta
     .getByRole("combobox", { name: "Añadir producto", exact: true })
     .focus();
   await tarjeta.getByRole("option", { name: /Faro Toyota/ }).click();
@@ -308,6 +324,24 @@ try {
   expect(JSON.parse(await readFile(stateFile, "utf8")).ventas[0].total).toBe(
     "453",
   );
+  const directo = page.locator("article.producto").first();
+  await directo
+    .getByText("Completar producto en inventario", { exact: true })
+    .click();
+  await directo.getByLabel("Stock físico actual", { exact: true }).fill("8");
+  await directo.getByLabel("Precio de venta USD", { exact: true }).fill("40");
+  await directo
+    .getByRole("button", { name: "Agregar al inventario", exact: true })
+    .click();
+  await expect
+    .poll(
+      async () =>
+        JSON.parse(await readFile(stateFile, "utf8")).pendientes.length,
+    )
+    .toBe(12);
+  expect(
+    JSON.parse(await readFile(stateFile, "utf8")).productos.at(-1).disponible,
+  ).toBe("8");
   await page.goto(base + "/clientes/nuevo");
   await page
     .getByLabel("Nombre del cliente", { exact: true })
@@ -423,6 +457,84 @@ try {
   );
   expect(ajena.status()).toBe(404);
   await pdfDialogo.getByRole("button", { name: "Cerrar", exact: true }).click();
+  await page.goto(base + "/clientes/" + clienteId);
+  await page.getByRole("button", { name: "Editar datos", exact: true }).click();
+  await page
+    .getByRole("textbox", { name: "Nombre", exact: true })
+    .fill("Cliente editado de prueba");
+  await page.getByLabel("Teléfono", { exact: true }).fill("000-DEMO");
+  await page
+    .getByRole("button", { name: "Guardar datos", exact: true })
+    .click();
+  await expect(page.locator("main h1")).toHaveText("Cliente editado de prueba");
+  await expect(
+    page.locator(".franja").getByRole("link", { name: /factura|venta/i }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByText("Historial de facturas del cliente", { exact: true }),
+  ).toBeVisible();
+  await page.goto(base + "/clientes");
+  const buscar = page.getByLabel("Buscar cliente", { exact: true });
+  await buscar.pressSequentially("editado", { delay: 35 });
+  await expect(page).toHaveURL(/q=editado/);
+  await expect(page.locator("a.producto")).toHaveCount(1);
+  await expect(buscar).toBeFocused();
+  await expect(buscar).toHaveValue("editado");
+  await page.getByRole("link", { name: /Cliente editado de prueba/ }).click();
+  await page
+    .getByRole("button", { name: "Eliminar cliente", exact: true })
+    .click();
+  const retiro = page.getByRole("dialog", {
+    name: "Eliminar cliente",
+    exact: true,
+  });
+  await retiro.getByRole("checkbox").check();
+  await retiro
+    .getByRole("button", { name: "Confirmar eliminación", exact: true })
+    .click();
+  await expect(page).toHaveURL(/\/clientes$/);
+  await expect(
+    page.getByRole("link", { name: /Cliente editado de prueba/ }),
+  ).toHaveCount(0);
+  await page.goto(base + "/inventario/22222222-2222-4222-8222-222222222222");
+  await page
+    .getByRole("button", { name: "Agregar unidades", exact: true })
+    .click();
+  const movimiento = page.getByRole("dialog", {
+    name: "Agregar unidades",
+    exact: true,
+  });
+  await movimiento.getByLabel("Cantidad", { exact: true }).fill("5");
+  await movimiento
+    .getByLabel("Motivo", { exact: true })
+    .fill("Ingreso de prueba");
+  await movimiento
+    .getByRole("button", { name: "Registrar movimiento", exact: true })
+    .click();
+  await expect(movimiento).not.toBeVisible();
+  await expect(
+    page.getByText("Ingreso de prueba", { exact: true }),
+  ).toBeVisible();
+  expect(
+    JSON.parse(await readFile(stateFile, "utf8")).productos[0].disponible,
+  ).toBe("15");
+  await page
+    .getByRole("link", { name: "Registrar venta", exact: true })
+    .click();
+  await expect(
+    page.getByRole("combobox", {
+      name: "Producto o servicio fila 1",
+      exact: true,
+    }),
+  ).toHaveValue("Faro Toyota de muestra");
+  await page
+    .getByRole("button", { name: "Revisar venta", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Confirmar venta", exact: true })
+    .click();
+  await expect(page).toHaveURL(/\/facturacion\?guardado=1/);
+  expect(JSON.parse(await readFile(stateFile, "utf8")).ventas).toHaveLength(3);
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 1000 });
     await page.goto(base + "/facturacion/nueva");
@@ -454,13 +566,21 @@ try {
     data: {},
   });
   expect(denegado.status()).toBe(403);
+  expect(
+    (
+      await page.request.post(base + "/api/gestion", {
+        headers: { origin: base },
+        data: { accion: "retirar_cliente", datos: { id: clienteId } },
+      })
+    ).status(),
+  ).toBe(403);
   await page.goto(base + "/inventario/pendientes");
   await expect(
     page.getByRole("heading", { name: "Productos sin cargar", exact: true }),
   ).toHaveCount(0);
   expect(errores).toEqual([]);
   console.log(
-    "Facturación rápida: 15/20 filas, teclado, catálogo/precio editable, productos pendientes, servicio, contado sin cuenta, crédito con alta, abono, PDF real compartido/WhatsApp, revocación, factura ajena denegada, permisos y 1440/390. Backend simulado.",
+    "Facturación rápida: 15/20 filas, teclado, catálogo/precio editable, productos pendientes con alta directa y stock real, servicio, búsqueda viva, editar/retirar cliente, entrada de existencias, venta desde inventario, contado sin cuenta, crédito con alta, abono, PDF real compartido/WhatsApp, revocación, factura ajena denegada, permisos y 1440/390. Backend simulado.",
   );
 } catch (e) {
   console.error(logs.slice(-3500));

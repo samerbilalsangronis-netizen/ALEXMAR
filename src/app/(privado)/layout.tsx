@@ -1,7 +1,6 @@
 export const dynamic = "force-dynamic";
 import { VigilarAcceso } from "@/components/vigilar-acceso";
 import { Tema } from "@/components/tema";
-import { Search, Plus } from "lucide-react";
 import Link from "next/link";
 import { LogOut } from "lucide-react";
 import { Marca } from "@/components/marca";
@@ -56,34 +55,10 @@ export default async function Privado({
       </aside>
       <div className="contenido">
         <div className="franja no-imprimir">
-          <form
-            action={
-              perfil.rol === "administrador" ? "/inventario" : "/consulta"
-            }
-            className="busqueda-global"
-          >
-            <Search size={18} aria-hidden="true" />
-            <input
-              name="q"
-              aria-label="Buscar en todo el inventario"
-              placeholder="Encuentra una pieza, referencia o vehículo…"
-            />
-            <button
-              className="icono secundario"
-              aria-label="Buscar en inventario"
-            >
-              <Search size={18} />
-            </button>
-          </form>
+          <span className="etiqueta">ALEXMAR · GESTIÓN</span>
           <div className="acciones">
             <span className="moneda-global">USD · Caracas</span>
             <Tema />
-            {["administrador", "ventas"].includes(perfil.rol) && (
-              <Link className="boton factura-global" href="/facturacion/nueva">
-                <Plus size={17} />
-                <span>Nueva factura</span>
-              </Link>
-            )}
           </div>
         </div>
         <main id="principal">{children}</main>

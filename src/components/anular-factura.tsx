@@ -40,7 +40,7 @@ export function AnularFactura({
         onClick={() => setAbierto(true)}
       >
         <Ban size={17} />
-        Anular factura
+        Eliminar factura
       </button>
       <dialog
         className="factura-dialogo"
@@ -48,7 +48,7 @@ export function AnularFactura({
         onCancel={() => setAbierto(false)}
         aria-labelledby="anular-titulo"
       >
-        <h2 id="anular-titulo">Anular factura</h2>
+        <h2 id="anular-titulo">Eliminar factura</h2>
         <p>
           Se conservará el documento con estado Anulada y se revertirán su cargo
           y sus cobros. Solo se devolverán existencias si esta factura las

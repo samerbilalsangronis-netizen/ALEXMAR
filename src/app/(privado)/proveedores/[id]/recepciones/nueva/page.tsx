@@ -34,7 +34,7 @@ export default async function NuevaRecepcion({
   return (
     <>
       <Cabecera
-        titulo="Recibir mercancía"
+        titulo="Cargar factura de compra"
         subtitulo="Elige productos, cantidades y costo. Al confirmar se actualizan inventario y cuenta por pagar juntos."
       >
         <Link className="boton secundario" href={"/proveedores/" + id}>

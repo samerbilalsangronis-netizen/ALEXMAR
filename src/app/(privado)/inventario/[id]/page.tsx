@@ -1,3 +1,4 @@
+import { MoverExistencia } from "@/components/mover-existencia";
 import type { ClasificacionProducto } from "@/lib/catalogo";
 import Link from "next/link";
 import {
@@ -42,6 +43,10 @@ export default async function Ficha({
         cantidad: string;
         motivo: string;
         saldo: string;
+        antes?: string;
+        usuario?: string;
+        venta_id?: string;
+        compra_id?: string;
       }>
     >("kardex", { p_id: id, p_pagina: pagina(p.pagina) }),
     consultar<Pagina<Compatibilidad>>("listar_compatibilidades", {
@@ -77,7 +82,16 @@ export default async function Ficha({
       <Cabecera
         titulo={a.nombre}
         subtitulo={a.categoria || "Producto sin categoría"}
-      />
+      >
+        {edita && (
+          <div className="acciones">
+            <MoverExistencia id={id} />
+            <Link className="boton" href={"/facturacion/nueva?producto=" + id}>
+              Registrar venta
+            </Link>
+          </div>
+        )}
+      </Cabecera>
       <Avisos p={p} />
       <section className="indicadores">
         <article>
@@ -237,13 +251,15 @@ export default async function Ficha({
         </details>
       )}
       <section className="panel">
-        <h2>Kardex</h2>
+        <h2>Historial de existencias</h2>
         <div className="tabla-contenedor">
           <table>
             <thead>
               <tr>
                 <th>Fecha</th>
                 <th>Motivo</th>
+                <th>Responsable</th>
+                <th>Antes</th>
                 <th>Movimiento</th>
                 <th>Saldo físico</th>
               </tr>
@@ -251,8 +267,24 @@ export default async function Ficha({
             <tbody>
               {k.filas.map((m) => (
                 <tr key={m.id}>
-                  <td>{fecha(m.creado)}</td>
-                  <td>{m.motivo}</td>
+                  <td>
+                    {new Intl.DateTimeFormat("es-VE", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                      timeZone: "America/Caracas",
+                    }).format(new Date(m.creado))}
+                  </td>
+                  <td>
+                    {m.motivo}
+                    {m.venta_id && (
+                      <Link href={"/facturacion/" + m.venta_id}>
+                        {" "}
+                        · Ver venta →
+                      </Link>
+                    )}
+                  </td>
+                  <td>{m.usuario || "Sistema"}</td>
+                  <td>{m.antes === undefined ? "—" : cantidad(m.antes)}</td>
                   <td>{cantidad(m.cantidad)}</td>
                   <td>{cantidad(m.saldo)}</td>
                 </tr>

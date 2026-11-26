@@ -1,3 +1,4 @@
+import { FormularioVivo } from "@/components/formulario-vivo";
 import { Analitica } from "@/components/analitica";
 import Link from "next/link";
 import { consultar, sesion } from "@/lib/supabase";
@@ -124,7 +125,7 @@ export default async function Reportes({
       )}
       <section className="panel">
         <h2>Detalle de inventario</h2>
-        <form className="filtros no-imprimir">
+        <FormularioVivo className="filtros no-imprimir">
           {p.desde && <input type="hidden" name="desde" value={p.desde} />}
           {p.hasta && <input type="hidden" name="hasta" value={p.hasta} />}
           <label>
@@ -160,8 +161,7 @@ export default async function Reportes({
               <option value="todos">Todos</option>
             </select>
           </label>
-          <button>Aplicar filtros</button>
-        </form>
+        </FormularioVivo>
         <div className="acciones no-imprimir">
           <a
             className="boton secundario"

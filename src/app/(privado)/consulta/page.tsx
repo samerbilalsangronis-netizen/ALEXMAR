@@ -1,3 +1,4 @@
+import { FormularioVivo } from "@/components/formulario-vivo";
 import { sesion } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 import { Cabecera, Paginacion, Vacio } from "@/components/comunes";
@@ -41,7 +42,7 @@ export default async function Consulta({
         subtitulo="Encuentra el producto y consulta su precio de venta en USD."
       />
       <section className="panel">
-        <form className="busqueda">
+        <FormularioVivo className="busqueda">
           <label className="sr-only" htmlFor="buscar-precio">
             Buscar producto
           </label>
@@ -52,8 +53,7 @@ export default async function Consulta({
             placeholder="Nombre, primeras letras, marca o vehículo…"
             autoComplete="off"
           />
-          <button>Buscar</button>
-        </form>
+        </FormularioVivo>
       </section>
       <div className="precios-generales">
         {d.filas.map((a) => (

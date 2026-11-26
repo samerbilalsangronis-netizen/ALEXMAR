@@ -1,5 +1,6 @@
 import type { Pagina } from "./formatos";
 export type LineaRecepcion = {
+  ocr_key?: string;
   variante_id: string | null;
   nombre: string;
   cantidad: string;
@@ -10,6 +11,7 @@ export type Compra = {
   id: string;
   numero: number;
   version?: number;
+  tiene_foto?: boolean;
   proveedor_id: string;
   proveedor_snapshot: { nombre: string; documento: string };
   referencia: string;

@@ -1,5 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
+import { LeerFotoCompra } from "./leer-foto-compra";
+import { type FotoFactura, type RenglonLeido } from "@/lib/lectura-factura";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   Plus,
@@ -46,8 +48,81 @@ export function EditorRecepcion({
     [paso, setPaso] = useState<"editar" | "revisar">("editar"),
     [referencia, setReferencia] = useState(""),
     [observaciones, setObservaciones] = useState("");
+  const [foto, setFoto] = useState<FotoFactura | null>(null),
+    [totalFoto, setTotalFoto] = useState<string | null>(null),
+    [omitidasFoto, setOmitidasFoto] = useState<string[]>([]),
+    [opcionesFoto, setOpcionesFoto] = useState<Record<string, Resultado[]>>({});
+  async function cargarFoto(
+    filas: RenglonLeido[],
+    imagen: FotoFactura,
+    total: string | null,
+    omitidas: string[],
+  ) {
+    if (lineas.length + filas.length > 200)
+      throw new Error(
+        "Una compra admite hasta 200 líneas. Divide el documento.",
+      );
+    const normal = (s: string) =>
+      s
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .trim();
+    const nuevas: LineaRecepcion[] = [],
+      opciones: Record<string, Resultado[]> = {};
+    for (const f of filas) {
+      const r = await fetch(
+        "/api/compras/buscar?" + new URLSearchParams({ q: f.nombre }),
+      );
+      const d = await r.json();
+      if (!r.ok)
+        throw new Error(
+          d.error || "No se pudo contrastar el inventario. Inténtalo de nuevo.",
+        );
+      const key = crypto.randomUUID(),
+        exactas = (d.filas as Resultado[]).filter(
+          (p) => normal(p.nombre) === normal(f.nombre),
+        );
+      opciones[key] = d.filas;
+      const existente = exactas.length === 1 ? exactas[0] : null;
+      nuevas.push({
+        ocr_key: key,
+        variante_id: existente?.variante_id || null,
+        nombre: existente?.nombre || f.nombre,
+        cantidad: f.cantidad,
+        costo_unitario: f.costo,
+        ...(!existente
+          ? {
+              nuevo: {
+                id: crypto.randomUUID(),
+                nombre: f.nombre,
+                categoria: "",
+              },
+            }
+          : {}),
+      });
+    }
+    setLineas((ls) => [...ls, ...nuevas]);
+    setOpcionesFoto((old) => ({ ...old, ...opciones }));
+    setFoto(imagen);
+    setTotalFoto(total);
+    setOmitidasFoto(omitidas);
+    setRevisado(false);
+  }
+  const tablaRecibida = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    if (foto)
+      tablaRecibida.current?.querySelector<HTMLInputElement>("input")?.focus();
+  }, [foto]);
   const numero = (x: string) => x.trim().replace(",", ".");
   useEffect(() => {
+    if (!q.trim()) {
+      setResultados(null);
+      setBuscando(false);
+      setErrorBusqueda("");
+      return;
+    }
     const c = new AbortController();
     const t = setTimeout(async () => {
       setBuscando(true);
@@ -161,6 +236,7 @@ export function EditorRecepcion({
           moneda: "USD",
           referencia,
           observaciones,
+          ...(foto ? { foto } : {}),
           lineas: lineas.map((l) => ({
             variante_id: l.variante_id,
             cantidad: numero(l.cantidad),
@@ -193,6 +269,43 @@ export function EditorRecepcion({
       </section>
       {paso === "editar" ? (
         <>
+          {!foto && <LeerFotoCompra cargar={cargarFoto} disabled={ocupado} />}
+          {foto && (
+            <div className="panel">
+              <p className="exito">
+                Foto incorporada a esta compra. Se guardará al confirmar. Revisa
+                cada coincidencia del catálogo y cada importe.
+              </p>
+              <details>
+                <summary>Ver foto y líneas sin incorporar</summary>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  className="foto-factura-previa"
+                  src={"data:image/jpeg;base64," + foto.base64}
+                  alt="Factura de proveedor para comparar con la tabla"
+                />
+                {omitidasFoto.length > 0 && (
+                  <>
+                    <p>
+                      Estas líneas no se cargaron automáticamente. Añade
+                      manualmente los productos que falten:
+                    </p>
+                    <pre className="texto-ocr">{omitidasFoto.join("\n")}</pre>
+                  </>
+                )}
+              </details>
+              <button
+                type="button"
+                className="secundario"
+                onClick={() => {
+                  setFoto(null);
+                  setTotalFoto(null);
+                }}
+              >
+                Retirar foto
+              </button>
+            </div>
+          )}
           <section className="panel">
             <span className="etiqueta">01 · ELIGE LO QUE LLEGÓ</span>
             <h2>Añadir productos</h2>
@@ -313,7 +426,7 @@ export function EditorRecepcion({
               </form>
             </details>
           </section>
-          <form onSubmit={revisar}>
+          <form onSubmit={revisar} ref={tablaRecibida}>
             <section className="panel">
               <span className="etiqueta">02 · CANTIDADES Y COSTOS</span>
               <h2>Mercancía recibida</h2>
@@ -326,10 +439,80 @@ export function EditorRecepcion({
               {lineas.map((l, i) => (
                 <div
                   className="linea-editor linea-recepcion"
-                  key={l.variante_id || l.nuevo!.id}
+                  key={l.ocr_key || l.variante_id || l.nuevo!.id}
                 >
                   <div>
-                    <strong>{l.nombre}</strong>
+                    {l.nuevo ? (
+                      <label>
+                        Producto
+                        <input
+                          value={l.nombre}
+                          maxLength={200}
+                          required
+                          onChange={(e) =>
+                            setLineas((ls) =>
+                              ls.map((x, n) =>
+                                n === i
+                                  ? {
+                                      ...x,
+                                      nombre: e.target.value,
+                                      nuevo: {
+                                        ...x.nuevo!,
+                                        nombre: e.target.value,
+                                      },
+                                    }
+                                  : x,
+                              ),
+                            )
+                          }
+                        />
+                      </label>
+                    ) : (
+                      <strong>{l.nombre}</strong>
+                    )}
+                    {l.ocr_key && (
+                      <label>
+                        Registro en inventario
+                        <select
+                          value={l.variante_id || ""}
+                          onChange={(e) =>
+                            setLineas((ls) =>
+                              ls.map((x, n) => {
+                                if (n !== i) return x;
+                                const p = opcionesFoto[l.ocr_key!]?.find(
+                                  (p) => p.variante_id === e.target.value,
+                                );
+                                return p
+                                  ? {
+                                      ...x,
+                                      variante_id: p.variante_id,
+                                      nombre: p.nombre,
+                                      nuevo: undefined,
+                                    }
+                                  : {
+                                      ...x,
+                                      variante_id: null,
+                                      nuevo: {
+                                        id: crypto.randomUUID(),
+                                        nombre: x.nombre,
+                                        categoria: "",
+                                      },
+                                    };
+                              }),
+                            )
+                          }
+                        >
+                          <option value="">
+                            Crear producto nuevo (revisar)
+                          </option>
+                          {opcionesFoto[l.ocr_key]?.map((p) => (
+                            <option key={p.variante_id} value={p.variante_id}>
+                              {p.nombre}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    )}
                     <small className="muted">
                       {l.nuevo
                         ? "Nuevo · precio de venta pendiente"
@@ -370,6 +553,19 @@ export function EditorRecepcion({
                   </button>
                 </div>
               ))}
+              {totalFoto && total && (
+                <p
+                  className={
+                    new Decimal(total).eq(totalFoto) ? "exito" : "aviso"
+                  }
+                >
+                  Total leído en la foto: {monto(totalFoto)} · Total de la
+                  tabla: {monto(total)}.{" "}
+                  {new Decimal(total).eq(totalFoto)
+                    ? "Coinciden."
+                    : "Son diferentes: revisa si faltan productos, impuestos o descuentos."}
+                </p>
+              )}
               <div className="formulario">
                 <label>
                   Factura o referencia del proveedor
@@ -411,6 +607,14 @@ export function EditorRecepcion({
         <section className="panel">
           <span className="etiqueta">03 · CONFIRMA LO RECIBIDO</span>
           <h2>Revisa antes de sumar al inventario</h2>
+          {foto && <p>Se guardará la foto de la factura con esta compra.</p>}
+          {totalFoto && total && !new Decimal(total).eq(totalFoto) && (
+            <p className="aviso">
+              El total de la foto ({monto(totalFoto)}) difiere de la tabla (
+              {monto(total)}). Vuelve a editar si falta un concepto. Se
+              registrará únicamente el total de la tabla.
+            </p>
+          )}
           <div className="tabla-contenedor">
             <table>
               <thead>
